@@ -71,20 +71,24 @@ async function requestRefresh(): Promise<Session | null> {
   return data;
 }
 
-// Every refresh rotates the cookie, so two refreshes at once would kill the session.
-// Inside this tab: callers share one promise. Across tabs: the browser lock runs them one after another.
-export function refreshSession(): Promise<Session | null> {
-  if (!refreshing) {
-    const run =
-      typeof navigator !== "undefined" && "locks" in navigator
-        ? navigator.locks.request("vh-auth-refresh", () => requestRefresh())
-        : requestRefresh();
-
-    refreshing = run.finally(() => {
-      refreshing = null;
-    });
+// The browser lock makes tabs refresh one after another (each refresh rotates the cookie).
+// `await` also unwraps the nested promise type that TypeScript gives navigator.locks.request.
+async function refreshWithLock(): Promise<Session | null> {
+  if (typeof navigator !== "undefined" && "locks" in navigator) {
+    return await navigator.locks.request("vh-auth-refresh", () => requestRefresh());
   }
-  return refreshing;
+  return requestRefresh();
+}
+
+// Inside this tab: every caller shares the one refresh that is already running.
+export function refreshSession(): Promise<Session | null> {
+  if (refreshing) return refreshing;
+
+  const run = refreshWithLock().finally(() => {
+    refreshing = null;
+  });
+  refreshing = run;
+  return run;
 }
 
 // ---------- Requests ----------
