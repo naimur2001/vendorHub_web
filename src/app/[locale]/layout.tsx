@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AppProviders } from "@/components/app-providers";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -39,6 +40,13 @@ export async function generateMetadata({ params }: Omit<Props, "children">): Pro
     title: { default: t("title"), template: `%s · ${t("title")}` },
     description: t("description"),
     applicationName: t("title"),
+    // iPhone "Add to Home Screen" (and later the Capacitor app)
+    appleWebApp: { capable: true, title: t("title"), statusBarStyle: "default" },
+    icons: {
+      icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+    },
+    formatDetection: { telephone: false },
   };
 }
 
@@ -63,6 +71,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider>
           <AppProviders>{children}</AppProviders>
         </NextIntlClientProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
