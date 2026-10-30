@@ -1,26 +1,159 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+  Vendors Hub design tokens, from vendors-hub-figma-spec.md.
+  Light theme only (the spec has no dark mode yet).
+*/
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* shadcn/ui semantic variables, mapped to the spec */
+  --background: #f8fafc; /* color/surface/page */
+  --foreground: #0f172a; /* color/text/primary */
+  --card: #ffffff; /* color/surface/card */
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #059669; /* ButtonPrimary in the spec = color/action/secondary */
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #1e293b;
+  --destructive: #dc2626; /* color/status/error */
+  --border: #e2e8f0; /* color/border/default */
+  --input: #e2e8f0;
+  --ring: #3730a3; /* focused input border in the spec */
+  --radius: 0.75rem;
 }
 
+/* Spec tokens: usable as bg-brand, text-highlight, border-verified, etc. */
+@theme {
+  /* Brand and actions */
+  --color-brand: #1e293b; /* color/primary/brand */
+  --color-brand-alt: #3730a3; /* color/primary/brand-alt */
+  --color-action: #059669; /* color/action/secondary: Buy, Accept, Confirm */
+  --color-action-hover: #047857;
+  --color-highlight: #d97706; /* color/accent/highlight: bargain, pending, limited */
+
+  /* Text */
+  --color-ink: #0f172a; /* color/text/primary */
+  --color-ink-secondary: #334155; /* color/text/secondary */
+  --color-ink-muted: #64748b; /* inactive tabs, ghost buttons */
+  --color-ink-disabled: #94a3b8;
+
+  /* Surfaces and lines */
+  --color-surface: #f8fafc; /* color/surface/page */
+  --color-subtle: #f1f5f9; /* hover fills, disabled inputs */
+  --color-line: #e2e8f0; /* color/border/default */
+  --color-line-strong: #cbd5e1; /* hover borders, disabled buttons */
+
+  /* Status */
+  --color-verified: #0284c7; /* color/status/verified */
+  --color-warning: #ea580c; /* color/status/warning */
+  --color-error: #dc2626; /* color/status/error */
+
+  /* Soft badge fills used across the spec */
+  --color-success-soft: #d1fae5; /* In Stock fill, customer bargain bubble */
+  --color-success-ink: #047857; /* In Stock text */
+  --color-highlight-soft: #fef3c7; /* Limited, Bargained, timer bar */
+  --color-error-soft: #fee2e2; /* Out of Stock, rejected */
+  --color-info-soft: #eff6ff; /* physical shop badge, info notices */
+  --color-warning-soft: #fff7ed; /* fulfilment notice, outline hover */
+  --color-payment-soft: #dbeafe; /* online payment badge fill */
+  --color-payment-ink: #1d4ed8; /* online payment badge text */
+
+  /* Radius tokens: radius/sm, radius/md, radius/lg */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Elevation tokens */
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-modal: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+
+/* shadcn/ui color names + fonts (inline because they point at runtime variables) */
 @theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+  Text styles from the spec. Named type-* (not text-*) so the cn() helper
+  does not confuse them with text colors and drop one of them.
+*/
+@utility type-display {
+  font-family: var(--font-jakarta), var(--font-inter), sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 2.5rem;
+}
+
+@utility type-h2 {
+  font-family: var(--font-jakarta), var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+@utility type-h3 {
+  font-family: var(--font-jakarta), var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+}
+
+@utility type-body {
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@utility type-body-medium {
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@utility type-caption {
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
 }
