@@ -3,6 +3,7 @@ import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { AppProviders } from "@/components/app-providers";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -58,8 +59,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} className={`${inter.variable} ${jakarta.variable}`}>
       <body>
-        {/* Gives client components access to translations, locale and time zone. */}
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        {/* Translations for client components, then TanStack Query + session. */}
+        <NextIntlClientProvider>
+          <AppProviders>{children}</AppProviders>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
