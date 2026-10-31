@@ -2,5 +2,30 @@
   "Metadata": {
     "title": "Vendors Hub",
     "description": "Find verified physical shops, compare prices and bargain."
+  },
+  "Nav": {
+    "skipToContent": "Skip to content",
+    "homeLink": "Vendors Hub home",
+    "mainNav": "Main navigation",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search products, brands, or shops",
+    "home": "Home",
+    "search": "Search",
+    "cart": "Cart",
+    "bargains": "Bargains",
+    "account": "Account",
+    "login": "Log in",
+    "yourAccount": "Your account ({name})"
+  },
+  "Home": {
+    "heroTitle": "Buy from real shops you can visit",
+    "heroText": "Compare prices from verified physical shops in Dhaka, make an offer, then pick up in store or get it delivered.",
+    "cta": "Start searching",
+    "verifiedTitle": "Verified physical shops",
+    "verifiedText": "Every shop is checked: documents, business and a real address you can walk into.",
+    "compareTitle": "Compare shop prices",
+    "compareText": "See the same product from different shops side by side.",
+    "bargainTitle": "Bargain like in the market",
+    "bargainText": "Make an offer and let the shop accept or counter."
   }
 }

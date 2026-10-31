@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Jost, Playfair_Display } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,17 +8,17 @@ import { ServiceWorkerRegister } from "@/components/sw-register";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
-// Body text: Inter. Headings: Plus Jakarta Sans (spec text styles).
-// Bangla later: add Noto Sans Bengali here, these two fonts have no Bangla letters.
-const inter = Inter({
+// Text and UI: Jost. Headings: Playfair Display (Didone, neo-classical).
+// Bangla later: add Noto Sans Bengali (text) and Noto Serif Bengali (headings).
+const jost = Jost({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jost",
   display: "swap",
 });
 
-const jakarta = Plus_Jakarta_Sans({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-playfair",
   display: "swap",
 });
 
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Omit<Props, "children">): Pro
 }
 
 export const viewport: Viewport = {
-  themeColor: "#1E293B",
+  themeColor: "#7A1E2C",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -65,7 +65,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${inter.variable} ${jakarta.variable}`}>
+    <html lang={locale} className={`${jost.variable} ${playfair.variable}`}>
       <body>
         {/* Translations for client components, then TanStack Query + session. */}
         <NextIntlClientProvider>
