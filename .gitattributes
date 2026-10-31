@@ -1,0 +1,10 @@
+# Store all text files with LF line endings in Git (no CRLF warnings on Windows).
+* text=auto eol=lf
+
+# Binary files: never touch
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff2 binary

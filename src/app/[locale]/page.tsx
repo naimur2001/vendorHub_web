@@ -67,4 +67,4 @@ export default function Home() {
     </div>
   );
 }
-   export const test = () => localStorage.setItem("token", "x");
+  
