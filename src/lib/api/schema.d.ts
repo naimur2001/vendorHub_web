@@ -1878,6 +1878,26 @@ export interface paths {
         patch: operations["adminToggleCategoryTryOn"];
         trace?: never;
     };
+    "/api/v1/users/me/shops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The shops I own or work at, with their latest verification request
+         * @description Entry point for the shop owner area. Owned shops first, then shops where I am staff; oldest first in each group. Shops deactivated by an admin are included so the owner can see that state. A shop I both own and work at is listed once, as OWNER. A customer gets an empty list. At most 50 shops. Only the listed fields are returned (never the pre-check score, admin notes, documents or the owner id).
+         */
+        get: operations["listMyShops"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2381,6 +2401,42 @@ export interface components {
             note?: string;
             /** @description True when pictures are not real AI (development and tests). */
             mock?: boolean;
+        };
+        /** @enum {string} */
+        VerificationStatus: "PENDING" | "AUTO_FLAGGED" | "CORRECTION_REQUESTED" | "APPROVED" | "REJECTED" | "REVOKED";
+        MyShop: {
+            /** Format: uuid */
+            id?: string;
+            /** @example TechZone Electronics */
+            name?: string;
+            /** @example techzone-electronics */
+            slug?: string;
+            /** @description False when an admin deactivated the shop. */
+            isActive?: boolean;
+            /** @enum {string} */
+            membership?: "OWNER" | "STAFF";
+            /** @description The staff title for STAFF, null for OWNER. */
+            staffTitle?: string | null;
+            verificationLevel?: components["schemas"]["VerificationLevel"];
+            market?: components["schemas"]["IdNameSlug"] | null;
+            /** @example Level 3 */
+            levelFloor?: string | null;
+            /** @example Shop 42 */
+            shopNumber?: string | null;
+            /** @description The newest verification request of this shop, or null if none. */
+            latestVerification?: {
+                /** Format: uuid */
+                id?: string;
+                status?: components["schemas"]["VerificationStatus"];
+                targetLevel?: components["schemas"]["VerificationLevel"];
+                /**
+                 * Format: date-time
+                 * @description When the request was submitted.
+                 */
+                createdAt?: string;
+            } | null;
+            /** Format: date-time */
+            createdAt?: string;
         };
     };
     responses: {
@@ -6290,6 +6346,31 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    listMyShops: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My shops. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success?: boolean;
+                        data?: components["schemas"]["MyShop"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
 }
