@@ -27,5 +27,16 @@
     "compareText": "See the same product from different shops side by side.",
     "bargainTitle": "Bargain like in the market",
     "bargainText": "Make an offer and let the shop accept or counter."
+  },
+  "Verification": {
+    "UNVERIFIED": "Not verified yet",
+    "DOCUMENTS_VERIFIED": "Documents verified",
+    "BUSINESS_VERIFIED": "Business verified",
+    "PHYSICAL_SHOP_VERIFIED": "Physical shop verified",
+    "TRUSTED_VENDOR": "Trusted vendor"
+  },
+  "Price": {
+    "price": "Price",
+    "regularPrice": "Regular price"
   }
 }

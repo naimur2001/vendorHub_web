@@ -10,7 +10,7 @@
 
 :root {
   /* shadcn/ui semantic variables */
-  --background: #faf6ef; /* ivory */
+   --background: #faf6ef;    /* ivory */
   --foreground: #1f1a17; /* warm black */
   --card: #fffdf8; /* warm white */
   --card-foreground: #1f1a17;
