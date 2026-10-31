@@ -30,8 +30,9 @@ export function normalizePhone(value: string): string {
 
 const BD_MOBILE = /^01\d{9}$/;
 
-// Same limits as the backend's registerSchema; the password rule is a bit stricter on purpose.
-function createRegisterSchema(t: Translate, tAuth: Translate, phoneRequired: boolean) {
+// Same limits as the backend's registerSchema. Stricter on purpose: phone required for everyone,
+// password needs letters and numbers.
+function createRegisterSchema(t: Translate, tAuth: Translate) {
   return z.object({
     name: z
       .string()
@@ -48,14 +49,11 @@ function createRegisterSchema(t: Translate, tAuth: Translate, phoneRequired: boo
     phone: z
       .string()
       .max(25, { error: t("phoneInvalid") })
-      .refine((v) => !phoneRequired || normalizePhone(v) !== "", { error: t("phoneRequired") })
-      .refine(
-        (v) => {
-          const n = normalizePhone(v);
-          return n === "" || BD_MOBILE.test(n);
-        },
-        { error: t("phoneInvalid") },
-      ),
+      .refine((v) => normalizePhone(v) !== "", { error: t("phoneRequired") })
+      .refine((v) => {
+        const n = normalizePhone(v);
+        return n === "" || BD_MOBILE.test(n);
+      }, { error: t("phoneInvalid") }),
     password: z
       .string()
       .min(8, { error: t("passwordShort") })
@@ -67,6 +65,7 @@ function createRegisterSchema(t: Translate, tAuth: Translate, phoneRequired: boo
 
 type RegisterValues = z.infer<ReturnType<typeof createRegisterSchema>>;
 
+// Neutral texts only: the screen never says whether an email or phone is already registered.
 function errorMessage(err: unknown, t: Translate, tAuth: Translate): string {
   if (err instanceof ApiError) {
     if (err.status === 409) return t("errors.alreadyRegistered");
@@ -96,7 +95,7 @@ export function RegisterForm({ role }: { role: AccountRole }) {
     return path.startsWith("/auth") ? "/" : path;
   }, [nextParam]);
 
-  const schema = useMemo(() => createRegisterSchema(t, tAuth, isOwner), [t, tAuth, isOwner]);
+  const schema = useMemo(() => createRegisterSchema(t, tAuth), [t, tAuth]);
   const {
     register,
     handleSubmit,
@@ -114,14 +113,13 @@ export function RegisterForm({ role }: { role: AccountRole }) {
 
   async function onSubmit(values: RegisterValues) {
     setFormError(null);
-    const phone = normalizePhone(values.phone);
     try {
       await registerAccount({
         name: values.name,
         email: values.email,
+        phone: normalizePhone(values.phone),
         password: values.password,
         role,
-        ...(phone ? { phone } : {}), // the backend wants no phone field at all when empty
       });
       // Shop owners will go to "set up your shop" once the owner area exists.
       router.replace(target);
@@ -164,12 +162,12 @@ export function RegisterForm({ role }: { role: AccountRole }) {
       />
 
       <TextField
-        label={isOwner ? t("phone") : t("phoneOptional")}
+        label={t("phone")}
         type="tel"
         inputMode="tel"
         autoComplete="tel"
         placeholder={t("phonePlaceholder")}
-        hint={t("phoneHint")}
+        hint={isOwner ? t("phoneHintOwner") : t("phoneHint")}
         maxLength={25}
         error={errors.phone?.message}
         {...register("phone")}

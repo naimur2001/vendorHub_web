@@ -83,9 +83,9 @@
     "name": "Full name",
     "namePlaceholder": "Rahim Uddin",
     "phone": "Mobile number",
-    "phoneOptional": "Mobile number (optional)",
     "phonePlaceholder": "01712345678",
-    "phoneHint": "Bangladesh mobile number, 11 digits.",
+    "phoneHint": "Bangladesh mobile number, 11 digits. Used for delivery and order updates.",
+    "phoneHintOwner": "Bangladesh mobile number, 11 digits. Customers use it to reach your shop.",
     "passwordHint": "At least 8 characters, with letters and numbers.",
     "createButton": "Create account",
     "shopButton": "Create shop owner account",
@@ -99,7 +99,7 @@
     "nameRequired": "Enter your name.",
     "nameShort": "Enter at least 2 characters.",
     "nameLong": "Use 80 characters or fewer.",
-    "phoneRequired": "Enter your mobile number. Customers use it to reach your shop.",
+    "phoneRequired": "Enter your mobile number.",
     "phoneInvalid": "Use a Bangladesh mobile number like 01712345678.",
     "passwordShort": "Use at least 8 characters.",
     "passwordLong": "This password is too long.",
@@ -108,5 +108,17 @@
       "alreadyRegistered": "We couldn't create an account with these details. If you already have an account, log in or reset your password.",
       "tooManyAttempts": "Too many sign-ups from this connection. Wait a while, then try again."
     }
+  },
+  "Forgot": {
+    "metaTitle": "Forgot password",
+    "title": "Forgot your password?",
+    "subtitle": "Enter the email you use for Vendors Hub. We'll send you a link to set a new password.",
+    "sendButton": "Send reset link",
+    "sending": "Sending…",
+    "sentTitle": "Check your email",
+    "sentText": "If an account exists for {email}, a link to set a new password is on its way.",
+    "sentHint": "It can take a few minutes. Check your spam folder too.",
+    "tryAgain": "Use a different email",
+    "backToLogin": "Back to log in"
   }
 }
