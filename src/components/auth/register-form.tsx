@@ -13,25 +13,11 @@ import { Link, useRouter } from "@/i18n/routing";
 import { register as registerAccount } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/core";
 import { safeRedirectPath } from "@/lib/security";
+import { emailField, newPasswordField, normalizePhone, phoneField } from "@/lib/validation";
 
 type Translate = (key: string) => string;
 type AccountRole = "CUSTOMER" | "SHOP_OWNER";
 
-const BANGLA_DIGITS = "০১২৩৪৫৬৭৮৯";
-
-/** "+880 1712-345678", "০১৭১২৩৪৫৬৭৮" -> "01712345678" (the format the backend expects). */
-export function normalizePhone(value: string): string {
-  let v = value.trim().replace(/[০-৯]/g, (d) => String(BANGLA_DIGITS.indexOf(d)));
-  v = v.replace(/[\s\-().]/g, "");
-  if (v.startsWith("+880")) v = `0${v.slice(4)}`;
-  else if (v.startsWith("880") && v.length === 13) v = `0${v.slice(3)}`;
-  return v;
-}
-
-const BD_MOBILE = /^01\d{9}$/;
-
-// Same limits as the backend's registerSchema. Stricter on purpose: phone required for everyone,
-// password needs letters and numbers.
 function createRegisterSchema(t: Translate, tAuth: Translate) {
   return z.object({
     name: z
@@ -40,26 +26,9 @@ function createRegisterSchema(t: Translate, tAuth: Translate) {
       .min(1, { error: t("nameRequired") })
       .min(2, { error: t("nameShort") })
       .max(80, { error: t("nameLong") }),
-    email: z
-      .string()
-      .trim()
-      .min(1, { error: tAuth("emailRequired") })
-      .max(254, { error: tAuth("emailInvalid") })
-      .pipe(z.email({ error: tAuth("emailInvalid") })),
-    phone: z
-      .string()
-      .max(25, { error: t("phoneInvalid") })
-      .refine((v) => normalizePhone(v) !== "", { error: t("phoneRequired") })
-      .refine((v) => {
-        const n = normalizePhone(v);
-        return n === "" || BD_MOBILE.test(n);
-      }, { error: t("phoneInvalid") }),
-    password: z
-      .string()
-      .min(8, { error: t("passwordShort") })
-      // bcrypt uses only the first 72 bytes; Bangla letters and emoji take several bytes each
-      .refine((v) => new TextEncoder().encode(v).length <= 72, { error: t("passwordLong") })
-      .refine((v) => /\p{L}/u.test(v) && /\p{N}/u.test(v), { error: t("passwordWeak") }),
+    email: emailField({ required: tAuth("emailRequired"), invalid: tAuth("emailInvalid") }),
+    phone: phoneField({ required: t("phoneRequired"), invalid: t("phoneInvalid") }),
+    password: newPasswordField({ short: t("passwordShort"), long: t("passwordLong"), weak: t("passwordWeak") }),
   });
 }
 

@@ -120,5 +120,19 @@
     "sentHint": "It can take a few minutes. Check your spam folder too.",
     "tryAgain": "Use a different email",
     "backToLogin": "Back to log in"
+  },
+  "Reset": {
+    "metaTitle": "Set a new password",
+    "title": "Set a new password",
+    "subtitle": "Choose a new password for your Vendors Hub account.",
+    "newPassword": "New password",
+    "saveButton": "Save new password",
+    "saving": "Saving…",
+    "doneTitle": "Password changed",
+    "doneText": "For your safety, you've been logged out on all devices. Log in with your new password.",
+    "logIn": "Log in",
+    "invalidTitle": "This link doesn't work any more",
+    "invalidText": "Reset links work only once and expire after 60 minutes. Ask for a new one and use it soon.",
+    "newLink": "Get a new link"
   }
 }
