@@ -45,6 +45,8 @@ function errorMessage(err: unknown, t: Translate, tAuth: Translate): string {
   return tAuth("errors.generic");
 }
 
+const OWNER_SETUP = "/owner/setup";
+
 const linkClass =
   "type-body-medium rounded-sm text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 
@@ -53,7 +55,7 @@ export function RegisterForm({ role }: { role: AccountRole }) {
   const tAuth = useTranslations("Auth");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { status, user } = useSession();
   const [formError, setFormError] = useState<string | null>(null);
 
   const isOwner = role === "SHOP_OWNER";
@@ -75,10 +77,10 @@ export function RegisterForm({ role }: { role: AccountRole }) {
     mode: "onTouched",
   });
 
-  // Already logged in: nothing to register.
+  // Logged in (already, or just now): shop owners continue with their shop setup.
   useEffect(() => {
-    if (status === "authenticated") router.replace(target);
-  }, [status, router, target]);
+    if (status === "authenticated") router.replace(user?.role === "SHOP_OWNER" ? OWNER_SETUP : target);
+  }, [status, user, router, target]);
 
   async function onSubmit(values: RegisterValues) {
     setFormError(null);
@@ -90,8 +92,7 @@ export function RegisterForm({ role }: { role: AccountRole }) {
         password: values.password,
         role,
       });
-      // Shop owners will go to "set up your shop" once the owner area exists.
-      router.replace(target);
+      router.replace(isOwner ? OWNER_SETUP : target);
     } catch (err) {
       setFormError(errorMessage(err, t, tAuth));
     }

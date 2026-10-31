@@ -11,7 +11,7 @@ import { useSession } from "@/components/app-providers";
 import { TextField } from "@/components/ui/text-field";
 import { Link, useRouter } from "@/i18n/routing";
 import { login } from "@/lib/api/auth";
-import { ApiError } from "@/lib/api/core";
+import { ApiError, type SessionUser } from "@/lib/api/core";
 import { safeRedirectPath } from "@/lib/security";
 
 type Translate = (key: string) => string;
@@ -44,18 +44,25 @@ function errorKey(err: unknown): string {
   return "errors.generic";
 }
 
+// Where a user goes when no ?next= page was given.
+function homeFor(user: SessionUser | null): string {
+  // Shop owners: /owner leads to the setup now and to the dashboard later.
+  return user?.role === "SHOP_OWNER" ? "/owner" : "/";
+}
+
 export function LoginForm() {
   const t = useTranslations("Auth");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { status, user } = useSession();
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Where to go after login: only same-site paths, never back into /auth.
+  // An explicit ?next= page wins (only same-site paths, never back into /auth).
   const nextParam = searchParams.get("next");
-  const target = useMemo(() => {
+  const explicitNext = useMemo(() => {
+    if (!nextParam) return null;
     const path = safeRedirectPath(nextParam);
-    return path.startsWith("/auth") ? "/" : path;
+    return path.startsWith("/auth") ? null : path;
   }, [nextParam]);
 
   const schema = useMemo(() => createLoginSchema(t), [t]);
@@ -73,14 +80,14 @@ export function LoginForm() {
 
   // Already logged in (e.g. opened /auth/login from a bookmark): go on.
   useEffect(() => {
-    if (status === "authenticated") router.replace(target);
-  }, [status, router, target]);
+    if (status === "authenticated") router.replace(explicitNext ?? homeFor(user));
+  }, [status, user, router, explicitNext]);
 
   async function onSubmit(values: LoginValues) {
     setFormError(null);
     try {
-      await login({ email: values.email, password: values.password });
-      router.replace(target);
+      const loggedIn = await login({ email: values.email, password: values.password });
+      router.replace(explicitNext ?? homeFor(loggedIn));
     } catch (err) {
       setFormError(t(errorKey(err)));
       resetField("password");
@@ -88,7 +95,7 @@ export function LoginForm() {
     }
   }
 
-  const registerHref = nextParam ? `/auth/register?next=${encodeURIComponent(target)}` : "/auth/register";
+  const registerHref = explicitNext ? `/auth/register?next=${encodeURIComponent(explicitNext)}` : "/auth/register";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
