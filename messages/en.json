@@ -38,5 +38,34 @@
   "Price": {
     "price": "Price",
     "regularPrice": "Regular price"
+  },
+  "Auth": {
+    "panelTagline": "Every shop here has a real address you can walk into.",
+    "panelNote": "Verified shops from Dhaka's markets, compared in one place.",
+    "backHome": "Back to home",
+    "loginMetaTitle": "Log in",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Log in to see your cart, orders and offers.",
+    "email": "Email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "loginButton": "Log in",
+    "loggingIn": "Logging in…",
+    "noAccount": "New to Vendors Hub?",
+    "createAccount": "Create an account",
+    "emailRequired": "Enter your email address.",
+    "emailInvalid": "Enter a valid email address, like name@example.com.",
+    "passwordRequired": "Enter your password.",
+    "passwordTooLong": "This password is too long.",
+    "errors": {
+      "invalidCredentials": "That email and password don't match. Check both and try again.",
+      "tooManyAttempts": "Too many attempts. Wait a few minutes, then try again.",
+      "network": "Can't reach Vendors Hub. Check your connection and try again.",
+      "checkFields": "Some details aren't right. Check the fields above.",
+      "generic": "Something went wrong on our side. Try again in a moment."
+    }
   }
 }
