@@ -4,6 +4,7 @@ import { LogIn, Search, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
+import { AccountMenu } from "@/components/layout/account-menu";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
 const SEARCH_MAX_LENGTH = 100;
@@ -57,15 +58,6 @@ function SearchBar() {
   );
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 function AccountArea() {
   const t = useTranslations("Nav");
   const pathname = usePathname();
@@ -77,17 +69,7 @@ function AccountArea() {
   }
 
   if (status === "authenticated" && user) {
-    return (
-      <Link
-        href="/account"
-        aria-label={t("yourAccount", { name: user.name })}
-        className="flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
-      >
-        <span className="type-caption flex size-9 items-center justify-center rounded-full bg-brand text-primary-foreground">
-          {initials(user.name) || "?"}
-        </span>
-      </Link>
-    );
+    return <AccountMenu user={user} />;
   }
 
   // Guest: come back to this page after login (validated by safeRedirectPath on the login screen).

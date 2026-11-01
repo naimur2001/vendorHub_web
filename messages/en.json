@@ -218,9 +218,30 @@
       "rejectedText": "Our team could not approve your documents. The reason is in your notifications.",
       "revokedTitle": "Verification removed",
       "revokedText": "Your shop's verification was removed. The reason is in your notifications.",
-      "approvedTitle": "Your shop is verified",
+           "approvedTitle": "Your shop is verified",
       "approvedText": "Customers now see your verification seal."
     }
+  },
+  "Account": {
+    "metaTitle": "Your account",
+    "title": "Your account",
+    "menuLabel": "Account menu",
+    "guestTitle": "Log in to see your account",
+    "guestText": "Your orders, offers and saved addresses are here once you log in.",
+    "logIn": "Log in",
+    "createAccount": "Create an account",
+    "roles": {
+      "CUSTOMER": "Customer",
+      "SHOP_OWNER": "Shop owner",
+      "SHOP_STAFF": "Shop staff",
+      "ADMIN": "Admin"
+    },
+    "ownerArea": "My shop",
+    "orders": "My orders",
+    "bargains": "My bargains",
+    "addresses": "Saved addresses",
+    "logOut": "Log out",
+    "loggingOut": "Logging out…"
   }
 
 }
