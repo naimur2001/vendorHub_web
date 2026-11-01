@@ -242,6 +242,22 @@
     "addresses": "Saved addresses",
     "logOut": "Log out",
     "loggingOut": "Logging out…"
+    },
+  "Catalog": {
+    "availability": {
+      "IN_STOCK": "In stock",
+      "LIMITED": "Limited availability",
+      "AVAILABLE": "Available",
+      "OUT_OF_STOCK": "Out of stock"
+    },
+    "from": "from",
+    "shops": "{count, plural, one {# shop} other {# shops}}",
+    "bargain": "Bargain",
+    "bargainAvailable": "Bargaining available",
+    "noPhoto": "No photo yet",
+    "latestTitle": "New in Dhaka's shops",
+    "latestText": "Fresh listings from verified shops, cheapest price first on every product.",
+    "seeAll": "See all",
+    "loadError": "Products couldn't load right now. Try again in a moment."
   }
-
 }
