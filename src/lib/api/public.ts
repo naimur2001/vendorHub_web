@@ -10,10 +10,16 @@ function baseUrl(): string {
   return API_URL;
 }
 
+export type PublicGetOptions = {
+  signal?: AbortSignal;
+  // true (default): always ask the API. false: let a surrounding "use cache" decide.
+  fresh?: boolean;
+};
+
 export async function publicGet<T>(
   path: string,
   query?: Query,
-  options: { signal?: AbortSignal } = {},
+  { signal, fresh = true }: PublicGetOptions = {},
 ): Promise<ApiResult<T>> {
   const url = new URL(`${API_PREFIX}${path}`, baseUrl());
   if (query) {
@@ -25,8 +31,8 @@ export async function publicGet<T>(
   const res = await safeFetch(url.toString(), {
     method: "GET",
     headers: { Accept: "application/json" },
-    signal: options.signal,
-    cache: "no-store", // prices and stock change often; always fresh
+    signal,
+    ...(fresh && { cache: "no-store" as const }), // prices and stock change often
   });
   return readResponse<T>(res);
 }

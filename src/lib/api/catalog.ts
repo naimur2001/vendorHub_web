@@ -1,5 +1,5 @@
 // Catalog reads (public). Types match the backend's catalog.service.js exactly.
-import { publicGet } from "./public";
+import { publicGet, type PublicGetOptions } from "./public";
 import type { ApiResult } from "./core";
 import type { components } from "./schema";
 
@@ -89,8 +89,11 @@ export type ProductDetail = {
 export type Category = { id: string; name: string; slug: string; parentId: string | null; productCount: number };
 export type Brand = { id: string; name: string; productCount: number };
 
-export function listProducts(query: ProductListQuery = {}, signal?: AbortSignal): Promise<ApiResult<ProductCardData[]>> {
-  return publicGet<ProductCardData[]>("/products", query, { signal });
+export function listProducts(
+  query: ProductListQuery = {},
+  options: PublicGetOptions = {},
+): Promise<ApiResult<ProductCardData[]>> {
+  return publicGet<ProductCardData[]>("/products", query, options);
 }
 
 export async function getProduct(slug: string, listingId?: string): Promise<ProductDetail> {

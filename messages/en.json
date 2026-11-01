@@ -256,8 +256,7 @@
     "bargainAvailable": "Bargaining available",
     "noPhoto": "No photo yet",
     "latestTitle": "New in Dhaka's shops",
-    "latestText": "Fresh listings from verified shops, cheapest price first on every product.",
-    "seeAll": "See all",
+    "latestText": "The newest products in Dhaka's shops. Each card shows the lowest price among all shops selling it.",    "seeAll": "See all",
     "loadError": "Products couldn't load right now. Try again in a moment."
   }
 }

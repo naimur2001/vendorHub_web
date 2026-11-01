@@ -3,19 +3,20 @@ import { Suspense } from "react";
 import { Arcade } from "@/components/brand/arcade";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
 import { Link } from "@/i18n/routing";
-import { listProducts, type ProductCardData } from "@/lib/api/catalog";
+import type { ProductCardData } from "@/lib/api/catalog";
+import { getLatestProducts } from "@/lib/api/catalog-cache";
 
 type Props = { params: Promise<{ locale: string }> };
 
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
-// Loaded on the server, streamed in after the page shell (never blocks the hero).
+// Cached for 60 seconds on the server (see catalog-cache.ts), streamed in after the page shell.
 async function LatestProducts() {
   const t = await getTranslations("Catalog");
 
   let products: ProductCardData[];
   try {
-    products = (await listProducts({ sort: "newest", availableOnly: true, limit: 8 })).data;
+    products = await getLatestProducts();
   } catch {
     return <p className="type-body text-ink-secondary">{t("loadError")}</p>;
   }
