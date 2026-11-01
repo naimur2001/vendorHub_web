@@ -2887,7 +2887,7 @@ export interface operations {
                 availableOnly?: "true" | "false";
                 sort?: "newest" | "price_asc" | "price_desc";
                 page?: components["parameters"]["Page"];
-                limit?: components["parameters"]["Limit"];
+                limit?: number;
             };
             header?: never;
             path?: never;
