@@ -553,5 +553,56 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "Your orders couldn't be placed. Nothing was charged. Try again in a moment."
     }
+  },
+  "Order": {
+    "metaTitle": "Order confirmation",
+    "loading": "Loading your orders…",
+    "loadError": "Your orders couldn't load. Check your connection and try again.",
+    "retry": "Try again",
+    "guestTitle": "Log in to see your orders",
+    "logIn": "Log in",
+    "notFoundTitle": "Order not found",
+    "notFoundText": "This confirmation doesn't exist, or it belongs to another account.",
+    "placedTitle": "{count, plural, one {Your order is placed} other {Your # orders are placed}}",
+    "placedText": "Each shop confirms and prepares its own order. You'll get a notification as each one moves along.",
+    "checkoutTotal": "Total for all orders",
+    "orderNumber": "Order {number}",
+    "placedOn": "Placed {date}",
+    "status": {
+      "PLACED": "Placed",
+      "CONFIRMED": "Confirmed by the shop",
+      "READY_FOR_PICKUP": "Ready for pickup",
+      "OUT_FOR_DELIVERY": "Out for delivery",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "paymentStatus": {
+      "PENDING": "Payment pending",
+      "PAID": "Paid",
+      "FAILED": "Payment failed",
+      "REFUNDED": "Refunded"
+    },
+    "payment": {
+      "ONLINE": "Online payment",
+      "PAY_AT_STORE": "Pay at the shop",
+      "CASH_ON_DELIVERY": "Cash on delivery"
+    },
+    "pickupAt": "Pick up at: {place}",
+    "deliverTo": "Delivery to: {address}",
+    "bargained": "Bargained price",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery",
+    "free": "Free",
+    "total": "Total",
+    "payNow": "Pay {amount} now",
+    "paying": "Paying…",
+    "testPayment": "Test payment: no real money is charged.",
+    "paid": "Payment received. Thank you!",
+    "payErrors": {
+      "network": "Can't reach Vendors Hub. Check your connection and try again.",
+      "generic": "The payment didn't go through. Nothing was charged. Try again."
+    },
+    "myOrders": "My orders",
+    "continueShopping": "Continue shopping"
   }
 }
