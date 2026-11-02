@@ -431,6 +431,7 @@
     "adding": "Adding…",
     "added": "Added to your cart.",
     "viewCart": "View cart",
+    "badgeLabel": "Cart, {count, plural, one {# item} other {# items}}",
     "loginToAdd": "Log in to add to cart",
     "offerSoon": "Making offers opens in the next update.",
     "errors": {
@@ -440,6 +441,49 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "tooMany": "Too many requests. Wait a moment, then try again.",
       "generic": "Couldn't add to your cart. Try again in a moment."
+    },
+    "metaTitle": "Your cart",
+    "title": "Your cart",
+    "summaryLine": "{items, plural, one {# item} other {# items}} from {shops, plural, one {# shop} other {# shops}}",
+    "independentNote": "Each shop is a separate order, with its own delivery or pickup.",
+    "loading": "Loading your cart…",
+    "loadError": "Your cart couldn't load. Check your connection and try again.",
+    "retry": "Try again",
+    "guestTitle": "Log in to see your cart",
+    "guestText": "Your cart is saved to your account, so it's the same on your phone and computer.",
+    "logIn": "Log in",
+    "emptyTitle": "Your cart is empty",
+    "emptyText": "Find something in Dhaka's verified shops.",
+    "startShopping": "Start shopping",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity of {product}",
+    "increase": "Increase quantity of {product}",
+    "each": "{price} each",
+    "remove": "Remove",
+    "removeLabel": "Remove {product} from your cart",
+    "bargainApplied": "Bargained price",
+    "problems": {
+      "UNAVAILABLE": "No longer sold by this shop. Remove it to continue.",
+      "OUT_OF_STOCK": "Out of stock at this shop. Remove it, or look for it in another shop.",
+      "INSUFFICIENT_STOCK": "The shop can't supply this many. Lower the quantity."
+    },
+    "subtotal": "Subtotal",
+    "options": "At checkout: {options}",
+    "optionDelivery": "delivery",
+    "optionPickup": "store pickup",
+    "orderSummary": "Order summary",
+    "itemsTotal": "{count, plural, one {# item} other {# items}}",
+    "deliveryLater": "Delivery fees are shown at checkout.",
+    "total": "Total",
+    "checkout": "Proceed to checkout",
+    "checkoutBlocked": "Fix the items marked in red to continue.",
+    "clearCart": "Remove all items",
+    "clearConfirm": "Tap again to remove all items",
+    "updateErrors": {
+      "limit": "That quantity isn't possible for this item.",
+      "stock": "The shop can't supply that many. Try a smaller quantity.",
+      "network": "Can't reach Vendors Hub. Check your connection and try again.",
+      "generic": "Couldn't update your cart. Try again in a moment."
     }
   }
 }

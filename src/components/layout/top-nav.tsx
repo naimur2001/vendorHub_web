@@ -4,6 +4,7 @@ import { LogIn, Search, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
+import { CartCountBadge, useCartCount } from "@/components/cart/cart-badge";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
@@ -85,6 +86,24 @@ function AccountArea() {
   );
 }
 
+// Desktop cart icon with the item count.
+function CartLink() {
+  const t = useTranslations("Nav");
+  const tCart = useTranslations("Cart");
+  const count = useCartCount();
+
+  return (
+    <Link
+      href="/cart"
+      aria-label={count > 0 ? tCart("badgeLabel", { count }) : t("cart")}
+      className="relative hidden size-11 items-center justify-center rounded-full text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none md:flex"
+    >
+      <ShoppingCart className="size-5" aria-hidden />
+      <CartCountBadge count={count} className="top-0.5 right-0" />
+    </Link>
+  );
+}
+
 export function TopNav() {
   const t = useTranslations("Nav");
 
@@ -112,13 +131,7 @@ export function TopNav() {
         </div>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
-          <Link
-            href="/cart"
-            aria-label={t("cart")}
-            className="hidden size-11 items-center justify-center rounded-full text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none md:flex"
-          >
-            <ShoppingCart className="size-5" aria-hidden />
-          </Link>
+          <CartLink />
           {/* Reads the current address: on pages whose address is only known at request time
               (e.g. /products/[slug]) it must wait inside Suspense. */}
           <Suspense fallback={accountPlaceholder}>
