@@ -1,5 +1,6 @@
 import "client-only";
 import { api } from "./client";
+import type { ApiResult } from "./core";
 import type { components } from "./schema";
 
 type VerificationLevel = components["schemas"]["VerificationLevel"];
@@ -8,6 +9,15 @@ export type PaymentStatus = components["schemas"]["PaymentStatus"];
 
 export type DeliveryMethod = "STORE_PICKUP" | "VENDOR_DELIVERY";
 export type PaymentMethod = "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
+
+export const ORDER_STATUSES: OrderStatus[] = [
+  "PLACED",
+  "CONFIRMED",
+  "READY_FOR_PICKUP",
+  "OUT_FOR_DELIVERY",
+  "COMPLETED",
+  "CANCELLED",
+];
 
 // Same as the backend (DELIVERY_FEE, taka per shop that delivers). Shown before ordering;
 // the confirmation always shows the server's own numbers.
@@ -52,7 +62,7 @@ export type ShopChoice = {
 
 export const checkoutKeys = {
   checkout: (checkoutId: string) => ["checkout", checkoutId] as const,
-  orders: ["orders"] as const,
+  orders: (status: OrderStatus | undefined, page: number) => ["orders", status ?? "ALL", page] as const,
 };
 
 export function placeOrders(shops: ShopChoice[]): Promise<CheckoutResult> {
@@ -65,4 +75,9 @@ export function getCheckout(checkoutId: string): Promise<CheckoutResult> {
 
 export function payMockOrder(orderId: string): Promise<Order> {
   return api.post<Order>(`/orders/${encodeURIComponent(orderId)}/pay-mock`);
+}
+
+// The logged-in customer's own orders (the backend never returns anyone else's).
+export function listOrders(query: { status?: OrderStatus; page: number; limit: number }): Promise<ApiResult<Order[]>> {
+  return api.list<Order>("/orders", { query });
 }

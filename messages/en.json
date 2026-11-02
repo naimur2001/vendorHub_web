@@ -604,5 +604,31 @@
     },
     "myOrders": "My orders",
     "continueShopping": "Continue shopping"
+  },
+  "MyOrders": {
+    "metaTitle": "My orders",
+    "title": "My orders",
+    "filterLabel": "Filter by status",
+    "all": "All",
+    "loading": "Loading your orders…",
+    "loadError": "Your orders couldn't load. Check your connection and try again.",
+    "retry": "Try again",
+    "guestTitle": "Log in to see your orders",
+    "logIn": "Log in",
+    "emptyTitle": "No orders yet",
+    "emptyText": "Orders you place appear here.",
+    "startShopping": "Start shopping",
+    "emptyFiltered": "No orders with this status.",
+    "showAll": "Show all orders",
+    "count": "{count, plural, one {# order} other {# orders}}",
+    "summary": "{items, plural, one {# item} other {# items}} · {total}",
+    "pickup": "Store pickup",
+    "delivery": "Delivery",
+    "view": "View order",
+    "payPending": "Payment pending: pay now",
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}"
   }
 }
