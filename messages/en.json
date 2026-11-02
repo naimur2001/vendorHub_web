@@ -314,6 +314,39 @@
       "priceTooHigh": "Use an amount up to ৳1,00,00,000.",
       "priceOrder": "The minimum is higher than the maximum."
     }
+   },
+  "Product": {
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "photos": "Product photos",
+    "photoN": "Photo {n} of {total}",
+    "noPhoto": "No photo yet",
+    "soldBy": "Sold by",
+    "saveVsMsrp": "{percent}% below MSRP",
+    "delivery": "Shop delivers",
+    "noDelivery": "No delivery",
+    "pickup": "Pick up in the shop",
+    "noPickup": "No pickup",
+    "rating": "{average} ★ shop rating ({count, plural, one {# review} other {# reviews}})",
+    "noRating": "No shop reviews yet",
+    "responds": "Usually replies within {minutes} min",
+    "audited": "Shop visited and checked in {date}",
+    "addToCart": "Add to cart",
+    "makeOffer": "Make an offer",
+    "actionsSoon": "The cart and offers open in the next update.",
+    "outOfStock": "This shop is out of stock right now. Other shops are listed below.",
+    "compareLink": "{count, plural, one {Compare # other shop selling this} other {Compare # other shops selling this}}",
+    "otherShopsTitle": "{count, plural, one {# other shop sells this} other {# other shops sell this}}",
+    "compareAll": "Compare all {count} shops",
+    "compareTitle": "Compare shops",
+    "compareText": "Every shop selling this product. Pick one to see its offer.",
+    "sortBy": "Sort by",
+    "sortPrice": "Lowest price",
+    "sortVerified": "Best verified",
+    "sortMarket": "Market",
+    "specifications": "Specifications",
+    "description": "Description",
+    "noListings": "No shop sells this product right now.",
+    "loadError": "This product couldn't load right now. Try again in a moment."
   }
-
 }

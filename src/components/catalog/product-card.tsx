@@ -7,7 +7,7 @@ import {
   Smartphone,
   Tablet,
   Watch,
-  type LucideIcon,
+  type LucideProps,
 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -17,24 +17,46 @@ import { AvailabilityBadge } from "@/components/catalog/availability-badge";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
 
-// A category icon stands in for missing product photos.
-const PLACEHOLDERS: [RegExp, LucideIcon][] = [
-  [/phone|mobile/, Smartphone],
-  [/tablet/, Tablet],
-  [/laptop|computer/, Laptop],
-  [/watch|wearable/, Watch],
-  [/audio|headphone|earbud|speaker/, Headphones],
-  [/accessor|charger|cable/, Cable],
-  [/fashion|cloth|wear|shirt/, Shirt],
+type CategoryKind = "phone" | "tablet" | "laptop" | "watch" | "audio" | "accessory" | "fashion" | "other";
+
+const KINDS: [RegExp, CategoryKind][] = [
+  [/phone|mobile/, "phone"],
+  [/tablet/, "tablet"],
+  [/laptop|computer/, "laptop"],
+  [/watch|wearable/, "watch"],
+  [/audio|headphone|earbud|speaker/, "audio"],
+  [/accessor|charger|cable/, "accessory"],
+  [/fashion|cloth|wear|shirt/, "fashion"],
 ];
 
-function placeholderIcon(categorySlug: string): LucideIcon {
-  return PLACEHOLDERS.find(([pattern]) => pattern.test(categorySlug))?.[1] ?? Package;
+function categoryKind(categorySlug: string): CategoryKind {
+  return KINDS.find(([pattern]) => pattern.test(categorySlug))?.[1] ?? "other";
+}
+
+/** Icon standing in for a missing product photo. A fixed component (React rule: no components chosen during render). */
+export function CategoryIcon({ categorySlug, ...props }: { categorySlug: string } & LucideProps) {
+  switch (categoryKind(categorySlug)) {
+    case "phone":
+      return <Smartphone {...props} />;
+    case "tablet":
+      return <Tablet {...props} />;
+    case "laptop":
+      return <Laptop {...props} />;
+    case "watch":
+      return <Watch {...props} />;
+    case "audio":
+      return <Headphones {...props} />;
+    case "accessory":
+      return <Cable {...props} />;
+    case "fashion":
+      return <Shirt {...props} />;
+    default:
+      return <Package {...props} />;
+  }
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const t = useTranslations("Catalog");
-  const Icon = placeholderIcon(product.category.slug);
 
   return (
     <Link
@@ -54,7 +76,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           />
         ) : (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-highlight">
-            <Icon className="size-10" strokeWidth={1.25} aria-hidden />
+            <CategoryIcon categorySlug={product.category.slug} className="size-10" strokeWidth={1.25} aria-hidden />
             <span className="type-caption text-ink-muted">{t("noPhoto")}</span>
           </span>
         )}

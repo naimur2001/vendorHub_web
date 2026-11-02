@@ -2,7 +2,7 @@
 
 import { LogIn, Search, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
@@ -58,15 +58,15 @@ function SearchBar() {
   );
 }
 
+// Same size as the avatar: shown while the session or the address is not known yet (no layout jump).
+const accountPlaceholder = <span className="size-9 animate-pulse rounded-full bg-subtle" aria-hidden />;
+
 function AccountArea() {
   const t = useTranslations("Nav");
   const pathname = usePathname();
   const { status, user } = useSession();
 
-  // While the page-load refresh runs: placeholder of the same size (no layout jump).
-  if (status === "loading") {
-    return <span className="size-9 animate-pulse rounded-full bg-subtle" aria-hidden />;
-  }
+  if (status === "loading") return accountPlaceholder;
 
   if (status === "authenticated" && user) {
     return <AccountMenu user={user} />;
@@ -119,7 +119,11 @@ export function TopNav() {
           >
             <ShoppingCart className="size-5" aria-hidden />
           </Link>
-          <AccountArea />
+          {/* Reads the current address: on pages whose address is only known at request time
+              (e.g. /products/[slug]) it must wait inside Suspense. */}
+          <Suspense fallback={accountPlaceholder}>
+            <AccountArea />
+          </Suspense>
         </div>
       </div>
     </header>
