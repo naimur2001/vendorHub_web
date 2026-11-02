@@ -62,6 +62,14 @@ export function ForgotForm() {
     if (sentTo) sentHeading.current?.focus();
   }, [sentTo]);
 
+    // Clear the new password when this page goes into the background.
+  useEffect(() => {
+    return () => {
+      reset();
+      setFormError(null);
+    };
+  }, [reset]);
+
   async function onSubmit(values: ForgotValues) {
     setFormError(null);
     try {

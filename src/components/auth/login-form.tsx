@@ -70,6 +70,7 @@ export function LoginForm() {
     register,
     handleSubmit,
     resetField,
+    reset,
     setFocus,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
@@ -83,6 +84,15 @@ export function LoginForm() {
     if (status === "authenticated") router.replace(explicitNext ?? homeFor(user));
   }, [status, user, router, explicitNext]);
 
+    // Next.js 16 keeps a page you leave alive in the background (instant "back").
+  // Clear the form when it is hidden, so typed data (email, password) never stays behind.
+  useEffect(() => {
+    return () => {
+      reset();
+      setFormError(null);
+    };
+  }, [reset]);
+  
   async function onSubmit(values: LoginValues) {
     setFormError(null);
     try {
