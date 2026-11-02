@@ -425,5 +425,21 @@
     "homeText": "Every arch is a real market or mall. Step inside to see its shops, floor by floor.",
     "viewAll": "All markets",
     "enterMarket": "Enter {market}"
+  },
+  "Cart": {
+    "add": "Add to cart",
+    "adding": "Adding…",
+    "added": "Added to your cart.",
+    "viewCart": "View cart",
+    "loginToAdd": "Log in to add to cart",
+    "offerSoon": "Making offers opens in the next update.",
+    "errors": {
+      "stock": "This shop can't supply that many right now. Try a smaller quantity or another shop.",
+      "limit": "You can buy up to 10 of one item at a time.",
+      "gone": "This offer is no longer available. Reload the page to see the current shops.",
+      "network": "Can't reach Vendors Hub. Check your connection and try again.",
+      "tooMany": "Too many requests. Wait a moment, then try again.",
+      "generic": "Couldn't add to your cart. Try again in a moment."
+    }
   }
 }

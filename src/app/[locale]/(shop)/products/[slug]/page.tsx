@@ -140,7 +140,7 @@ async function ProductView({ params, searchParams }: Props) {
           <div className="border-t border-gold" />
 
           {selectedListing ? (
-            <SelectedListingCard listing={selectedListing} otherCount={otherListings.length} />
+            <SelectedListingCard listing={selectedListing} otherCount={otherListings.length} productSlug={product.slug} />
           ) : (
             <p className="type-body rounded-md border border-line bg-card p-5 text-ink-secondary">{t("noListings")}</p>
           )}
