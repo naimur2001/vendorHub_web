@@ -5,12 +5,18 @@ import { Store, Truck, Undo2 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { StorefrontHeader } from "@/components/shop/storefront-header";
+import { CONTENT_ID, ShopProducts, ShopReviews, StorefrontTabs } from "@/components/shop/storefront-tabs";
 import { ApiError } from "@/lib/api/core";
 import { publicGet } from "@/lib/api/public";
 import { getStorefront, type Storefront } from "@/lib/api/storefront";
+import { parseStorefrontParams, storefrontHref } from "@/lib/storefront-params";
 import { cn } from "@/lib/utils";
 
-type Props = { params: Promise<{ locale: string; slug: string }> };
+type RawParams = Record<string, string | string[] | undefined>;
+type Props = {
+  params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<RawParams>;
+};
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const validSlug = (slug: string) => slug.length <= 200 && SLUG.test(slug);
@@ -24,7 +30,7 @@ async function shopMeta(slug: string) {
   return { name: data.name, description: data.description, market: data.market?.name ?? null };
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { slug } = await params;
   if (!validSlug(slug)) return {};
   try {
@@ -47,12 +53,23 @@ function ServiceLine({ on, icon: Icon, yes, no }: { on: boolean; icon: typeof Tr
   );
 }
 
-async function StorefrontView({ params }: Props) {
+function ListSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" aria-hidden>
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className="aspect-[4/5] animate-pulse rounded-t-full rounded-b-sm bg-subtle" />
+      ))}
+    </div>
+  );
+}
+
+async function StorefrontView({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   if (!validSlug(slug)) notFound();
 
   const t = await getTranslations("Shop");
+  const state = parseStorefrontParams(await searchParams);
 
   let shop: Storefront;
   try {
@@ -103,9 +120,13 @@ async function StorefrontView({ params }: Props) {
         </section>
       </div>
 
-      <p className="type-body rounded-md border border-dashed border-line-strong p-5 text-center text-ink-muted">
-        {t("productsSoon")}
-      </p>
+      <div id={CONTENT_ID} className="flex scroll-mt-32 flex-col gap-5">
+        <StorefrontTabs shop={shop} state={state} />
+        {/* key: switching tab, filter or page shows the skeleton instead of the old list */}
+        <Suspense key={storefrontHref(slug, state)} fallback={<ListSkeleton />}>
+          {state.tab === "reviews" ? <ShopReviews shop={shop} state={state} /> : <ShopProducts shop={shop} state={state} />}
+        </Suspense>
+      </div>
     </div>
   );
 }
@@ -113,18 +134,18 @@ async function StorefrontView({ params }: Props) {
 function StorefrontSkeleton() {
   return (
     <div className="flex flex-col gap-6" aria-hidden>
-      <div className="-mx-4 -mt-6 h-40 animate-pulse bg-subtle md:-mx-10 md:h-60" />
+      <div className="-mx-4 -mt-6 h-40 animate-pulse bg-subtle md:mx-0 md:mt-0 md:h-60 md:rounded-lg" />
       <div className="h-10 w-2/3 animate-pulse rounded-sm bg-subtle" />
       <div className="h-24 animate-pulse rounded-md bg-subtle" />
     </div>
   );
 }
 
-export default function ShopPage({ params }: Props) {
+export default function ShopPage({ params, searchParams }: Props) {
   // The shop slug is only known at request time, so everything waits inside Suspense.
   return (
     <Suspense fallback={<StorefrontSkeleton />}>
-      <StorefrontView params={params} />
+      <StorefrontView params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
