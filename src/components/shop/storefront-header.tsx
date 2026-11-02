@@ -182,31 +182,33 @@ export function StorefrontHeader({ shop }: { shop: Storefront }) {
             <FollowButton slug={shop.slug} onFollowers={setFollowers} />
           </div>
         </div>
-
-        <div className="flex flex-col gap-2">
-          <h1 className="type-display break-words text-ink">{shop.name}</h1>
-          <p className="type-caption inline-flex items-center gap-1 self-start rounded-sm bg-info-soft px-2 py-1 text-verified">
-            <MapPin className="size-3.5 shrink-0" aria-hidden />
-            {[place, shop.market?.name].filter(Boolean).join(" · ") || shop.address.addressLine}
-          </p>
-          {shop.market && (
-            <Link href={`/markets/${shop.market.slug}`} className="type-body-medium self-start text-brand underline-offset-4 hover:underline">
-              {t("allShopsIn", { market: shop.market.name })} →
-            </Link>
-          )}
-          {level !== "UNVERIFIED" && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <VerificationSeal level={level} size="md" withLabel />
-              {shop.verification.lastAuditedAt && (
-                <span className="type-caption text-ink-muted">
-                  {t("audited", {
-                    date: format.dateTime(new Date(shop.verification.lastAuditedAt), { month: "short", year: "numeric" }),
-                  })}
-                </span>
+          <div className="flex min-w-0 flex-col gap-2">
+            {/* Name with the seal beside it on desktop; seal below the name on phones */}
+            <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-x-4">
+              <h1 className="type-display break-words text-ink">{shop.name}</h1>
+              {level !== "UNVERIFIED" && (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <VerificationSeal level={level} size="md" withLabel className="mt-4" />
+                  {shop.verification.lastAuditedAt && (
+                    <span className="type-caption text-ink-muted mt-4">
+                      {t("audited", {
+                        date: format.dateTime(new Date(shop.verification.lastAuditedAt), { month: "short", year: "numeric" }),
+                      })}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+            <p className="type-caption inline-flex items-center gap-1 self-start rounded-sm bg-info-soft px-2 py-1 text-verified">
+              <MapPin className="size-3.5 shrink-0" aria-hidden />
+              {[place, shop.market?.name].filter(Boolean).join(" · ") || shop.address.addressLine}
+            </p>
+            {shop.market && (
+              <Link href={`/markets/${shop.market.slug}`} className="type-body-medium self-start text-brand underline-offset-4 hover:underline">
+                {t("allShopsIn", { market: shop.market.name })} →
+              </Link>
+            )}
+          </div>
 
         <div className="md:hidden">
           <FollowButton slug={shop.slug} onFollowers={setFollowers} />
