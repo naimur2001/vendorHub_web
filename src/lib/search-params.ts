@@ -3,8 +3,8 @@
 import type { ProductListQuery, ProductSort } from "@/lib/api/catalog";
 
 export const PAGE_SIZE = 24;
+export const MAX_PRICE = 10_000_000; // ৳1,00,00,000
 const MAX_PAGE = 500;
-const MAX_PRICE = 10_000_000;
 
 export type SearchState = {
   q?: string;
@@ -83,6 +83,16 @@ export function toProductQuery(state: SearchState): ProductListQuery {
     page: state.page,
     limit: PAGE_SIZE,
   };
+}
+
+/** How many filters are on (sort is an order, not a filter). */
+export function activeFilterCount(state: SearchState): number {
+  return (
+    (state.availableOnly ? 1 : 0) +
+    (state.minPrice !== undefined || state.maxPrice !== undefined ? 1 : 0) +
+    (state.marketId ? 1 : 0) +
+    (state.brand ? 1 : 0)
+  );
 }
 
 /**

@@ -3,16 +3,18 @@ import { ChevronLeft, ChevronRight, SearchX, Search as SearchIcon } from "lucide
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
+import { ActiveFilters, DesktopFilters, MobileFilters } from "@/components/search/search-filters";
 import { getPathname, Link } from "@/i18n/routing";
-import { listProducts, type Category } from "@/lib/api/catalog";
-import { getCategories } from "@/lib/api/catalog-cache";
+import { listProducts, type Brand, type Category } from "@/lib/api/catalog";
+import { getBrands, getCategories, getMarkets } from "@/lib/api/catalog-cache";
+import type { Market } from "@/lib/api/shops";
 import { parseSearchParams, searchHref, toProductQuery, type SearchState } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
 
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = { params: Promise<{ locale: string }>; searchParams: Promise<RawParams> };
 
-const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
+const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4";
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { locale } = await params;
@@ -21,8 +23,27 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   return { title: t("metaTitle"), robots: { index: false, follow: true } };
 }
 
-// Plain form: works even before JavaScript loads. Keeps the category and sort, starts at page 1.
+// Lists for chips and filters come from a 10-minute cache; if one fails, search still works without it.
+async function safeList<T>(load: () => Promise<T[]>): Promise<T[]> {
+  try {
+    return await load();
+  } catch {
+    return [];
+  }
+}
+
+// Plain form: works even before JavaScript loads. Keeps category, filters and sort; starts at page 1.
 function SearchForm({ locale, state, label, button }: { locale: string; state: SearchState; label: string; button: string }) {
+  const keep: [string, string | undefined][] = [
+    ["category", state.category],
+    ["brand", state.brand],
+    ["minPrice", state.minPrice?.toString()],
+    ["maxPrice", state.maxPrice?.toString()],
+    ["marketId", state.marketId],
+    ["availableOnly", state.availableOnly ? "true" : undefined],
+    ["sort", state.sort !== "newest" ? state.sort : undefined],
+  ];
+
   return (
     <form role="search" action={getPathname({ href: "/search", locale })} method="get" className="flex gap-2">
       <div className="relative flex-1">
@@ -38,8 +59,7 @@ function SearchForm({ locale, state, label, button }: { locale: string; state: S
           className="type-body h-12 w-full rounded-md border border-input bg-card pr-3 pl-10 text-ink placeholder:text-ink-muted hover:border-line-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
         />
       </div>
-      {state.category && <input type="hidden" name="category" value={state.category} />}
-      {state.sort !== "newest" && <input type="hidden" name="sort" value={state.sort} />}
+      {keep.map(([name, value]) => (value ? <input key={name} type="hidden" name={name} value={value} /> : null))}
       <button
         type="submit"
         className="type-body-medium h-12 shrink-0 rounded-sm bg-action px-5 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -78,55 +98,32 @@ function CategoryChips({ state, categories, label, allLabel }: { state: SearchSt
   );
 }
 
-function Pagination({ state, totalPages }: { state: SearchState; totalPages: number }) {
-  return (
-    <PaginationLabels>
-      {(t) => (
-        <nav aria-label={t.pagination} className="flex items-center justify-between gap-3 border-t border-gold pt-5">
-          {state.page > 1 ? (
-            <Link
-              href={searchHref(state, { page: state.page - 1 })}
-              rel="prev"
-              className="type-body-medium flex h-11 items-center gap-1 rounded-sm border border-brand px-3 text-brand hover:bg-subtle"
-            >
-              <ChevronLeft className="size-4" aria-hidden />
-              {t.previous}
-            </Link>
-          ) : (
-            <span />
-          )}
-          <span className="type-body text-ink-secondary">{t.pageOf(state.page, totalPages)}</span>
-          {state.page < totalPages ? (
-            <Link
-              href={searchHref(state, { page: state.page + 1 })}
-              rel="next"
-              className="type-body-medium flex h-11 items-center gap-1 rounded-sm border border-brand px-3 text-brand hover:bg-subtle"
-            >
-              {t.next}
-              <ChevronRight className="size-4" aria-hidden />
-            </Link>
-          ) : (
-            <span />
-          )}
-        </nav>
-      )}
-    </PaginationLabels>
-  );
-}
-
-// Small helper so Pagination can stay a plain (non-async) component.
-async function PaginationLabels({
-  children,
-}: {
-  children: (t: { pagination: string; previous: string; next: string; pageOf: (page: number, total: number) => string }) => React.ReactNode;
-}) {
+async function Pagination({ state, totalPages }: { state: SearchState; totalPages: number }) {
   const t = await getTranslations("Search");
-  return children({
-    pagination: t("pagination"),
-    previous: t("previous"),
-    next: t("next"),
-    pageOf: (page, total) => t("pageOf", { page, total }),
-  });
+  const linkClass =
+    "type-body-medium flex h-11 items-center gap-1 rounded-sm border border-brand px-3 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
+
+  return (
+    <nav aria-label={t("pagination")} className="flex items-center justify-between gap-3 border-t border-gold pt-5">
+      {state.page > 1 ? (
+        <Link href={searchHref(state, { page: state.page - 1 })} rel="prev" className={linkClass}>
+          <ChevronLeft className="size-4" aria-hidden />
+          {t("previous")}
+        </Link>
+      ) : (
+        <span />
+      )}
+      <span className="type-body text-ink-secondary">{t("pageOf", { page: state.page, total: totalPages })}</span>
+      {state.page < totalPages ? (
+        <Link href={searchHref(state, { page: state.page + 1 })} rel="next" className={linkClass}>
+          {t("next")}
+          <ChevronRight className="size-4" aria-hidden />
+        </Link>
+      ) : (
+        <span />
+      )}
+    </nav>
+  );
 }
 
 async function Results({ state }: { state: SearchState }) {
@@ -192,18 +189,17 @@ async function SearchContent({ locale, searchParams }: { locale: string; searchP
   const t = await getTranslations("Search");
   const state = parseSearchParams(await searchParams);
 
-  // Categories come from a 10-minute cache; if they fail, search still works without chips.
-  let categories: Category[] = [];
-  try {
-    categories = await getCategories();
-  } catch {
-    categories = [];
-  }
+  const [categories, markets, brands] = await Promise.all([
+    safeList<Category>(getCategories),
+    safeList<Market>(getMarkets),
+    safeList<Brand>(getBrands),
+  ]);
+
   const active = categories.find((c) => c.slug === state.category);
   // Main categories, plus the active one if it is a subcategory.
   const chips = categories.filter((c) => c.parentId === null || c.slug === state.category);
-
   const heading = state.q ? t("resultsFor", { q: state.q }) : (active?.name ?? t("allProducts"));
+  const filterProps = { state, markets, brands };
 
   return (
     <div className="flex flex-col gap-5">
@@ -212,10 +208,21 @@ async function SearchContent({ locale, searchParams }: { locale: string; searchP
       {chips.length > 0 && (
         <CategoryChips state={state} categories={chips} label={t("categories")} allLabel={t("allCategories")} />
       )}
-      {/* key: a new search shows the skeleton again instead of old results */}
-      <Suspense key={searchHref(state)} fallback={<ResultsSkeleton />}>
-        <Results state={state} />
-      </Suspense>
+
+      <div className="md:hidden">
+        <MobileFilters {...filterProps} />
+      </div>
+      <ActiveFilters state={state} markets={markets} />
+
+      <div className="flex flex-col gap-5 md:grid md:grid-cols-[15rem_minmax(0,1fr)] md:items-start md:gap-8">
+        <aside className="hidden md:block">
+          <DesktopFilters {...filterProps} />
+        </aside>
+        {/* key: a new search shows the skeleton again instead of old results */}
+        <Suspense key={searchHref(state)} fallback={<ResultsSkeleton />}>
+          <Results state={state} />
+        </Suspense>
+      </div>
     </div>
   );
 }
