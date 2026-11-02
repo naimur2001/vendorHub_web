@@ -544,6 +544,12 @@
     "total": "Total",
     "place": "{count, plural, one {Place order} other {Place # orders}}",
     "placing": "Placing your orders…",
+    "opening": "Orders placed. Opening your confirmation…",
+    "placingTitle": "{count, plural, one {Placing your order} other {Placing your # orders}}",
+    "placingTotal": "Total {total}",
+    "stepCheck": "Checking prices and stock, creating one order per shop",
+    "stepOpen": "Opening your confirmation",
+    "dontClose": "Please don't close or refresh this page.",
     "pricesNote": "Prices and stock are checked again when you place the order.",
     "errors": {
       "problems": "Some items are no longer available. Your cart was updated. Check it and try again.",

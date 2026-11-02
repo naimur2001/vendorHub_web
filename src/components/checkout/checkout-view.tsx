@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, Info, LoaderCircle, MapPin, ShoppingCart, TriangleAlert } from "lucide-react";
+import { Circle, CircleAlert, CircleCheck, Info, LoaderCircle, MapPin, ShoppingCart, TriangleAlert } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
@@ -81,6 +81,8 @@ export function CheckoutView() {
   const [address, setAddress] = useState<Address>({ line1: "", area: "", city: "Dhaka", phone: "" });
   const [addressErrors, setAddressErrors] = useState<AddressErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+  // Order count and total at the moment of placing (the server empties the cart right after).
+  const [submitted, setSubmitted] = useState<{ count: number; total: number } | null>(null);
 
   const place = useMutation({
     mutationFn: placeOrders,
@@ -105,6 +107,68 @@ export function CheckoutView() {
     );
   }
 
+
+
+  type StepState = "done" | "current" | "upcoming";
+
+function StepIcon({ state }: { state: StepState }) {
+  if (state === "done") return <CircleCheck className="size-5 shrink-0 text-success-ink" aria-hidden />;
+  if (state === "current") return <LoaderCircle className="size-5 shrink-0 animate-spin text-brand" aria-hidden />;
+  return <Circle className="size-5 shrink-0 text-line-strong" aria-hidden />;
+}
+
+/** Shown while the orders are placed: a doorway, the total, two live steps and a "don't close" note. */
+function PlacingOrders({
+  phase,
+  count,
+  total,
+  locale,
+}: {
+  phase: "placing" | "opening";
+  count: number;
+  total: number;
+  locale: string;
+}) {
+  const t = useTranslations("Checkout");
+  const steps: { label: string; state: StepState }[] = [
+    { label: t("stepCheck"), state: phase === "placing" ? "current" : "done" },
+    { label: t("stepOpen"), state: phase === "opening" ? "current" : "upcoming" },
+  ];
+
+  return (
+    <section
+      role="status"
+      aria-live="polite"
+      className="mx-auto flex w-full max-w-md flex-col items-center gap-6 rounded-md border border-line bg-card px-6 py-10 text-center shadow-card"
+    >
+      {/* The doorway: gold arch, bordeaux door, gold keystone */}
+      <svg viewBox="0 0 120 150" className="h-28 w-auto" aria-hidden="true">
+        <path d="M15 148 V65 A45 45 0 0 1 105 65 V148" fill="none" strokeWidth="2.5" className="stroke-gold" />
+        <path d="M32 148 V70 A28 28 0 0 1 88 70 V148 Z" className="fill-brand" />
+        <path d="M54 12 H66 L64 26 H56 Z" className="fill-gold" />
+        <line x1="4" y1="148" x2="116" y2="148" strokeWidth="2.5" className="stroke-gold" />
+      </svg>
+
+      <div className="flex flex-col gap-1">
+        <h2 className="type-h2 text-ink">{t("placingTitle", { count })}</h2>
+        {total > 0 && <p className="type-price text-[1.125rem] text-ink-secondary">{t("placingTotal", { total: formatTaka(total, locale) })}</p>}
+      </div>
+
+      <ol className="flex w-full flex-col gap-3 border-y border-line py-4 text-left">
+        {steps.map((step) => (
+          <li key={step.label} className="flex items-center gap-3">
+            <StepIcon state={step.state} />
+            <span className={cn("type-body", step.state === "upcoming" ? "text-ink-muted" : "text-ink")}>{step.label}</span>
+          </li>
+        ))}
+      </ol>
+
+      <p className="type-caption text-ink-muted">{t("dontClose")}</p>
+    </section>
+  );
+}
+
+
   if (status === "guest") {
     return (
       <div className={panel}>
@@ -117,6 +181,23 @@ export function CheckoutView() {
       </div>
     );
   }
+
+
+   // While placing, and after success until the confirmation page opens: the "doorway" screen.
+  // Otherwise the page would briefly show the now-empty cart.
+  if (place.isPending || place.isSuccess) {
+    return (
+      <PlacingOrders
+        phase={place.isSuccess ? "opening" : "placing"}
+        count={submitted?.count ?? 1}
+        total={submitted?.total ?? 0}
+        locale={locale}
+      />
+    );
+  }
+
+
+
 
   if (cart.isError || !cart.data) {
     return (
@@ -198,6 +279,7 @@ export function CheckoutView() {
         ...(choice.delivery === "VENDOR_DELIVERY" && { deliveryAddress }),
       };
     });
+    setSubmitted({ count: shops.length, total });
     place.mutate(payload);
   }
 
