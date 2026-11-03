@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronRight, Handshake, LoaderCircle, LogOut, MapPin, Package, Store, type LucideIcon } from "lucide-react";
+import { ChevronRight, Handshake, Inbox, LoaderCircle, LogOut, MapPin, Package, Store, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSession } from "@/components/app-providers";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,13 +28,16 @@ export function initials(name: string): string {
   );
 }
 
-type LinkKey = "ownerArea" | "orders" | "bargains" | "addresses";
+type LinkKey = "ownerArea" | "ownerOffers" | "orders" | "bargains" | "addresses";
 type AccountLink = { href: string; key: LinkKey; icon: LucideIcon };
 
 // The same entries in the desktop menu and on the /account page.
 function linksFor(user: SessionUser): AccountLink[] {
   const links: AccountLink[] = [];
   if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
+  if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") {
+    links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
+  }
   links.push(
     { href: "/account/orders", key: "orders", icon: Package },
     { href: "/bargains", key: "bargains", icon: Handshake },
@@ -41,7 +45,6 @@ function linksFor(user: SessionUser): AccountLink[] {
   );
   return links;
 }
-
 // Log out: server clears the cookie, memory token and cached data are dropped, then home.
 function useLogout() {
   const router = useRouter();

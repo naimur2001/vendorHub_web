@@ -20,8 +20,11 @@ import {
 } from "@/lib/api/bargains";
 import { cartKeys } from "@/lib/api/cart";
 import { ApiError } from "@/lib/api/core";
+import type { ShopBargain } from "@/lib/api/owner";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+type Side = "CUSTOMER" | "SHOP";
 
 const STATUS_STYLE: Record<BargainStatus, string> = {
   AWAITING_SHOP: "bg-info-soft text-verified",
@@ -30,6 +33,8 @@ const STATUS_STYLE: Record<BargainStatus, string> = {
   DECLINED: "bg-subtle text-ink-secondary",
   EXPIRED: "bg-error-soft text-error",
 };
+
+const ACTIVE: BargainStatus[] = ["AWAITING_SHOP", "COUNTERED"];
 
 function clock(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600);
@@ -84,13 +89,27 @@ const outline = (tone: "error" | "ink") =>
     tone === "error" ? "border-error text-error focus-visible:ring-error" : "border-ink text-ink focus-visible:ring-brand",
   );
 
-/** One negotiation: status, offer history, countdown and the actions allowed right now. */
-export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNewOffer?: () => void }) {
+/**
+ * One negotiation: status, offer history, countdown and the actions allowed right now.
+ * side="CUSTOMER" (default): the buyer's view. side="SHOP": the shop team's mirrored view.
+ */
+export function Negotiation({
+  bargainId,
+  onNewOffer,
+  side = "CUSTOMER",
+}: {
+  bargainId: string;
+  onNewOffer?: () => void;
+  side?: Side;
+}) {
   const t = useTranslations("Bargain");
+  const tShop = useTranslations("OwnerBargains.negotiation");
+  const tShopStatus = useTranslations("OwnerBargains");
   const locale = useLocale();
   const format = useFormatter();
   const queryClient = useQueryClient();
   const counterId = useId();
+  const isShop = side === "SHOP";
 
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [countering, setCountering] = useState(false);
@@ -99,13 +118,17 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
   const query = useQuery({
     queryKey: bargainKeys.bargain(bargainId),
     queryFn: () => getBargain(bargainId),
-    // While the shop has to answer, check for its reply every 10 seconds.
-    refetchInterval: (q) => (q.state.data?.status === "AWAITING_SHOP" ? 10_000 : false),
+    // While the other side has to answer, check for their reply every 10 seconds.
+    refetchInterval: (q) => {
+      const data = q.state.data;
+      return data && ACTIVE.includes(data.status) && !data.yourTurn ? 10_000 : false;
+    },
   });
 
   function updated(b: Bargain) {
     queryClient.setQueryData(bargainKeys.bargain(bargainId), b);
     void queryClient.invalidateQueries({ queryKey: ["bargains"] });
+    void queryClient.invalidateQueries({ queryKey: ["owner", "bargains"] });
     setMessage(null);
     setCountering(false);
     setCounterText("");
@@ -157,13 +180,18 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
     );
   }
 
-  const b = query.data;
+  const b = query.data as ShopBargain;
   const events = b.events ?? [];
   const offersMade = events.filter((e) => e.amount !== null).length;
-  const lastOwn = [...events].reverse().find((e) => e.actor === "CUSTOMER" && e.amount !== null)?.amount ?? 0;
-  const counterMin = lastOwn + 1;
-  const counterMax = b.currentOffer - 1;
   const money = (n: number) => formatTaka(n, locale);
+
+  // Counter range: the customer goes above their own last offer and below the shop's counter;
+  // the shop goes above the customer's offer and below the list price.
+  const lastCustomer = [...events].reverse().find((e) => e.actor === "CUSTOMER" && e.amount !== null)?.amount ?? 0;
+  const counterMin = isShop ? b.currentOffer + 1 : lastCustomer + 1;
+  const counterMax = isShop ? b.listPrice - 1 : b.currentOffer - 1;
+  const rangeLow = isShop ? b.currentOffer : lastCustomer;
+  const rangeHigh = isShop ? b.listPrice : b.currentOffer;
 
   function eventText(e: BargainEvent): string {
     const amount = e.amount !== null ? money(e.amount) : "";
@@ -172,6 +200,17 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
       if (e.note === "Offer expired") return t("event.expired");
       if (e.note === "Agreed price expired unused") return t("event.agreedExpired");
       return e.note ?? "";
+    }
+    if (isShop) {
+      if (e.actor === "CUSTOMER") {
+        if (e.note === "Accepted") return tShop("customerAccepted", { amount });
+        if (e.note === "Withdrawn") return tShop("customerWithdrew");
+        if (e.note === "Declined") return tShop("customerDeclined");
+        return tShop("customerOffered", { amount });
+      }
+      if (e.note === "Accepted") return tShop("youAccepted", { amount });
+      if (e.note === "Declined") return tShop("youDeclined");
+      return tShop("youCountered", { amount });
     }
     if (e.actor === "CUSTOMER") {
       if (e.note === "Accepted") return t("event.youAccepted", { amount });
@@ -194,12 +233,13 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
     counter.mutate(amount);
   }
 
-  const timerLabel =
-    b.status === "AWAITING_SHOP"
-      ? (time: string) => t("timerShop", { time })
-      : b.status === "COUNTERED"
-        ? (time: string) => t("timerYou", { time })
-        : (time: string) => t("timerAgreed", { time });
+  const timerLabel = (time: string) => {
+    if (b.status === "ACCEPTED") return isShop ? tShop("timerAgreed", { time }) : t("timerAgreed", { time });
+    if (b.yourTurn) return isShop ? tShop("timerYou", { time }) : t("timerYou", { time });
+    return isShop ? tShop("timerCustomer", { time }) : t("timerShop", { time });
+  };
+
+  const statusText = isShop ? tShopStatus(`status.${b.status}`) : t(`status.${b.status}`);
 
   return (
     <div className="flex flex-col gap-4">
@@ -208,10 +248,11 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
           {b.product.title}
         </Link>
         <p className="type-caption text-ink-muted">
-          {b.shop.name} · {t("listPrice", { price: money(b.listPrice) })}
+          {isShop && b.customer ? tShop("customer", { name: b.customer.name }) : b.shop.name} ·{" "}
+          {t("listPrice", { price: money(b.listPrice) })}
         </p>
         <span className={cn("type-caption mt-1 self-start rounded-full px-2.5 py-0.5", STATUS_STYLE[b.status])}>
-          {t(`status.${b.status}`)}
+          {statusText}
           {b.status === "ACCEPTED" && b.agreedPrice !== null && ` · ${money(b.agreedPrice)}`}
         </span>
       </div>
@@ -226,7 +267,8 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
               </li>
             );
           }
-          const mine = e.actor === "CUSTOMER";
+          // Your own messages on the right, the other side's on the left.
+          const mine = e.actor === side;
           return (
             <li key={e.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
               <div
@@ -243,7 +285,7 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
         })}
       </ol>
 
-      {(b.status === "AWAITING_SHOP" || b.status === "COUNTERED" || b.status === "ACCEPTED") && b.secondsLeft > 0 && (
+      {(ACTIVE.includes(b.status) || b.status === "ACCEPTED") && b.secondsLeft > 0 && (
         // key: a fresh server value restarts the countdown
         <TimerBar key={query.dataUpdatedAt} seconds={b.secondsLeft} label={timerLabel} onDone={() => void query.refetch()} />
       )}
@@ -267,8 +309,8 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
         </p>
       )}
 
-      {/* The shop countered: the customer's turn */}
-      {b.status === "COUNTERED" && b.yourTurn && !countering && (
+      {/* Your turn (customer after a counter, shop after an offer): decline, counter or accept */}
+      {ACTIVE.includes(b.status) && b.yourTurn && !countering && (
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2">
             <button type="button" onClick={() => decline.mutate()} disabled={busy} className={outline("error")}>
@@ -286,10 +328,10 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
         </div>
       )}
 
-      {b.status === "COUNTERED" && b.yourTurn && countering && (
+      {ACTIVE.includes(b.status) && b.yourTurn && countering && (
         <form onSubmit={onCounter} noValidate className="flex flex-col gap-2 rounded-md border border-line p-3">
           <label htmlFor={counterId} className="type-body-medium text-ink">
-            {t("counterLabel")}
+            {isShop ? tShop("counterLabel") : t("counterLabel")}
           </label>
           <input
             id={counterId}
@@ -302,7 +344,9 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
             className="type-price h-12 w-full rounded-md border border-input bg-card px-3 text-[1.25rem] text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
           />
           <p id={`${counterId}-range`} className="type-caption text-ink-muted">
-            {t("counterRange", { min: money(lastOwn), max: money(b.currentOffer) })}
+            {isShop
+              ? tShop("counterRange", { min: money(rangeLow), max: money(rangeHigh) })
+              : t("counterRange", { min: money(rangeLow), max: money(rangeHigh) })}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <button type="button" onClick={() => setCountering(false)} disabled={busy} className={outline("ink")}>
@@ -316,16 +360,19 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
         </form>
       )}
 
-      {/* Waiting for the shop: the customer may withdraw */}
-      {b.status === "AWAITING_SHOP" && (
+      {/* Waiting for the other side: the customer may withdraw; the shop just waits */}
+      {ACTIVE.includes(b.status) && !b.yourTurn && !isShop && (
         <button type="button" onClick={() => decline.mutate()} disabled={busy} className={outline("error")}>
           {decline.isPending && <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden />}
           {t("withdraw")}
         </button>
       )}
+      {ACTIVE.includes(b.status) && !b.yourTurn && isShop && (
+        <p className="type-caption text-ink-muted">{tShop("waitingCustomer")}</p>
+      )}
 
-      {/* Agreed: one unit at this price into the cart */}
-      {b.status === "ACCEPTED" && b.agreedPrice !== null && (
+      {/* Agreed: the customer adds one unit to the cart; the shop just sees the result */}
+      {b.status === "ACCEPTED" && b.agreedPrice !== null && !isShop && (
         <div className="flex flex-col gap-1">
           <button type="button" onClick={() => toCart.mutate()} disabled={busy} aria-busy={toCart.isPending} className={primary}>
             {toCart.isPending ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <ShoppingCart className="size-5" aria-hidden />}
@@ -334,8 +381,9 @@ export function Negotiation({ bargainId, onNewOffer }: { bargainId: string; onNe
           <p className="type-caption text-ink-muted">{t("agreedNote")}</p>
         </div>
       )}
+      {b.status === "ACCEPTED" && isShop && <p className="type-caption text-ink-muted">{tShop("agreedNote")}</p>}
 
-      {(b.status === "DECLINED" || b.status === "EXPIRED") && onNewOffer && (
+      {(b.status === "DECLINED" || b.status === "EXPIRED") && onNewOffer && !isShop && (
         <button type="button" onClick={onNewOffer} className={outline("ink")}>
           {t("newOffer")}
         </button>
