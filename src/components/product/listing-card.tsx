@@ -4,6 +4,7 @@ import { PriceTicket } from "@/components/brand/price-ticket";
 import { VerificationSeal } from "@/components/brand/verification-seal";
 import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { AvailabilityBadge } from "@/components/catalog/availability-badge";
+import { MakeOfferButton } from "@/components/bargain/offer-sheet";
 import { Link } from "@/i18n/routing";
 import type { Listing, ListingShop } from "@/lib/api/catalog";
 import { cn } from "@/lib/utils";
@@ -117,29 +118,18 @@ export function SelectedListingCard({
         </a>
       )}
 
-      <div className="flex flex-col gap-2 border-t border-line pt-4">
+        <div className="flex flex-col gap-2 border-t border-line pt-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="flex-1">
             <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} />
           </div>
-          {listing.bargainEnabled && (
-            <button
-              type="button"
-              disabled
-              aria-describedby="offer-note"
-              className="type-body-medium h-12 flex-1 rounded-sm border border-highlight text-highlight disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span aria-hidden>🤝 </span>
-              {t("makeOffer")}
-            </button>
+          {listing.bargainEnabled && !outOfStock && (
+            <div className="flex-1">
+              <MakeOfferButton listingId={listing.id} productSlug={productSlug} />
+            </div>
           )}
         </div>
         {outOfStock && <p className="type-caption text-ink-muted">{t("outOfStock")}</p>}
-        {listing.bargainEnabled && !outOfStock && (
-          <p id="offer-note" className="type-caption text-ink-muted">
-            {tCart("offerSoon")}
-          </p>
-        )}
       </div>
     </section>
   );
