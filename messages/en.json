@@ -8,7 +8,7 @@
     "homeLink": "Vendors Hub home",
     "mainNav": "Main navigation",
     "searchLabel": "Search",
-    "searchPlaceholder": "Search products or brands",
+    "searchPlaceholder": "Search products, brands or shops",
     "home": "Home",
     "search": "Search",
     "cart": "Cart",
@@ -263,8 +263,8 @@
     "metaTitle": "Search",
     "allProducts": "All products",
     "resultsFor": "Results for “{q}”",
-    "searchLabel": "Search products or brands",
-    "searchPlaceholder": "Search products or brands",
+    "searchLabel": "Search products, brands or shops",
+    "searchPlaceholder": "Search products, brands or shops",
     "searchButton": "Search",
     "categories": "Categories",
     "allCategories": "All",
@@ -740,5 +740,12 @@
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {page} of {total}"
+  },
+  "ShopSearch": {
+    "title": "Shops matching “{q}”",
+    "count": "{count, plural, one {# shop} other {# shops}}",
+    "rating": "{average} ★ ({count})",
+    "noReviews": "No reviews yet",
+    "products": "{count, plural, one {# product} other {# products}}"
   }
 }

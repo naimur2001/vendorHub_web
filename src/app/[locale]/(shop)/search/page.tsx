@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
 import { ActiveFilters, DesktopFilters, MobileFilters } from "@/components/search/search-filters";
+import { ShopResults } from "@/components/search/shop-results";
 import { getPathname, Link } from "@/i18n/routing";
 import { listProducts, type Brand, type Category } from "@/lib/api/catalog";
 import { getBrands, getCategories, getMarkets } from "@/lib/api/catalog-cache";
@@ -205,6 +206,14 @@ async function SearchContent({ locale, searchParams }: { locale: string; searchP
     <div className="flex flex-col gap-5">
       <SearchForm locale={locale} state={state} label={t("searchPlaceholder")} button={t("searchButton")} />
       <h1 className="type-h2 break-words text-ink">{heading}</h1>
+            {/* Matching shops above the products: text searches, first page only */}
+      {state.q && state.page === 1 && (
+        <Suspense key={`shops-${state.q}-${state.marketId ?? ""}`} fallback={null}>
+          <ShopResults q={state.q} marketId={state.marketId} />
+        </Suspense>
+      )}
+
+      
       {chips.length > 0 && (
         <CategoryChips state={state} categories={chips} label={t("categories")} allLabel={t("allCategories")} />
       )}

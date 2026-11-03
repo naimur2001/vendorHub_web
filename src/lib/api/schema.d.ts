@@ -324,7 +324,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Find shops by name (public); most trusted first
+         * @description Only active shops. With q, names that start with q come first, then names that only contain it; inside each group the highest verification level first, then name A-Z, then id (stable pages). Without q, the same order without the first rule. In q, % and _ are normal characters. Only public card fields are returned (never the owner, contact data, stock numbers, offer minimums or verification internals).
+         */
+        get: operations["searchShops"];
         put?: never;
         /** Create a shop (it starts unverified) */
         post: operations["createShop"];
@@ -2438,6 +2442,38 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        ShopSearchItem: {
+            /** Format: uuid */
+            id: string;
+            /** @example TechZone Electronics */
+            name: string;
+            /** @example techzone-electronics */
+            slug: string;
+            logoUrl: string | null;
+            /** @example Level 3 */
+            levelFloor: string | null;
+            /** @example Shop 42 */
+            shopNumber: string | null;
+            verificationLevel: components["schemas"]["VerificationLevel"];
+            market: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+            } | null;
+            coverPhoto: {
+                url: string;
+                /** @enum {string} */
+                kind: "EXTERIOR" | "SIGNBOARD" | "INTERIOR" | "DISPLAY" | "PANORAMA_360" | "OTHER";
+                /** @description True when an admin checked the photo against the real shop. */
+                verified: boolean;
+            } | null;
+            /** @description Average of the shop-trust reviews, one decimal; null without reviews. */
+            ratingAverage: number | null;
+            reviewCount: number;
+            /** @description Active listings of this shop. */
+            productCount: number;
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -3021,6 +3057,42 @@ export interface operations {
                 };
             };
             404: components["responses"]["NotFound"];
+        };
+    };
+    searchShops: {
+        parameters: {
+            query?: {
+                /** @description Part of the shop name (case-insensitive). */
+                q?: string;
+                marketId?: string;
+                /** @description true = leave out UNVERIFIED shops. */
+                verifiedOnly?: "true" | "false";
+                page?: components["parameters"]["Page"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of shops. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        data: components["schemas"]["ShopSearchItem"][];
+                        meta: {
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
         };
     };
     createShop: {
