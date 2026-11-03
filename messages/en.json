@@ -701,5 +701,44 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "That didn't work. Try again in a moment."
     }
+  },
+  "MyBargains": {
+    "metaTitle": "My bargains",
+    "title": "My bargains",
+    "subtitle": "Your offers to shops, newest activity first.",
+    "filterLabel": "Filter bargains",
+    "filters": {
+      "ALL": "All",
+      "COUNTERED": "Your turn",
+      "AWAITING_SHOP": "Waiting for the shop",
+      "ACCEPTED": "Agreed",
+      "DECLINED": "Closed",
+      "EXPIRED": "Expired"
+    },
+    "yourTurn": "Your turn",
+    "youOffered": "You offered {amount}",
+    "shopCountered": "The shop countered at {amount}",
+    "agreedAt": "Agreed at {amount}",
+    "lastOffer": "Last offer {amount}",
+    "listed": "listed at {amount}",
+    "minutesLeft": "{count, plural, one {# min left} other {# min left}}",
+    "hoursLeft": "{count, plural, one {# h left} other {# h left}}",
+    "open": "Open",
+    "sheetTitle": "Negotiation",
+    "loading": "Loading your bargains…",
+    "loadError": "Your bargains couldn't load. Check your connection and try again.",
+    "retry": "Try again",
+    "guestTitle": "Log in to see your bargains",
+    "logIn": "Log in",
+    "emptyTitle": "No bargains yet",
+    "emptyText": "Look for the 🤝 tag: those shops take offers.",
+    "browse": "Find items open to offers",
+    "emptyFiltered": "Nothing here right now.",
+    "showAll": "Show all bargains",
+    "count": "{count, plural, one {# bargain} other {# bargains}}",
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}"
   }
 }
