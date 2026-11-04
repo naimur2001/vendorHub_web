@@ -24,7 +24,7 @@ export default async function OwnerSetupPage({ params }: Props) {
         <p className="type-body text-ink-secondary">{t("subtitle")}</p>
       </header>
       {/* The wizard keeps a comfortable form width, aligned left under the title */}
-      <div className="w-full max-w-2xl">
+      <div className="mx-auto w-full max-w-2xl">
         <SetupWizard />
       </div>
     </div>
