@@ -1029,5 +1029,14 @@
     "noShopTitle": "Set up your shop first",
     "noShopText": "Once your shop exists, you can add products here.",
     "setup": "Go to shop setup"
+  },
+  "OwnerNav": {
+    "label": "Shop sections",
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "offers": "Offers",
+    "listings": "Listings",
+    "verification": "Verification",
+    "waiting": "{label}, {count} waiting"
   }
 }
