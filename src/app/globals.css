@@ -11,7 +11,8 @@
 /* Always keep room for the scrollbar, so pages don't shift sideways
    when their length changes (switching tabs, content loading in). */
 html {
-  scrollbar-gutter: stable;
+  /* Always show the scrollbar track: page width never changes between short and long pages. */
+  overflow-y: scroll;
 }
 :root {
   /* shadcn/ui semantic variables */
@@ -231,4 +232,16 @@ html {
       opacity: 1;
     }
   }
+}
+
+
+/* Sideways-scrolling rows (tabs, chips): swipe or trackpad to scroll, no visible scrollbar,
+   and never a vertical scrollbar. */
+.scroll-row {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.scroll-row::-webkit-scrollbar {
+  display: none;
 }
