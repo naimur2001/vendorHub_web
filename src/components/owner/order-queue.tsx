@@ -22,7 +22,7 @@ import {
 import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
+import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 const PAGE_SIZE = 20;
 const FILTERS: OrderFilter[] = ["ALL", ...ORDER_STATUSES];
 
@@ -109,12 +109,7 @@ export function OrderQueue() {
   const go = (shopId: string | undefined, nextFilter: OrderFilter, nextPage: number) =>
     router.replace(ordersHref(shopList.length > 1 ? shopId : undefined, nextFilter, nextPage), { scroll: false });
 
-  const loading = (
-    <p role="status" className="type-body flex items-center justify-center gap-2 py-12 text-ink-secondary">
-      <LoaderCircle className="size-5 animate-spin" aria-hidden />
-      {t("loading")}
-    </p>
-  );
+  const loading = <OwnerSkeleton label={t("loading")} variant="dashboard" />;
 
   if (session === "loading") return loading;
 

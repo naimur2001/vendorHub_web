@@ -25,7 +25,7 @@ import { getShopDashboard, ownerKeys, type ShopDashboard } from "@/lib/api/owner
 import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
+import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 const panel = "flex flex-col items-center gap-3 rounded-md border border-line bg-card px-6 py-12 text-center";
 const primaryLink =
   "type-body-medium flex h-12 items-center rounded-sm bg-action px-6 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none";
@@ -144,12 +144,7 @@ export function OwnerDashboard() {
     refetchInterval: 60_000,
   });
 
-  const loading = (
-    <p role="status" className="type-body flex items-center justify-center gap-2 py-12 text-ink-secondary">
-      <LoaderCircle className="size-5 animate-spin" aria-hidden />
-      {t("loading")}
-    </p>
-  );
+  const loading = <OwnerSkeleton label={t("loading")} variant="dashboard" />;
 
   if (session === "loading") return loading;
 

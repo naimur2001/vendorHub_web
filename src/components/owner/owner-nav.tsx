@@ -9,7 +9,8 @@ import { Link, usePathname } from "@/i18n/routing";
 import { getShopDashboard, ownerKeys, type ShopDashboard } from "@/lib/api/owner";
 import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { cn } from "@/lib/utils";
-
+// import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
+import { useLinkStatus } from "next/link";
 type TabKey = "dashboard" | "orders" | "offers" | "listings" | "verification";
 
 type Tab = {
@@ -30,6 +31,20 @@ const TABS: Tab[] = [
   { key: "verification", href: "/owner/setup", icon: ShieldCheck, ownerOnly: true },
 ];
 
+
+/** Inside a tab link: a pulsing underline while that tab's page is opening. */
+function TabPending() {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "absolute inset-x-0 -bottom-[3px] h-[3px] bg-brand/60 transition-opacity",
+        pending ? "opacity-100 motion-safe:animate-pulse" : "opacity-0",
+      )}
+    />
+  );
+}
 /** Tabs above every owner page (owners and staff only). Counts come from the shared dashboard data. */
 export function OwnerNav() {
   const t = useTranslations("OwnerNav");
@@ -76,8 +91,8 @@ export function OwnerNav() {
                 href={`${tab.href}${tab.keepShop ? keep : ""}`}
                 aria-current={active ? "page" : undefined}
                 aria-label={count > 0 ? t("waiting", { label, count }) : undefined}
-                className={cn(
-                  "type-body-medium flex h-12 items-center gap-2 border-b-[3px] whitespace-nowrap focus-visible:bg-subtle focus-visible:outline-none",
+                                className={cn(
+                  "relative type-body-medium flex h-12 items-center gap-2 border-b-[3px] whitespace-nowrap focus-visible:bg-subtle focus-visible:outline-none",
                   active ? "border-brand text-ink" : "border-transparent text-ink-muted hover:text-ink",
                 )}
               >
@@ -88,6 +103,7 @@ export function OwnerNav() {
                     {count > 99 ? "99+" : count}
                   </span>
                 )}
+                <TabPending />
               </Link>
             </li>
           );

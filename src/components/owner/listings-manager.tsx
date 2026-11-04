@@ -17,7 +17,7 @@ import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { safeMediaUrl } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
+import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
 const FILTERS: Filter[] = ["ACTIVE", "INACTIVE", "ALL"];
 
@@ -88,12 +88,7 @@ export function ListingsManager() {
     setNotice(t("saved"));
   }
 
-  const loading = (
-    <p role="status" className="type-body flex items-center justify-center gap-2 py-12 text-ink-secondary">
-      <LoaderCircle className="size-5 animate-spin" aria-hidden />
-      {t("loading")}
-    </p>
-  );
+  const loading = <OwnerSkeleton label={t("loading")} variant="dashboard" />;
 
   if (session === "loading") return loading;
 

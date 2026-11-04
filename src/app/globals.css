@@ -8,6 +8,11 @@
   Token names are kept from the spec (brand, action, highlight...) so components never hard-code colors.
 */
 
+/* Always keep room for the scrollbar, so pages don't shift sideways
+   when their length changes (switching tabs, content loading in). */
+html {
+  scrollbar-gutter: stable;
+}
 :root {
   /* shadcn/ui semantic variables */
    --background: #faf6ef;    /* ivory */
