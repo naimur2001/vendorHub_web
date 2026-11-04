@@ -17,12 +17,16 @@ export default async function OwnerSetupPage({ params }: Props) {
   const t = await getTranslations("OwnerSetup");
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-8">
-      <header className="flex flex-col gap-2 text-center">
-        <h1 className="type-h2 text-ink">{t("title")}</h1>
+    <div className="flex flex-col gap-6">
+      {/* Same header as the other owner tabs: large title on the left, one line under it */}
+      <header className="flex flex-col gap-1">
+        <h1 className="type-display text-ink">{t("title")}</h1>
         <p className="type-body text-ink-secondary">{t("subtitle")}</p>
       </header>
-      <SetupWizard />
+      {/* The wizard keeps a comfortable form width, aligned left under the title */}
+      <div className="w-full max-w-2xl">
+        <SetupWizard />
+      </div>
     </div>
   );
 }
