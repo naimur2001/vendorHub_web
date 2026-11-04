@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronRight, Handshake, Inbox, LoaderCircle, LogOut, MapPin, Package, Store, type LucideIcon } from "lucide-react";
+import { ChevronRight, Eye, Handshake, Inbox, LoaderCircle, LogOut, MapPin, Package, Store, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSession } from "@/components/app-providers";
-
+import { useQuery } from "@tanstack/react-query";
+import { getMyShops, shopKeys } from "@/lib/api/shops";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,13 +29,24 @@ export function initials(name: string): string {
   );
 }
 
-type LinkKey = "ownerArea" | "ownerOffers" | "orders" | "bargains" | "addresses";
+type LinkKey = "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "addresses";
 type AccountLink = { href: string; key: LinkKey; icon: LucideIcon };
 
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+// The first shop the user owns or works at, for "View my storefront" (shared cache with the dashboard).
+function useStorefrontSlug(user: SessionUser | null | undefined): string | undefined {
+  const isTeam = user?.role === "SHOP_OWNER" || user?.role === "SHOP_STAFF";
+  const { data } = useQuery({ queryKey: shopKeys.mine, queryFn: getMyShops, enabled: isTeam, staleTime: 5 * 60_000 });
+  const slug = isTeam ? data?.[0]?.slug : undefined;
+  return slug && SLUG.test(slug) ? slug : undefined;
+}
+
 // The same entries in the desktop menu and on the /account page.
-function linksFor(user: SessionUser): AccountLink[] {
+function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
   const links: AccountLink[] = [];
   if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
+  if (storefrontSlug) links.push({ href: `/shops/${storefrontSlug}`, key: "storefront", icon: Eye });
   if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") {
     links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
   }
@@ -81,6 +93,7 @@ function Avatar({ name, size }: { name: string; size: "sm" | "lg" }) {
 
 /** Desktop: the initials in the top bar open this menu. */
 export function AccountMenu({ user }: { user: SessionUser }) {
+  const storefrontSlug = useStorefrontSlug(user);
   const t = useTranslations("Account");
   const tNav = useTranslations("Nav");
   const { run: logOut, pending } = useLogout();
@@ -102,7 +115,7 @@ export function AccountMenu({ user }: { user: SessionUser }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {linksFor(user).map(({ href, key, icon: Icon }) => (
+        {linksFor(user,storefrontSlug).map(({ href, key, icon: Icon }) => (
           <DropdownMenuItem key={key} asChild className="type-body min-h-10 cursor-pointer gap-3">
             <Link href={href}>
               <Icon className="size-4 text-ink-muted" aria-hidden />
