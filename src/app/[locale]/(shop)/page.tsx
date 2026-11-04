@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
 import { getLatestProducts, getMarkets } from "@/lib/api/catalog-cache";
 import type { Market } from "@/lib/api/shops";
+import { OwnerStrip } from "@/components/owner/owner-strip";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -107,6 +108,8 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-14 md:gap-20">
+            {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
+      <OwnerStrip />
       <section className="flex flex-col items-center gap-6 pt-4 text-center md:gap-8 md:pt-10">
         <h1 className="type-display max-w-3xl text-ink">{t("heroTitle")}</h1>
         <p className="type-body max-w-xl text-ink-secondary">{t("heroText")}</p>
