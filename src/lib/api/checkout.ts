@@ -81,3 +81,9 @@ export function payMockOrder(orderId: string): Promise<Order> {
 export function listOrders(query: { status?: OrderStatus; page: number; limit: number }): Promise<ApiResult<Order[]>> {
   return api.list<Order>("/orders", { query });
 }
+
+
+// The customer cancels their own order (only while PLACED; the backend checks both).
+export function cancelOrder(orderId: string, reason?: string): Promise<Order> {
+  return api.post<Order>(`/orders/${encodeURIComponent(orderId)}/cancel`, reason ? { reason } : {});
+}

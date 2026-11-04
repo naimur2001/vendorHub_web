@@ -3,11 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, LoaderCircle, MapPin, PackageCheck, SearchX, Store, Truck } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
 import { VerificationSeal } from "@/components/brand/verification-seal";
 import { Link } from "@/i18n/routing";
 import {
+  cancelOrder,
   checkoutKeys,
   getCheckout,
   payMockOrder,
@@ -140,20 +141,33 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
   const locale = useLocale();
   const format = useFormatter();
   const queryClient = useQueryClient();
+  const reasonId = useId();
+
   const [payError, setPayError] = useState<string | null>(null);
   const [justPaid, setJustPaid] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [justCancelled, setJustCancelled] = useState(false);
 
   const canPay = order.paymentMethod === "ONLINE" && order.paymentStatus === "PENDING" && order.status !== "CANCELLED";
+  const canCancel = order.status === "PLACED";
   const pickupPlace = [shopPlace(order.shop.levelFloor, order.shop.shopNumber), order.shop.addressLine].filter(Boolean).join(", ");
+
+  // Put the server's updated order into this checkout's cached data.
+  function replaceOrder(updated: Order) {
+    queryClient.setQueryData<CheckoutResult>(checkoutKeys.checkout(checkoutId), (old) =>
+      old ? { ...old, orders: old.orders.map((o) => (o.id === updated.id ? updated : o)) } : old,
+    );
+    void queryClient.invalidateQueries({ queryKey: ["orders"] }); // My orders
+  }
 
   const pay = useMutation({
     // Only the order id is sent; the amount is the server's.
     mutationFn: () => payMockOrder(order.id),
     onMutate: () => setPayError(null),
     onSuccess: (updated) => {
-      queryClient.setQueryData<CheckoutResult>(checkoutKeys.checkout(checkoutId), (old) =>
-        old ? { ...old, orders: old.orders.map((o) => (o.id === updated.id ? updated : o)) } : old,
-      );
+      replaceOrder(updated);
       setJustPaid(true);
     },
     onError: (err) => {
@@ -165,6 +179,37 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
       setPayError(err instanceof ApiError && err.status === 0 ? t("payErrors.network") : t("payErrors.generic"));
     },
   });
+
+  const cancel = useMutation({
+    // Only the order id and the optional reason are sent; the backend checks it's yours and still PLACED.
+    mutationFn: (why: string | undefined) => cancelOrder(order.id, why),
+    onMutate: () => setCancelError(null),
+    onSuccess: (updated) => {
+      replaceOrder(updated);
+      setCancelOpen(false);
+      setReason("");
+      setJustCancelled(true);
+    },
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 409) {
+        // The shop confirmed in the meantime: show the real state.
+        void queryClient.invalidateQueries({ queryKey: checkoutKeys.checkout(checkoutId) });
+        setCancelError(t("cancel.tooLate"));
+        return;
+      }
+      setCancelError(t("cancel.error"));
+    },
+  });
+
+  function onCancel(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const why = reason.trim();
+    if (why.length > 0 && why.length < 3) {
+      setCancelError(t("cancel.reasonError"));
+      return;
+    }
+    cancel.mutate(why || undefined);
+  }
 
   return (
     <article aria-labelledby={`order-${order.id}`} className="flex flex-col gap-4 rounded-md border border-line bg-card p-5 shadow-card">
@@ -234,7 +279,7 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
         </div>
       </dl>
 
-      {canPay && (
+      {canPay && !cancelOpen && (
         <div className="flex flex-col gap-2 border-t border-gold pt-3">
           <button
             type="button"
@@ -260,6 +305,71 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
         <p role="alert" className="type-body flex items-start gap-2 text-error">
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           {payError}
+        </p>
+      )}
+
+      {/* Cancelling: only while the shop hasn't confirmed the order yet */}
+      {canCancel && !cancelOpen && (
+        <button
+          type="button"
+          onClick={() => setCancelOpen(true)}
+          className="type-body-medium flex h-11 items-center self-start rounded-sm px-2 text-ink-secondary underline-offset-4 hover:text-error hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        >
+          {t("cancel.button")}
+        </button>
+      )}
+
+      {canCancel && cancelOpen && (
+        <form onSubmit={onCancel} noValidate className="flex flex-col gap-3 rounded-md border border-error/40 bg-error-soft/40 p-3">
+          <p className="type-body-medium text-ink">{t("cancel.title")}</p>
+          <p className="type-caption text-ink-secondary">{t("cancel.text")}</p>
+          <label htmlFor={reasonId} className="type-body-medium text-ink">
+            {t("cancel.reason")}
+          </label>
+          <textarea
+            id={reasonId}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={300}
+            rows={2}
+            placeholder={t("cancel.reasonPlaceholder")}
+            className="type-body w-full rounded-md border border-input bg-card px-3 py-2 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCancelOpen(false);
+                setCancelError(null);
+              }}
+              disabled={cancel.isPending}
+              className="type-body-medium flex h-12 items-center justify-center rounded-sm border border-ink px-4 text-ink hover:bg-subtle"
+            >
+              {t("cancel.keep")}
+            </button>
+            <button
+              type="submit"
+              disabled={cancel.isPending}
+              aria-busy={cancel.isPending}
+              className="type-body-medium flex h-12 items-center justify-center gap-2 rounded-sm bg-error px-4 text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            >
+              {cancel.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
+              {cancel.isPending ? t("cancel.cancelling") : t("cancel.confirm")}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {cancelError && (
+        <p role="alert" className="type-body flex items-start gap-2 text-error">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {cancelError}
+        </p>
+      )}
+      {justCancelled && order.status === "CANCELLED" && (
+        <p role="status" className="type-body flex items-center gap-2 text-ink-secondary">
+          <CircleCheck className="size-4 shrink-0" aria-hidden />
+          {t("cancel.done")}
         </p>
       )}
     </article>

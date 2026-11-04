@@ -610,6 +610,20 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "The payment didn't go through. Nothing was charged. Try again."
     },
+        "cancel": {
+      "button": "Cancel this order",
+      "title": "Cancel this order?",
+      "text": "The shop hasn't confirmed it yet, so you can still cancel. If you paid online, the payment is refunded.",
+      "reason": "Reason (optional)",
+      "reasonPlaceholder": "For example: I ordered the wrong colour",
+      "reasonError": "Write at least 3 characters, or leave it empty.",
+      "keep": "Keep the order",
+      "confirm": "Cancel order",
+      "cancelling": "Cancelling…",
+      "done": "Order cancelled.",
+      "tooLate": "The shop has already confirmed this order, so it can't be cancelled here. Please contact the shop.",
+      "error": "The order couldn't be cancelled. Try again in a moment."
+    },
     "myOrders": "My orders",
     "continueShopping": "Continue shopping"
   },
