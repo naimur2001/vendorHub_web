@@ -818,6 +818,7 @@
   "OwnerDashboard": {
     "metaTitle": "Shop dashboard",
     "title": "Shop dashboard",
+    "back": "Back to dashboard",
     "loading": "Loading your shop…",
     "loadError": "Your shop's numbers couldn't load. Check your connection and try again.",
     "retry": "Try again",
