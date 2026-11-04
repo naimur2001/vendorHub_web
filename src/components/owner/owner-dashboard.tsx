@@ -271,8 +271,8 @@ export function OwnerDashboard() {
             href={`/owner/orders?${shopList.length > 1 ? `shop=${shop.id}&` : ""}status=PLACED`}
           />
           <TodoCard icon={CreditCard} count={d.actions.ordersAwaitingPayment} label={t("awaitingPayment")} />
-          <TodoCard icon={PackageX} count={d.actions.lowStockCount} label={t("lowStock")} />
-        </div>
+          <TodoCard icon={PackageX} count={d.actions.lowStockCount} label={t("lowStock")} href={`/owner/listings${shopQuery}`} />
+           </div>
       </section>
 
       <Section title={t("salesTitle")}>
