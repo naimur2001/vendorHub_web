@@ -264,7 +264,12 @@ export function OwnerDashboard() {
         </h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <TodoCard icon={Inbox} count={d.actions.bargainsWaiting} label={t("offersWaiting")} href={`/owner/bargains${shopQuery}`} />
-          <TodoCard icon={PackageCheck} count={d.actions.ordersToConfirm} label={t("ordersToConfirm")} />
+                   <TodoCard
+            icon={PackageCheck}
+            count={d.actions.ordersToConfirm}
+            label={t("ordersToConfirm")}
+            href={`/owner/orders?${shopList.length > 1 ? `shop=${shop.id}&` : ""}status=PLACED`}
+          />
           <TodoCard icon={CreditCard} count={d.actions.ordersAwaitingPayment} label={t("awaitingPayment")} />
           <TodoCard icon={PackageX} count={d.actions.lowStockCount} label={t("lowStock")} />
         </div>
