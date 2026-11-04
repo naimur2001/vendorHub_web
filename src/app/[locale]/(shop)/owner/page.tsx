@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { OwnerDashboard } from "@/components/owner/owner-dashboard";
+import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -19,9 +20,13 @@ export default async function OwnerPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="type-display text-ink">{t("title")}</h1>
-      {/* The dashboard reads ?shop= from the URL, which needs a Suspense boundary */}
-      <Suspense fallback={<div className="h-64 animate-pulse rounded-md bg-subtle" aria-hidden />}>
+      {/* Same header on every owner page: title and one line */}
+      <header className="flex flex-col gap-1">
+        <h1 className="type-display text-ink">{t("title")}</h1>
+        <p className="type-body text-ink-secondary">{t("subtitle")}</p>
+      </header>
+      {/* Reads ?shop= from the URL, which needs a Suspense boundary */}
+      <Suspense fallback={<OwnerSkeleton label={t("loading")} variant="dashboard" />}>
         <OwnerDashboard />
       </Suspense>
     </div>
