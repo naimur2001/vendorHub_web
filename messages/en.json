@@ -1053,5 +1053,95 @@
     "listings": "Listings",
     "verification": "Verification",
     "waiting": "{label}, {count} waiting"
+  },
+  "Admin": {
+    "metaTitle": "Admin",
+    "portal": "Admin",
+    "navLabel": "Admin sections",
+    "nav": {
+      "queue": "Verification queue",
+      "back": "Back to the marketplace"
+    },
+    "loading": "Loading…",
+    "guestTitle": "Log in as an admin",
+    "logIn": "Log in",
+    "deniedTitle": "Admins only",
+    "deniedText": "This area is for Vendors Hub staff.",
+    "home": "Go to the marketplace",
+    "queue": {
+      "title": "Shop verification queue",
+      "subtitle": "Oldest requests first. Review the documents, then decide.",
+      "stats": {
+        "pending": "Pending review",
+        "flagged": "Auto-flagged",
+        "approved": "Approved this week"
+      },
+      "filtersLabel": "Filter requests",
+      "status": "Status",
+      "search": "Shop name",
+      "searchPlaceholder": "Search shops",
+      "from": "Submitted from",
+      "to": "Submitted until",
+      "apply": "Apply",
+      "clear": "Clear filters",
+      "filters": {
+        "OPEN": "Waiting for a decision",
+        "PENDING": "Pending review",
+        "AUTO_FLAGGED": "Auto-flagged",
+        "CORRECTION_REQUESTED": "Correction requested",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "REVOKED": "Revoked",
+        "ALL": "All"
+      },
+      "tableCaption": "Verification requests",
+      "columns": {
+        "business": "Business",
+        "address": "Physical address",
+        "documents": "Documents",
+        "score": "Pre-check",
+        "level": "Level",
+        "status": "Status"
+      },
+      "submitted": "Submitted {when}",
+      "toLevel": "→ {level}",
+      "count": "{count, plural, one {# request} other {# requests}}",
+      "empty": "No requests match these filters.",
+      "emptyOpen": "Nothing is waiting for a decision right now.",
+      "loadError": "The queue couldn't load. Check your connection and try again.",
+      "retry": "Try again",
+      "pagination": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {total}"
+    },
+    "status": {
+      "PENDING": "Pending review",
+      "AUTO_FLAGGED": "Auto-flagged",
+      "CORRECTION_REQUESTED": "Correction requested",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "REVOKED": "Revoked"
+    },
+    "levels": {
+      "UNVERIFIED": "Unverified",
+      "DOCUMENTS_VERIFIED": "Documents verified",
+      "BUSINESS_VERIFIED": "Business verified",
+      "PHYSICAL_SHOP_VERIFIED": "Physical shop verified",
+      "TRUSTED_VENDOR": "Trusted vendor"
+    },
+    "docs": {
+      "TRADE_LICENSE": "Trade licence",
+      "NID": "NID",
+      "SHOP_PHOTO": "Shop photo",
+      "OTHER": "Other"
+    },
+    "docState": {
+      "reviewed": "{doc}: reviewed",
+      "reupload": "{doc}: needs re-upload",
+      "open": "{doc}: not reviewed yet"
+    },
+    "score": "{score}/100",
+    "noScore": "No score"
   }
 }
