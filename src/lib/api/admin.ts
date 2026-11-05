@@ -136,6 +136,8 @@ export function revokeShop(shopId: string, reason: string): Promise<{ shopId: st
 // ---------- Markets (G4a) ----------
 
 // GET /markets (public list, always fresh here) and GET /markets/:slug for the saved location.
+export type MarketImage = { url: string; thumbUrl: string; width: number; height: number };
+
 export type AdminMarket = {
   id: string;
   name: string;
@@ -143,8 +145,8 @@ export type AdminMarket = {
   city: string | null;
   address: string | null;
   shopCount: number;
+  image: MarketImage | null;
 };
-
 export type MarketInput = {
   name: string;
   city: string;
@@ -178,4 +180,17 @@ export function updateMarket(id: string, input: MarketInput): Promise<AdminMarke
 
 export function deleteMarket(id: string): Promise<{ message: string }> {
   return api.delete<{ message: string }>(`/admin/markets/${encodeURIComponent(id)}`);
+}
+
+
+
+// Photo: one real image file, checked and re-drawn as WebP by the server (admin only).
+export function uploadMarketImage(id: string, file: File): Promise<unknown> {
+  const body = new FormData();
+  body.append("image", file);
+  return api.put<unknown>(`/admin/markets/${encodeURIComponent(id)}/image`, body);
+}
+
+export function removeMarketImage(id: string): Promise<unknown> {
+  return api.delete<unknown>(`/admin/markets/${encodeURIComponent(id)}/image`);
 }

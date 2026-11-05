@@ -1305,5 +1305,33 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "That didn't work. Try again in a moment."
     }
+  },
+  "AdminMarketPhoto": {
+    "title": "Photo",
+    "hint": "A wide photo of the entrance or the building. JPG, PNG or WebP, at least 800 × 450 pixels, up to 5 MB.",
+    "noPhoto": "No photo yet",
+    "cardNoPhoto": "No photo",
+    "choose": "Choose a photo",
+    "drop": "or drag it here",
+    "previewAlt": "Preview of the new photo",
+    "currentAlt": "Photo of {market}",
+    "upload": "Upload photo",
+    "uploading": "Uploading…",
+    "chooseAnother": "Choose another",
+    "remove": "Remove photo",
+    "removing": "Removing…",
+    "uploaded": "Photo saved.",
+    "removed": "Photo removed.",
+    "afterCreate": "Market added. Now add its photo below.",
+    "errors": {
+      "type": "Only JPG, PNG or WebP photos are allowed.",
+      "size": "The photo is larger than 5 MB. Choose a smaller one.",
+      "small": "The photo is too small. It needs at least 800 × 450 pixels.",
+      "read": "This file couldn't be read as a photo.",
+      "rejected": "The server didn't accept this file as a photo.",
+      "rateLimit": "Too many uploads. Wait a few minutes, then try again.",
+      "network": "Can't reach Vendors Hub. Check your connection and try again.",
+      "generic": "The photo couldn't be saved. Try again in a moment."
+    }
   }
 }
