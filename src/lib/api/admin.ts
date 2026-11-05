@@ -83,3 +83,49 @@ export async function listVerifications(query: QueueQuery): Promise<ApiResult<Ad
   const stats = (result.meta as { stats?: QueueStats } | undefined)?.stats ?? null;
   return { ...result, stats };
 }
+
+
+
+// ---------- Review panel (G2) ----------
+
+export type StepState = "completed" | "current" | "upcoming" | "rejected";
+
+// Exact shape of getForAdmin() in verification.service.js
+export type AdminVerificationDetail = AdminVerificationRow & {
+  internalNotes: string | null;
+  precheck: { score: number | null; band: ScoreBand | null; details: Record<string, boolean | string> | null };
+  stepper: { level: VerificationLevel; state: StepState }[];
+  shopDetails: { levelFloor: string | null; shopNumber: string | null; market: string | null; lastAuditedAt: string | null };
+  owner: { name: string; email: string };
+  history: { id: string; action: string; meta: Record<string, unknown> | null; createdAt: string; actor: string | null }[];
+};
+
+const vPath = (id: string) => `/admin/verifications/${encodeURIComponent(id)}`;
+
+export function getVerification(id: string): Promise<AdminVerificationDetail> {
+  return api.get<AdminVerificationDetail>(vPath(id));
+}
+
+export function saveNotes(id: string, notes: string): Promise<{ internalNotes: string }> {
+  return api.patch<{ internalNotes: string }>(`${vPath(id)}/notes`, { notes });
+}
+
+export function markDocumentReviewed(id: string, docId: string, reviewed: boolean): Promise<AdminVerificationDetail> {
+  return api.patch<AdminVerificationDetail>(`${vPath(id)}/documents/${encodeURIComponent(docId)}`, { reviewed });
+}
+
+export function approveVerification(id: string): Promise<AdminVerificationDetail> {
+  return api.post<AdminVerificationDetail>(`${vPath(id)}/approve`);
+}
+
+export function requestCorrection(id: string, note: string, documentIds: string[]): Promise<AdminVerificationDetail> {
+  return api.post<AdminVerificationDetail>(`${vPath(id)}/request-correction`, { note, documentIds });
+}
+
+export function rejectVerification(id: string, reason: string): Promise<AdminVerificationDetail> {
+  return api.post<AdminVerificationDetail>(`${vPath(id)}/reject`, { reason });
+}
+
+export function revokeShop(shopId: string, reason: string): Promise<{ shopId: string; level: VerificationLevel }> {
+  return api.post<{ shopId: string; level: VerificationLevel }>(`/admin/shops/${encodeURIComponent(shopId)}/revoke`, { reason });
+}

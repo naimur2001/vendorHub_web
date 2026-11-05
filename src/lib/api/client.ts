@@ -1,5 +1,7 @@
 import "client-only";
 import {
+  API_PREFIX,
+  API_URL,
   ApiError,
   buildUrl,
   readResponse,
@@ -165,3 +167,51 @@ export const api = {
 };
 
 export { ApiError };
+
+
+// ---------- Private files (verification documents) ----------
+
+/** True only for files served by our own API at /api/v1/files/... */
+export function isPrivateFileUrl(fileUrl: string): boolean {
+  try {
+    const url = new URL(fileUrl, API_URL);
+    return url.origin === new URL(API_URL).origin && url.pathname.startsWith(`${API_PREFIX}/files/`);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Downloads a private file with the login token and returns it as a Blob (kept in memory only).
+ * The token is only ever sent to our own API's /files/ address, never to another site.
+ */
+export async function fetchPrivateFile(fileUrl: string, signal?: AbortSignal): Promise<Blob> {
+  if (!isPrivateFileUrl(fileUrl)) throw new ApiError(400, "Not a Vendors Hub file");
+  const url = new URL(fileUrl, API_URL).toString();
+
+  // On page load the first refresh may still be running: wait so this request carries the token.
+  if (refreshing) await refreshing.catch(() => null);
+
+  const send = (token: string | null) =>
+    safeFetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      signal,
+      credentials: "same-origin",
+      cache: "no-store", // private documents are never stored by the browser cache
+    });
+
+  const sentToken = accessToken;
+  let res = await send(sentToken);
+
+  // Token expired: refresh once, then retry (same rule as apiRequest).
+  if (res.status === 401 && sentToken) {
+    const fresh =
+      accessToken && accessToken !== sentToken
+        ? accessToken
+        : ((await refreshSession().catch(() => null))?.accessToken ?? null);
+    if (fresh) res = await send(fresh);
+  }
+
+  if (!res.ok) await readResponse(res); // throws ApiError with the backend's message
+  return res.blob();
+}

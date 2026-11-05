@@ -5,7 +5,9 @@ import { ChevronLeft, ChevronRight, FileText, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
+import { ScoreBadge, StatusPill, VerificationDetail } from "@/components/admin/verification-detail";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useRouter } from "@/i18n/routing";
 import {
   adminKeys,
@@ -15,9 +17,7 @@ import {
   type AdminVerificationRow,
   type QueueFilter,
   type QueueQuery,
-  type ScoreBand,
   type VerificationDoc,
-  type VerificationStatus,
 } from "@/lib/api/admin";
 import { cn } from "@/lib/utils";
 
@@ -54,38 +54,8 @@ function queueHref(q: QueueQuery): string {
   return query ? `/admin?${query}` : "/admin";
 }
 
-const STATUS_STYLE: Record<VerificationStatus, string> = {
-  PENDING: "bg-info-soft text-verified",
-  AUTO_FLAGGED: "bg-error-soft text-error",
-  CORRECTION_REQUESTED: "bg-highlight-soft text-highlight",
-  APPROVED: "bg-success-soft text-success-ink",
-  REJECTED: "bg-subtle text-ink-secondary",
-  REVOKED: "bg-subtle text-ink-secondary",
-};
-
-const BAND_STYLE: Record<ScoreBand, string> = {
-  GREEN: "bg-success-soft text-success-ink",
-  AMBER: "bg-highlight-soft text-highlight",
-  RED: "bg-error-soft text-error",
-};
-
 const inputClass =
   "type-body h-11 w-full rounded-md border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none";
-
-function StatusPill({ status }: { status: VerificationStatus }) {
-  const t = useTranslations("Admin");
-  return <span className={cn("type-caption rounded-full px-2.5 py-0.5 whitespace-nowrap", STATUS_STYLE[status])}>{t(`status.${status}`)}</span>;
-}
-
-function ScoreBadge({ row }: { row: AdminVerificationRow }) {
-  const t = useTranslations("Admin");
-  if (row.precheckScore === null || !row.scoreBand) return <span className="type-caption text-ink-muted">{t("noScore")}</span>;
-  return (
-    <span className={cn("type-body-medium rounded-sm px-2 py-0.5 tabular-nums", BAND_STYLE[row.scoreBand])}>
-      {t("score", { score: row.precheckScore })}
-    </span>
-  );
-}
 
 function DocChips({ docs }: { docs: VerificationDoc[] }) {
   const t = useTranslations("Admin");
@@ -146,8 +116,28 @@ function LevelDots({ row }: { row: AdminVerificationRow }) {
   );
 }
 
+function ReviewButton({ row, onOpen }: { row: AdminVerificationRow; onOpen: () => void }) {
+  const t = useTranslations("AdminReview");
+  const open = row.status === "PENDING" || row.status === "AUTO_FLAGGED";
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={t("reviewLabel", { shop: row.shop.name })}
+      className={cn(
+        "type-body-medium flex h-10 items-center gap-1 rounded-sm px-3 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none",
+        open ? "bg-action text-primary-foreground hover:bg-action-hover" : "border border-brand text-brand hover:bg-subtle",
+      )}
+    >
+      {t("review")}
+      <ChevronRight className="size-4" aria-hidden />
+    </button>
+  );
+}
+
 export function VerificationQueue() {
   const t = useTranslations("Admin.queue");
+  const tReview = useTranslations("AdminReview");
   const format = useFormatter();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -155,6 +145,7 @@ export function VerificationQueue() {
 
   const query = readQuery(new URLSearchParams(searchParams.toString()));
   const [draft, setDraft] = useState({ status: query.status, q: query.q ?? "", from: query.from ?? "", to: query.to ?? "" });
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const queue = useQuery({
     queryKey: adminKeys.queue(query),
@@ -280,6 +271,7 @@ export function VerificationQueue() {
                   <th scope="col" className="px-4 py-3">{t("columns.score")}</th>
                   <th scope="col" className="px-4 py-3">{t("columns.level")}</th>
                   <th scope="col" className="px-4 py-3">{t("columns.status")}</th>
+                  <th scope="col" className="px-4 py-3"><span className="sr-only">{tReview("columnActions")}</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -294,6 +286,7 @@ export function VerificationQueue() {
                     <td className="px-4 py-4"><ScoreBadge row={row} /></td>
                     <td className="px-4 py-4"><LevelDots row={row} /></td>
                     <td className="px-4 py-4"><StatusPill status={row.status} /></td>
+                    <td className="px-4 py-4"><ReviewButton row={row} onOpen={() => setOpenId(row.id)} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -317,6 +310,7 @@ export function VerificationQueue() {
                   <LevelDots row={row} />
                   <StatusPill status={row.status} />
                 </div>
+                <ReviewButton row={row} onOpen={() => setOpenId(row.id)} />
               </li>
             ))}
           </ul>
@@ -346,6 +340,17 @@ export function VerificationQueue() {
           </button>
         </nav>
       )}
+
+      {/* Spec: RowDetailDrawer (right side) */}
+      <Sheet open={openId !== null} onOpenChange={(isOpen) => !isOpen && setOpenId(null)}>
+        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle className="type-h3 text-ink">{tReview("sheetTitle")}</SheetTitle>
+            <SheetDescription className="sr-only">{t("subtitle")}</SheetDescription>
+          </SheetHeader>
+          <div className="px-4">{openId && <VerificationDetail key={openId} id={openId} />}</div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
