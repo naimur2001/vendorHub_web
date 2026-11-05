@@ -1240,5 +1240,15 @@
       "rejected": "Rejected",
       "other": "Change recorded"
     }
+  },
+  "NotFound": {
+    "metaTitle": "Page not found",
+    "code": "404",
+    "title": "This doorway leads nowhere",
+    "text": "The page you're looking for doesn't exist, or it has moved. Let's get you back into the market.",
+    "home": "Go to the home page",
+    "search": "Search products and shops",
+    "markets": "Browse markets",
+    "homeLink": "Vendors Hub home"
   }
 }
