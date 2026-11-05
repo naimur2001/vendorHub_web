@@ -3,7 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, FileText, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
 import { ScoreBadge, StatusPill, VerificationDetail } from "@/components/admin/verification-detail";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
@@ -139,6 +139,8 @@ export function VerificationQueue() {
   const t = useTranslations("Admin.queue");
   const tReview = useTranslations("AdminReview");
   const format = useFormatter();
+  // One shared "now" for "Submitted 2 days ago", refreshed every minute.
+  const now = useNow({ updateInterval: 60_000 });
   const router = useRouter();
   const searchParams = useSearchParams();
   const ids = { status: useId(), q: useId(), from: useId(), to: useId() };
@@ -179,7 +181,7 @@ export function VerificationQueue() {
   const rows = queue.data?.data ?? [];
   const total = queue.data?.meta?.pagination?.total ?? rows.length;
   const totalPages = queue.data?.meta?.pagination?.totalPages ?? 1;
-  const when = (iso: string) => format.relativeTime(new Date(iso));
+  const when = (iso: string) => format.relativeTime(new Date(iso), now);
 
   return (
     <div className="flex flex-col gap-6">
