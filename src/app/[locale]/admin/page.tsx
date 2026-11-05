@@ -5,7 +5,9 @@ import { VerificationQueue } from "@/components/admin/verification-queue";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 
 type Props = { params: Promise<{ locale: string }> };
-
+// The admin frame shows its content only after confirming the visitor is an admin,
+// so this page can't be pre-checked for instant navigation (and doesn't need it).
+export const instant = false;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Admin.queue" });
