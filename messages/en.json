@@ -1060,6 +1060,7 @@
     "navLabel": "Admin sections",
     "nav": {
       "queue": "Verification queue",
+      "markets": "Markets",
       "back": "Back to the marketplace"
     },
     "loading": "Loading…",
@@ -1250,5 +1251,59 @@
     "search": "Search products and shops",
     "markets": "Browse markets",
     "homeLink": "Vendors Hub home"
+  },
+  "AdminMarkets": {
+    "metaTitle": "Markets",
+    "title": "Markets and malls",
+    "subtitle": "The places where shops are. Shop owners pick one of these when they set up their shop.",
+    "add": "Add market",
+    "findLabel": "Find a market",
+    "findPlaceholder": "Name or city",
+    "count": "{count, plural, one {# market} other {# markets}}",
+    "shops": "{count, plural, =0 {No shops yet} one {# shop} other {# shops}}",
+    "noAddress": "No address yet",
+    "hasLocation": "On the map",
+    "viewPage": "View page",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Click again to delete",
+    "cantDelete": "Has {count, plural, one {# shop} other {# shops}}, can't be deleted",
+    "deleted": "Market deleted.",
+    "saved": "Saved.",
+    "cacheNote": "New and changed markets appear on the public site within 10 minutes.",
+    "empty": "No markets yet. Add the first one.",
+    "noMatch": "No market matches your search.",
+    "loading": "Loading markets…",
+    "loadError": "Markets couldn't load. Check your connection and try again.",
+    "retry": "Try again",
+    "form": {
+      "addTitle": "Add a market",
+      "editTitle": "Edit market",
+      "name": "Name",
+      "namePlaceholder": "Jamuna Future Park",
+      "city": "City",
+      "address": "Address (optional)",
+      "addressPlaceholder": "KA-244, Pragati Ave, Dhaka 1229",
+      "location": "Map location (optional)",
+      "locationPlaceholder": "23.8133, 90.4243",
+      "locationHint": "In Google Maps, right-click the place and click the numbers at the top to copy them, then paste here.",
+      "slugNote": "The web address is made from the name once and never changes, so renaming keeps links working.",
+      "save": "Save changes",
+      "create": "Add market",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "loadingLocation": "Loading the saved location…"
+    },
+    "errors": {
+      "name": "Write a name of 2 to 100 characters.",
+      "city": "Write a city of 2 to 60 characters.",
+      "address": "Use 200 characters or fewer.",
+      "location": "Paste two numbers like 23.8133, 90.4243 (latitude, longitude).",
+      "hasShops": "This market still has shops, so it can't be deleted.",
+      "invalid": "Check the fields and try again.",
+      "gone": "This market no longer exists. The list has been refreshed.",
+      "network": "Can't reach Vendors Hub. Check your connection and try again.",
+      "generic": "That didn't work. Try again in a moment."
+    }
   }
 }

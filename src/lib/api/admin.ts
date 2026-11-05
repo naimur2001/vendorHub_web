@@ -2,7 +2,7 @@ import "client-only";
 import { api } from "./client";
 import type { ApiResult } from "./core";
 import type { components } from "./schema";
-
+import { publicGet } from "./public";
 export type VerificationLevel = components["schemas"]["VerificationLevel"];
 export type VerificationStatus = "PENDING" | "AUTO_FLAGGED" | "CORRECTION_REQUESTED" | "APPROVED" | "REJECTED" | "REVOKED";
 export type DocumentType = "TRADE_LICENSE" | "NID" | "SHOP_PHOTO" | "OTHER";
@@ -128,4 +128,54 @@ export function rejectVerification(id: string, reason: string): Promise<AdminVer
 
 export function revokeShop(shopId: string, reason: string): Promise<{ shopId: string; level: VerificationLevel }> {
   return api.post<{ shopId: string; level: VerificationLevel }>(`/admin/shops/${encodeURIComponent(shopId)}/revoke`, { reason });
+}
+
+
+
+
+// ---------- Markets (G4a) ----------
+
+// GET /markets (public list, always fresh here) and GET /markets/:slug for the saved location.
+export type AdminMarket = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  address: string | null;
+  shopCount: number;
+};
+
+export type MarketInput = {
+  name: string;
+  city: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export const marketKeys = {
+  all: ["admin", "markets"] as const,
+  location: (slug: string) => ["admin", "market-location", slug] as const,
+};
+
+export async function listAllMarkets(): Promise<AdminMarket[]> {
+  return (await publicGet<AdminMarket[]>("/markets")).data;
+}
+
+export async function getMarketLocation(slug: string): Promise<{ latitude: number | null; longitude: number | null }> {
+  const { data } = await publicGet<{ latitude: number | null; longitude: number | null }>(`/markets/${encodeURIComponent(slug)}`);
+  return { latitude: data.latitude, longitude: data.longitude };
+}
+
+// Admin only (the backend checks and writes the audit log).
+export function createMarket(input: MarketInput): Promise<AdminMarket> {
+  return api.post<AdminMarket>("/admin/markets", input);
+}
+
+export function updateMarket(id: string, input: MarketInput): Promise<AdminMarket> {
+  return api.patch<AdminMarket>(`/admin/markets/${encodeURIComponent(id)}`, input);
+}
+
+export function deleteMarket(id: string): Promise<{ message: string }> {
+  return api.delete<{ message: string }>(`/admin/markets/${encodeURIComponent(id)}`);
 }

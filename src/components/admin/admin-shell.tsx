@@ -1,13 +1,17 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LoaderCircle, ShieldCheck, Store, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV: { href: string; key: "queue"; icon: LucideIcon }[] = [{ href: "/admin", key: "queue", icon: ShieldCheck }];
+const NAV: { href: string; key: "queue" | "markets"; icon: LucideIcon }[] = [
+  { href: "/admin", key: "queue", icon: ShieldCheck },
+  { href: "/admin/markets", key: "markets", icon: Store },
+];
+
 
 function NavLinks({ pathname }: { pathname: string | null }) {
   const t = useTranslations("Admin");
