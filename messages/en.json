@@ -1323,6 +1323,9 @@
     "uploaded": "Photo saved.",
     "removed": "Photo removed.",
     "afterCreate": "Market added. Now add its photo below.",
+    "optional": "Photo (optional)",
+    "addedWithPhoto": "Market added with its photo.",
+    "photoFailed": "Market added, but the photo couldn't be saved: {reason} Try again below.",
     "errors": {
       "type": "Only JPG, PNG or WebP photos are allowed.",
       "size": "The photo is larger than 5 MB. Choose a smaller one.",

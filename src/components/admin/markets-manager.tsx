@@ -25,7 +25,7 @@ import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
 
-type Panel = { kind: "add" } | { kind: "edit"; market: AdminMarket; justCreated?: boolean } | null;
+type Panel = { kind: "add" } | { kind: "edit"; market: AdminMarket; justCreated?: string } | null;
 
 const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
@@ -80,6 +80,85 @@ function imageSize(src: string): Promise<{ width: number; height: number }> {
     img.onerror = () => reject(new Error("not an image"));
     img.src = src;
   });
+}
+
+
+// Quick checks in the browser (the server checks again, properly). A preview, or an error key.
+async function preparePhoto(file: File): Promise<{ preview: string } | { error: string }> {
+  if (!PHOTO_TYPES.includes(file.type)) return { error: "errors.type" };
+  if (file.size > PHOTO_MAX_BYTES) return { error: "errors.size" };
+  try {
+    const preview = await readAsDataUrl(file);
+    const { width, height } = await imageSize(preview);
+    if (width < PHOTO_MIN.width || height < PHOTO_MIN.height) return { error: "errors.small" };
+    return { preview };
+  } catch {
+    return { error: "errors.read" };
+  }
+}
+
+type Picked = { file: File; preview: string };
+type PhotoResult = { ok: true } | { ok: false; errorKey: string };
+
+/** Photo picker for a market that doesn't exist yet (uploaded right after it's created). */
+function NewPhotoPicker({ value, onChange }: { value: Picked | null; onChange: (p: Picked | null) => void }) {
+  const t = useTranslations("AdminMarketPhoto");
+  const inputId = useId();
+  const [error, setError] = useState<string | null>(null);
+
+  async function pick(file: File | undefined) {
+    setError(null);
+    if (!file) return;
+    const result = await preparePhoto(file);
+    if ("error" in result) setError(t(result.error));
+    else onChange({ file, preview: result.preview });
+  }
+
+  return (
+    <section className="flex flex-col gap-2">
+      <span className="type-body-medium text-ink">{t("optional")}</span>
+      {value ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- local preview from memory, not uploaded yet */}
+          <img src={value.preview} alt={t("previewAlt")} className="aspect-video w-full rounded-md border border-line object-cover" />
+          <button type="button" onClick={() => onChange(null)} className="type-body-medium flex h-10 items-center self-start rounded-sm border border-ink px-3 text-ink hover:bg-subtle">
+            {t("chooseAnother")}
+          </button>
+        </>
+      ) : (
+        <label
+          htmlFor={inputId}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            void pick(e.dataTransfer.files?.[0]);
+          }}
+          className="flex cursor-pointer flex-col items-center gap-1 rounded-md border-2 border-dashed border-line-strong bg-surface p-5 text-center hover:border-brand has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand"
+        >
+          <ImagePlus className="size-7 text-highlight" aria-hidden />
+          <span className="type-body-medium text-brand">{t("choose")}</span>
+          <span className="type-caption text-ink-muted">{t("drop")}</span>
+          <input
+            id={inputId}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            onChange={(e) => {
+              void pick(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+        </label>
+      )}
+      <p className="type-caption text-ink-muted">{t("hint")}</p>
+      {error && (
+        <p role="alert" className="type-body flex items-start gap-2 text-error">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {error}
+        </p>
+      )}
+    </section>
+  );
 }
 
 /** The market photo: current one, a drop zone, a preview before upload, replace and remove. */
@@ -230,8 +309,7 @@ function PhotoField({ marketId, marketName }: { marketId: string; marketName: st
   );
 }
 
-type FormProps = { market?: AdminMarket; onSaved: (saved: AdminMarket) => void; onCancel: () => void };
-
+type FormProps = { market?: AdminMarket; onSaved: (saved: AdminMarket, photo?: PhotoResult) => void; onCancel: () => void };
 /** Add or edit one market's details. */
 function MarketForm({ market, onSaved, onCancel }: FormProps) {
   const t = useTranslations("AdminMarkets");
@@ -247,14 +325,26 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
   const [city, setCity] = useState(market?.city ?? "Dhaka");
   const [address, setAddress] = useState(market?.address ?? "");
   const [place, setPlace] = useState<string | null>(null); // null = not edited: show the saved location
+  const [photo, setPhoto] = useState<Picked | null>(null);
   const [errors, setErrors] = useState<Partial<Record<"name" | "city" | "address" | "location" | "form", string>>>({});
 
   const saved = location.data && location.data.latitude !== null && location.data.longitude !== null ? `${location.data.latitude}, ${location.data.longitude}` : "";
   const placeText = place ?? saved;
 
   const save = useMutation({
-    mutationFn: (input: MarketInput) => (market ? updateMarket(market.id, input) : createMarket(input)),
-    onSuccess: onSaved,
+    // New market: create it, then upload the photo. A failed photo never undoes the market.
+    mutationFn: async (input: MarketInput): Promise<{ saved: AdminMarket; photo?: PhotoResult }> => {
+      if (market) return { saved: await updateMarket(market.id, input) };
+      const saved = await createMarket(input);
+      if (!photo) return { saved };
+      try {
+        await uploadMarketImage(saved.id, photo.file);
+        return { saved, photo: { ok: true } };
+      } catch (err) {
+        return { saved, photo: { ok: false, errorKey: photoErrorKey(err) } };
+      }
+    },
+    onSuccess: (r) => onSaved(r.saved, r.photo),
     onError: (err) => setErrors({ form: t(errorKey(err)) }),
   });
 
@@ -295,6 +385,7 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
         onChange={(e) => setPlace(e.target.value)}
         error={errors.location}
       />
+      {!market && <NewPhotoPicker value={photo} onChange={setPhoto} />}
       {!market && <p className="type-caption text-ink-muted">{t("form.slugNote")}</p>}
 
       {errors.form && (
@@ -319,8 +410,11 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
         </button>
       </div>
     </form>
+    
   );
+       
 }
+
 
 export function MarketsManager() {
   const t = useTranslations("AdminMarkets");
@@ -354,12 +448,13 @@ export function MarketsManager() {
     return all.filter((m) => m.name.toLowerCase().includes(term) || (m.city ?? "").toLowerCase().includes(term));
   }, [all, find]);
 
-  function afterSave(saved: AdminMarket, wasNew: boolean) {
+  function afterSave(saved: AdminMarket, wasNew: boolean, photo?: PhotoResult) {
     void queryClient.invalidateQueries({ queryKey: ["admin", "markets"] });
     void queryClient.invalidateQueries({ queryKey: ["admin", "market-location"] });
     if (wasNew) {
-      // A new market: continue straight to its photo (the photo needs the market to exist first).
-      setPanel({ kind: "edit", market: { ...saved, shopCount: 0, image: null }, justCreated: true });
+      // Continue editing the new market: shows its photo, or lets you retry a failed one.
+      const note = !photo ? "noPhoto" : photo.ok ? "withPhoto" : photo.errorKey;
+      setPanel({ kind: "edit", market: { ...saved, shopCount: 0, image: null }, justCreated: note });
       setMessage(null);
       return;
     }
@@ -508,13 +603,25 @@ export function MarketsManager() {
             <SheetDescription className="type-caption text-ink-muted">{t("subtitle")}</SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-4 px-4">
-            {panel?.kind === "add" && <MarketForm onSaved={(saved) => afterSave(saved, true)} onCancel={() => setPanel(null)} />}
+            {panel?.kind === "add" && <MarketForm onSaved={(saved, photo) => afterSave(saved, true, photo)} onCancel={() => setPanel(null)} />}
             {panel?.kind === "edit" && (
               <>
-                {panel.justCreated && (
+                {panel.justCreated === "withPhoto" && (
+                  <p role="status" className="type-body flex items-start gap-2 text-success-ink">
+                    <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    {tPhoto("addedWithPhoto")}
+                  </p>
+                )}
+                {panel.justCreated === "noPhoto" && (
                   <p role="status" className="type-body flex items-start gap-2 text-success-ink">
                     <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
                     {tPhoto("afterCreate")}
+                  </p>
+                )}
+                {panel.justCreated && panel.justCreated.startsWith("errors.") && (
+                  <p role="alert" className="type-body flex items-start gap-2 text-error">
+                    <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    {tPhoto("photoFailed", { reason: tPhoto(panel.justCreated) })}
                   </p>
                 )}
                 <PhotoField marketId={panel.market.id} marketName={panel.market.name} />
