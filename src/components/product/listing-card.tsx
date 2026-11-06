@@ -61,7 +61,7 @@ export function SelectedListingCard({
   productSlug: string;
 }) {
   const t = useTranslations("Product");
-  const tCart = useTranslations("Cart");
+  // const tCart = useTranslations("Cart");
   const format = useFormatter();
   const { shop } = listing;
   const outOfStock = listing.availability === "OUT_OF_STOCK";
