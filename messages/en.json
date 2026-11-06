@@ -238,6 +238,7 @@
     },
     "ownerArea": "Shop dashboard",
     "storefront": "View my storefront",
+    "adminPortal": "Admin portal",
     "ownerOffers": "Offers to answer",
     "orders": "My orders",
     "bargains": "My bargains",
@@ -1062,6 +1063,7 @@
       "queue": "Verification queue",
       "markets": "Markets",
       "products": "Products",
+      "audit": "Audit log",
       "back": "Back to the marketplace"
     },
     "loading": "Loading…",
@@ -1468,5 +1470,26 @@
     "noResults": "No other active product found.",
     "cancel": "Cancel",
     "error": "That didn't work. Try again in a moment."
+  },
+  "AdminAudit": {
+    "metaTitle": "Audit log",
+    "title": "Audit log",
+    "subtitle": "Every important change, who made it and when. Entries can't be edited or deleted.",
+    "searchLabel": "Filter by action",
+    "searchPlaceholder": "e.g. verification, market, product",
+    "from": "From",
+    "to": "Until",
+    "apply": "Apply",
+    "clear": "Clear",
+    "count": "{count, plural, one {# entry} other {# entries}}",
+    "system": "System",
+    "details": "Details",
+    "empty": "No entries match.",
+    "loading": "Loading the audit log…",
+    "loadError": "The audit log couldn't load. Try again.",
+    "retry": "Try again",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}"
   }
 }

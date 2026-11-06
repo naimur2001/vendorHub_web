@@ -1,16 +1,17 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck, Store, Package, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LoaderCircle, ShieldCheck, Store, Package,ScrollText, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV: { href: string; key: "queue" | "markets" | "products"; icon: LucideIcon }[] = [
+const NAV: { href: string; key: "queue" | "markets" | "products" | "audit"; icon: LucideIcon }[] = [
   { href: "/admin", key: "queue", icon: ShieldCheck },
   { href: "/admin/markets", key: "markets", icon: Store },
   { href: "/admin/products", key: "products", icon: Package },
+  { href: "/admin/audit", key: "audit", icon: ScrollText },
 ];
 
 

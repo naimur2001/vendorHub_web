@@ -273,3 +273,25 @@ export function reviewProduct(id: string): Promise<unknown> {
 export function mergeProduct(id: string, intoProductId: string): Promise<unknown> {
   return api.post<unknown>(`/admin/products/${encodeURIComponent(id)}/merge`, { intoProductId });
 }
+
+
+
+// ---------- Audit log (G3) ----------
+
+export type AuditEntry = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  meta: Record<string, unknown> | null;
+  createdAt: string;
+  actor: { name: string; email: string } | null;
+};
+
+export type AuditQuery = { action?: string; from?: string; to?: string; page: number; limit: number };
+
+export function listAuditLogs(q: AuditQuery): Promise<ApiResult<AuditEntry[]>> {
+  return api.list<AuditEntry>("/admin/audit-logs", {
+    query: { ...q, to: q.to ? `${q.to}T23:59:59.999` : undefined },
+  });
+}

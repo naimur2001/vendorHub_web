@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Eye, Handshake, Inbox, LoaderCircle, LogOut, MapPin, Package, Store, type LucideIcon } from "lucide-react";
+import { ChevronRight, Eye, Handshake, Inbox, LoaderCircle, LogOut, MapPin,ShieldCheck, Package, Store, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSession } from "@/components/app-providers";
@@ -29,7 +29,7 @@ export function initials(name: string): string {
   );
 }
 
-type LinkKey = "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "addresses";
+type LinkKey = "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "addresses" | "adminPortal";
 type AccountLink = { href: string; key: LinkKey; icon: LucideIcon };
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -45,6 +45,7 @@ function useStorefrontSlug(user: SessionUser | null | undefined): string | undef
 // The same entries in the desktop menu and on the /account page.
 function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
   const links: AccountLink[] = [];
+    if (user.role === "ADMIN") links.push({ href: "/admin", key: "adminPortal", icon: ShieldCheck });
   if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
   if (storefrontSlug) links.push({ href: `/shops/${storefrontSlug}`, key: "storefront", icon: Eye });
   if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") {
