@@ -1447,5 +1447,26 @@
       "network": "Can't reach Vendors Hub. Check your connection.",
       "generic": "That didn't work. Try again in a moment."
     }
+  },
+  "AdminProductReview": {
+    "filter": "From shops · not reviewed",
+    "fromShop": "From {shop}",
+    "notReviewed": "Not reviewed",
+    "markReviewed": "Mark reviewed",
+    "reviewed": "Marked as reviewed.",
+    "merge": "Merge into…",
+    "mergeTitle": "Merge a duplicate",
+    "mergeText": "Moves all shop listings of “{product}” to the product you choose, then switches “{product}” off.",
+    "mergeSearch": "Find the product to keep",
+    "mergeSearchPlaceholder": "Title or brand",
+    "search": "Search",
+    "choose": "Choose",
+    "chosen": "Keep: {product}",
+    "confirm": "Merge now",
+    "merging": "Merging…",
+    "merged": "Merged. The listings moved to the kept product.",
+    "noResults": "No other active product found.",
+    "cancel": "Cancel",
+    "error": "That didn't work. Try again in a moment."
   }
 }

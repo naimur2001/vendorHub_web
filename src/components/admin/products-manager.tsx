@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, CircleAlert, CircleCheck, LoaderCircle, Pencil, Plus, Search, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, GitMerge, LoaderCircle, Pencil, Plus, Search, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
@@ -12,7 +12,9 @@ import {
   listAdminProducts,
   listBrands,
   listCategories,
+  mergeProduct,
   productKeys,
+  reviewProduct,
   updateProduct,
   type AdminProduct,
   type CatalogCategory,
@@ -25,7 +27,7 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
-type Panel = { kind: "add" } | { kind: "edit"; product: AdminProduct } | null;
+type Panel = { kind: "add" } | { kind: "edit"; product: AdminProduct } | { kind: "merge"; product: AdminProduct } | null;
 type SpecRow = { key: string; value: string };
 
 const inputClass =
@@ -48,6 +50,8 @@ function errorKey(err: unknown): string {
   }
   return "errors.generic";
 }
+
+// ---------- Add / edit ----------
 
 function ProductForm({
   product,
@@ -175,8 +179,79 @@ function ProductForm({
   );
 }
 
+// ---------- Merge a duplicate ----------
+
+/** Moves all listings of a duplicate to the product to keep, then switches the duplicate off. */
+function MergePanel({ product, onDone, onCancel }: { product: AdminProduct; onDone: () => void; onCancel: () => void }) {
+  const t = useTranslations("AdminProductReview");
+  const searchId = useId();
+  const [text, setText] = useState("");
+  const [term, setTerm] = useState("");
+  const [target, setTarget] = useState<AdminProduct | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const results = useQuery({
+    queryKey: ["admin", "merge-search", term],
+    queryFn: () => listAdminProducts({ q: term, isActive: true, page: 1, limit: 8 }),
+    enabled: term.length >= 2,
+  });
+  const options = (results.data?.data ?? []).filter((p) => p.id !== product.id);
+
+  const merge = useMutation({
+    mutationFn: () => mergeProduct(product.id, target?.id ?? ""),
+    onSuccess: onDone,
+    onError: () => setError(t("error")),
+  });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="type-body text-ink-secondary">{t("mergeText", { product: product.title })}</p>
+      <form
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setTerm(text.replace(/\p{Cc}/gu, "").trim().slice(0, 100));
+        }}
+        className="flex flex-col gap-1.5"
+      >
+        <label htmlFor={searchId} className="type-body-medium text-ink">{t("mergeSearch")}</label>
+        <div className="flex gap-2">
+          <input id={searchId} type="search" maxLength={100} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("mergeSearchPlaceholder")} className={inputClass} />
+          <button type="submit" className="type-body-medium h-11 shrink-0 rounded-sm border border-brand px-3 text-brand hover:bg-subtle">{t("search")}</button>
+        </div>
+      </form>
+
+      {term.length >= 2 && results.data && options.length === 0 && <p className="type-body text-ink-secondary">{t("noResults")}</p>}
+      {options.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {options.map((p) => (
+            <li key={p.id} className={cn("flex items-center justify-between gap-2 rounded-md border p-2", target?.id === p.id ? "border-brand bg-highlight-soft/40" : "border-line")}>
+              <span className="type-body min-w-0 truncate text-ink">{p.title}</span>
+              <button type="button" onClick={() => setTarget(p)} className="type-body-medium shrink-0 rounded-sm border border-brand px-2 py-1 text-brand hover:bg-subtle">{t("choose")}</button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {target && <p className="type-body-medium text-ink">{t("chosen", { product: target.title })}</p>}
+      {error && <p role="alert" className="type-body text-error">{error}</p>}
+
+      <div className="grid grid-cols-2 gap-2">
+        <button type="button" onClick={onCancel} disabled={merge.isPending} className="type-body-medium flex h-12 items-center justify-center rounded-sm border border-ink px-4 text-ink hover:bg-subtle">{t("cancel")}</button>
+        <button type="button" onClick={() => merge.mutate()} disabled={!target || merge.isPending} className="type-body-medium flex h-12 items-center justify-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover disabled:opacity-50">
+          {merge.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
+          {merge.isPending ? t("merging") : t("confirm")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------- The page ----------
+
 export function ProductsManager() {
   const t = useTranslations("AdminProducts");
+  const tR = useTranslations("AdminProductReview");
   const locale = useLocale();
   const queryClient = useQueryClient();
   const searchId = useId();
@@ -192,24 +267,30 @@ export function ProductsManager() {
   const categories = useMemo(() => flatten(categoriesQ.data ?? []), [categoriesQ.data]);
   const brands = brandsQ.data ?? [];
 
+  const refresh = (text: string) => {
+    setNotice(text);
+    void queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+  };
+
   const toggle = useMutation({
     mutationFn: (p: AdminProduct) => updateProduct(p.id, { isActive: !p.isActive }),
-    onSuccess: () => {
-      setNotice(t("saved"));
-      void queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
-    },
+    onSuccess: () => refresh(t("saved")),
+  });
+  const review = useMutation({
+    mutationFn: (id: string) => reviewProduct(id),
+    onSuccess: () => refresh(tR("reviewed")),
   });
 
   const filter: Filter = query.isActive === undefined ? "ALL" : query.isActive ? "ACTIVE" : "INACTIVE";
   const setFilter = (f: Filter) => setQuery((q) => ({ ...q, page: 1, isActive: f === "ALL" ? undefined : f === "ACTIVE" }));
+  const reviewOnly = query.source === "SHOP" && query.reviewed === false;
   const rows = products.data?.data ?? [];
   const total = products.data?.meta?.pagination?.total ?? rows.length;
   const totalPages = products.data?.meta?.pagination?.totalPages ?? 1;
 
-  function afterSave() {
+  function closeAnd(text: string) {
     setPanel(null);
-    setNotice(t("saved"));
-    void queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+    refresh(text);
   }
 
   return (
@@ -239,18 +320,39 @@ export function ProductsManager() {
           <option value="">{t("allCategories")}</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
-        <button type="button" onClick={() => { setNotice(null); setPanel({ kind: "add" }); }} className="type-body-medium flex h-11 shrink-0 items-center justify-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover">
+        <button
+          type="button"
+          onClick={() => {
+            setNotice(null);
+            setPanel({ kind: "add" });
+          }}
+          className="type-body-medium flex h-11 shrink-0 items-center justify-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover"
+        >
           <Plus className="size-5" aria-hidden />
           {t("add")}
         </button>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(["ACTIVE", "INACTIVE", "ALL"] as Filter[]).map((f) => (
-          <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)} className={cn("type-body-medium flex h-10 items-center rounded-full border px-4", filter === f ? "border-brand bg-brand text-primary-foreground" : "border-line-strong bg-card text-ink hover:border-brand")}>
+          <button
+            key={f}
+            type="button"
+            aria-pressed={filter === f}
+            onClick={() => setFilter(f)}
+            className={cn("type-body-medium flex h-10 items-center rounded-full border px-4", filter === f ? "border-brand bg-brand text-primary-foreground" : "border-line-strong bg-card text-ink hover:border-brand")}
+          >
             {t(`filters.${f}`)}
           </button>
         ))}
+        <button
+          type="button"
+          aria-pressed={reviewOnly}
+          onClick={() => setQuery((q) => ({ ...q, page: 1, source: reviewOnly ? undefined : "SHOP", reviewed: reviewOnly ? undefined : false }))}
+          className={cn("type-body-medium flex h-10 items-center rounded-full border px-4", reviewOnly ? "border-highlight bg-highlight text-primary-foreground" : "border-highlight text-highlight hover:bg-highlight-soft")}
+        >
+          {tR("filter")}
+        </button>
       </div>
 
       {notice && (
@@ -274,7 +376,7 @@ export function ProductsManager() {
           <p className="type-body text-ink-secondary">{t("count", { count: total })}</p>
           <ul className={cn("flex flex-col gap-3 transition-opacity", products.isPlaceholderData && "opacity-60")}>
             {rows.map((p) => (
-              <li key={p.id} className={cn("flex flex-col gap-3 rounded-md border border-line bg-card p-4 shadow-card sm:flex-row sm:items-center", !p.isActive && "opacity-70")}>
+              <li key={p.id} className={cn("flex flex-col gap-3 rounded-md border border-line bg-card p-4 shadow-card md:flex-row md:items-center", !p.isActive && "opacity-70")}>
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <h2 className="type-body-medium text-ink">{p.title}</h2>
                   <p className="type-caption text-ink-muted">{[p.brand?.name ?? t("noBrand"), p.category.name].join(" · ")}</p>
@@ -283,12 +385,45 @@ export function ProductsManager() {
                     {t("shopsSelling", { count: p.activeListings })}
                     {!p.isActive && ` · ${t("off")}`}
                   </p>
+                  {p.source === "SHOP" && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.createdBy && <span className="type-caption rounded-full bg-info-soft px-2 py-0.5 text-verified">{tR("fromShop", { shop: p.createdBy.name })}</span>}
+                      {!p.reviewedAt && <span className="type-caption rounded-full bg-highlight-soft px-2 py-0.5 text-highlight">{tR("notReviewed")}</span>}
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => { setNotice(null); setPanel({ kind: "edit", product: p }); }} className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm border border-brand px-3 text-brand hover:bg-subtle">
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotice(null);
+                      setPanel({ kind: "edit", product: p });
+                    }}
+                    className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm border border-brand px-3 text-brand hover:bg-subtle"
+                  >
                     <Pencil className="size-4" aria-hidden />
                     {t("edit")}
                   </button>
+                  {p.source === "SHOP" && !p.reviewedAt && (
+                    <button type="button" onClick={() => review.mutate(p.id)} disabled={review.isPending} className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm px-3 text-success-ink hover:bg-success-soft disabled:opacity-60">
+                      <BadgeCheck className="size-4" aria-hidden />
+                      {tR("markReviewed")}
+                    </button>
+                  )}
+                  {p.isActive && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNotice(null);
+                        setPanel({ kind: "merge", product: p });
+                      }}
+                      className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm px-3 text-ink-secondary hover:bg-subtle"
+                    >
+                      <GitMerge className="size-4" aria-hidden />
+                      {tR("merge")}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => toggle.mutate(p)}
@@ -322,12 +457,17 @@ export function ProductsManager() {
       <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}>
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
           <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("form.editTitle") : t("form.addTitle")}</SheetTitle>
+            <SheetTitle className="type-h3 text-ink">
+              {panel?.kind === "edit" ? t("form.editTitle") : panel?.kind === "merge" ? tR("mergeTitle") : t("form.addTitle")}
+            </SheetTitle>
             <SheetDescription className="type-caption text-ink-muted">{t("subtitle")}</SheetDescription>
           </SheetHeader>
           <div className="px-4">
-            {panel?.kind === "add" && <ProductForm categories={categories} brands={brands} onSaved={afterSave} onCancel={() => setPanel(null)} />}
-            {panel?.kind === "edit" && <ProductForm key={panel.product.id} product={panel.product} categories={categories} brands={brands} onSaved={afterSave} onCancel={() => setPanel(null)} />}
+            {panel?.kind === "add" && <ProductForm categories={categories} brands={brands} onSaved={() => closeAnd(t("saved"))} onCancel={() => setPanel(null)} />}
+            {panel?.kind === "edit" && (
+              <ProductForm key={panel.product.id} product={panel.product} categories={categories} brands={brands} onSaved={() => closeAnd(t("saved"))} onCancel={() => setPanel(null)} />
+            )}
+            {panel?.kind === "merge" && <MergePanel product={panel.product} onCancel={() => setPanel(null)} onDone={() => closeAnd(tR("merged"))} />}
           </div>
         </SheetContent>
       </Sheet>

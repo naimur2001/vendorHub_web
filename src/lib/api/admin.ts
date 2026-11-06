@@ -215,6 +215,9 @@ export type AdminProduct = {
   brand: { id: string; name: string } | null;
   category: { id: string; name: string; slug: string };
   activeListings: number;
+  source: "ADMIN" | "SHOP";
+  createdBy: { id: string; name: string; slug: string } | null;
+  reviewedAt: string | null;
 };
 
 export type ProductInput = {
@@ -226,7 +229,15 @@ export type ProductInput = {
   msrp: number | null;
 };
 
-export type ProductQuery = { q?: string; categoryId?: string; isActive?: boolean; page: number; limit: number };
+export type ProductQuery = {
+  q?: string;
+  categoryId?: string;
+  isActive?: boolean;
+  source?: "ADMIN" | "SHOP";
+  reviewed?: boolean;
+  page: number;
+  limit: number;
+};
 
 export const productKeys = {
   list: (q: ProductQuery) => ["admin", "products", q] as const,
@@ -252,4 +263,13 @@ export function createProduct(input: ProductInput): Promise<AdminProduct> {
 
 export function updateProduct(id: string, patch: Partial<ProductInput> & { isActive?: boolean }): Promise<AdminProduct> {
   return api.patch<AdminProduct>(`/admin/products/${encodeURIComponent(id)}`, patch);
+}
+
+
+export function reviewProduct(id: string): Promise<unknown> {
+  return api.post<unknown>(`/admin/products/${encodeURIComponent(id)}/review`);
+}
+
+export function mergeProduct(id: string, intoProductId: string): Promise<unknown> {
+  return api.post<unknown>(`/admin/products/${encodeURIComponent(id)}/merge`, { intoProductId });
 }
