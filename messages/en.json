@@ -1063,6 +1063,7 @@
       "queue": "Verification queue",
       "markets": "Markets",
       "products": "Products",
+      "catalog": "Brands & categories",
       "audit": "Audit log",
       "back": "Back to the marketplace"
     },
@@ -1491,5 +1492,37 @@
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {page} of {total}"
+  },
+  "AdminTaxonomy": {
+    "metaTitle": "Brands and categories",
+    "title": "Brands and categories",
+    "subtitle": "The lists used when adding products. Renaming keeps all web addresses the same.",
+    "categories": "Categories",
+    "brands": "Brands",
+    "name": "Name",
+    "under": "Place",
+    "topLevel": "Main category",
+    "underParent": "Under {parent}",
+    "add": "Add",
+    "rename": "Rename",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirmDelete": "Click again to delete",
+    "saved": "Saved.",
+    "deleted": "Deleted.",
+    "cacheNote": "The public site shows changes within 10 minutes.",
+    "noCategories": "No categories yet.",
+    "noBrands": "No brands yet.",
+    "loading": "Loading…",
+    "loadError": "The lists couldn't load. Try again.",
+    "retry": "Try again",
+    "errors": {
+      "name": "Write a name of 2 to 60 characters.",
+      "duplicate": "This name already exists.",
+      "inUse": "Still used by products or subcategories, so it can't be deleted.",
+      "network": "Can't reach Vendors Hub. Check your connection.",
+      "generic": "That didn't work. Try again in a moment."
+    }
   }
 }

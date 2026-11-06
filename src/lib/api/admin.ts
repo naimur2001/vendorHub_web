@@ -295,3 +295,26 @@ export function listAuditLogs(q: AuditQuery): Promise<ApiResult<AuditEntry[]>> {
     query: { ...q, to: q.to ? `${q.to}T23:59:59.999` : undefined },
   });
 }
+
+
+
+// ---------- Brands and categories ----------
+
+export function createBrand(name: string): Promise<unknown> {
+  return api.post<unknown>("/admin/brands", { name });
+}
+export function renameBrand(id: string, name: string): Promise<unknown> {
+  return api.patch<unknown>(`/admin/brands/${encodeURIComponent(id)}`, { name });
+}
+export function deleteBrand(id: string): Promise<unknown> {
+  return api.delete<unknown>(`/admin/brands/${encodeURIComponent(id)}`);
+}
+export function createCategory(name: string, parentId?: string): Promise<unknown> {
+  return api.post<unknown>("/admin/categories", { name, ...(parentId && { parentId }) });
+}
+export function renameCategory(id: string, name: string): Promise<unknown> {
+  return api.patch<unknown>(`/admin/categories/${encodeURIComponent(id)}`, { name });
+}
+export function deleteCategory(id: string): Promise<unknown> {
+  return api.delete<unknown>(`/admin/categories/${encodeURIComponent(id)}`);
+}
