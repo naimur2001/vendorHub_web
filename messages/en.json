@@ -1308,7 +1308,7 @@
   },
   "AdminMarketPhoto": {
     "title": "Photo",
-    "hint": "A wide photo of the entrance or the building. JPG, PNG or WebP, at least 800 × 450 pixels, up to 5 MB.",
+    "hint": "A wide photo of the entrance or the building. JPG, PNG or WebP, at least 480 × 270 pixels, up to 5 MB.",
     "noPhoto": "No photo yet",
     "cardNoPhoto": "No photo",
     "choose": "Choose a photo",
@@ -1329,7 +1329,7 @@
     "errors": {
       "type": "Only JPG, PNG or WebP photos are allowed.",
       "size": "The photo is larger than 5 MB. Choose a smaller one.",
-      "small": "The photo is too small. It needs at least 800 × 450 pixels.",
+      "small": "The photo is too small. It needs at least 480 × 270 pixels.",
       "read": "This file couldn't be read as a photo.",
       "rejected": "The server didn't accept this file as a photo.",
       "rateLimit": "Too many uploads. Wait a few minutes, then try again.",

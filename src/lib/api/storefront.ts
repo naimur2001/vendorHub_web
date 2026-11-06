@@ -2,7 +2,7 @@
 import { API_URL, type ApiResult } from "./core";
 import { publicGet } from "./public";
 import type { components } from "./schema";
-
+import type { MarketImage } from "./shops";
 type Availability = components["schemas"]["Availability"];
 type VerificationLevel = components["schemas"]["VerificationLevel"];
 type ProductSort = "newest" | "price_asc" | "price_desc";
@@ -85,6 +85,7 @@ export type MarketDetail = {
   slug: string;
   city: string | null;
   address: string | null;
+  image: MarketImage | null;
   latitude: number | null;
   longitude: number | null;
   shops: MarketShop[];

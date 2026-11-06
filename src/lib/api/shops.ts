@@ -33,6 +33,8 @@ export type MyShop = {
   createdAt: string;
 };
 
+
+export type MarketImage = { url: string; thumbUrl: string; width: number; height: number };
 // GET /markets
 export type Market = {
   id: string;
@@ -41,6 +43,7 @@ export type Market = {
   city: string | null;
   address: string | null;
   shopCount: number;
+  image: MarketImage | null;
 };
 
 // POST /shops (only send optional fields that have a value)

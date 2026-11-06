@@ -10,6 +10,8 @@ import { ApiError } from "@/lib/api/core";
 import { publicGet } from "@/lib/api/public";
 import type { MarketDetail, MarketShop } from "@/lib/api/storefront";
 import { externalLinkProps } from "@/lib/security";
+import Image from "next/image";
+import { safeMediaUrl } from "@/lib/api/storefront";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -84,7 +86,7 @@ async function MarketView({ params }: Props) {
   const hasMap = typeof market.latitude === "number" && typeof market.longitude === "number";
   const mapHref = hasMap ? `https://www.google.com/maps/search/?api=1&query=${market.latitude},${market.longitude}` : null;
   const floors = groupByFloor(market.shops);
-
+  const banner = safeMediaUrl(market.image?.url ?? null);
   return (
     <div className="flex flex-col gap-8">
       <nav aria-label={t("breadcrumb")}>
@@ -111,6 +113,14 @@ async function MarketView({ params }: Props) {
         </ol>
       </nav>
 
+
+      {banner && (
+        <div className="relative -mx-4 aspect-[16/7] overflow-hidden bg-brand md:mx-0 md:rounded-lg">
+          <Image src={banner} alt={market.name} fill unoptimized priority sizes="(min-width: 1280px) 1200px, 100vw" className="object-cover" />
+        </div>
+      )}
+
+      
       <header className="flex flex-col gap-3 border-b border-gold pb-5">
         <h1 className="type-display text-ink">{market.name}</h1>
         {(market.address || market.city) && (

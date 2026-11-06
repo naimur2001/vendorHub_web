@@ -29,7 +29,7 @@ type Panel = { kind: "add" } | { kind: "edit"; market: AdminMarket; justCreated?
 
 const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
-const PHOTO_MIN = { width: 800, height: 450 };
+const PHOTO_MIN = { width: 480, height: 270 };
 
 /** "23.8133, 90.4243" -> numbers; "" -> null (no location); anything else -> "invalid". */
 function parseLocation(text: string): { latitude: number; longitude: number } | null | "invalid" {

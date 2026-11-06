@@ -19,27 +19,40 @@ function initials(name: string): string {
 }
 
 /** One market on /markets. */
+/** One market on /markets: photo on top (or the small arcade). */
 export function MarketCard({ market }: { market: Market }) {
   const t = useTranslations("Market");
+  const photo = safeMediaUrl(market.image?.thumbUrl ?? null);
   return (
     <Link
       href={`/markets/${market.slug}`}
-      className="group flex flex-col gap-3 rounded-md border border-line bg-card p-5 shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+      className="group flex flex-col overflow-hidden rounded-md border border-line bg-card shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
     >
-      <Arcade className="h-14 w-auto self-start" />
-      <div className="flex flex-col gap-1">
-        <h2 className="type-h3 text-ink group-hover:text-brand">{market.name}</h2>
-        {(market.address || market.city) && (
-          <p className="type-body text-ink-secondary">{[market.address, market.city].filter(Boolean).join(", ")}</p>
-        )}
+      {photo ? (
+        <span className="relative aspect-[16/9] w-full bg-brand">
+          <Image src={photo} alt="" fill unoptimized sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+        </span>
+      ) : (
+        <span className="px-5 pt-5">
+          <Arcade className="h-14 w-auto" />
+        </span>
+      )}
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex flex-col gap-1">
+          <h2 className="type-h3 text-ink group-hover:text-brand">{market.name}</h2>
+          {(market.address || market.city) && (
+            <p className="type-body text-ink-secondary">{[market.address, market.city].filter(Boolean).join(", ")}</p>
+          )}
+        </div>
+        <p className="type-body-medium mt-auto flex items-center justify-between border-t border-line pt-3 text-ink">
+          {t("shopCount", { count: market.shopCount })}
+          <ChevronRight className="size-5 text-ink-muted" aria-hidden />
+        </p>
       </div>
-      <p className="type-body-medium mt-auto flex items-center justify-between border-t border-line pt-3 text-ink">
-        {t("shopCount", { count: market.shopCount })}
-        <ChevronRight className="size-5 text-ink-muted" aria-hidden />
-      </p>
     </Link>
   );
 }
+
 
 /** One shop inside a market page. */
 export function MarketShopCard({ shop }: { shop: MarketShop }) {
@@ -76,25 +89,34 @@ export function MarketShopCard({ shop }: { shop: MarketShop }) {
  * Home page: a market as a tall arch doorway (bordeaux arch, gold inner outline, gold keystone).
  * Hover / focus: the doorway deepens and the gold outline lights up, like light through an entrance.
  */
+/**
+ * Home page: a market as a tall arch doorway. With a photo, the photo fills the doorway
+ * under a dark fade (text stays readable); without one, the bordeaux door.
+ */
 export function MarketDoor({ market }: { market: Market }) {
   const t = useTranslations("Market");
+  const photo = safeMediaUrl(market.image?.thumbUrl ?? null);
   return (
     <Link
       href={`/markets/${market.slug}`}
       aria-label={`${t("enterMarket", { market: market.name })}, ${t("shopCount", { count: market.shopCount })}`}
       className="group relative flex aspect-[3/4] w-44 shrink-0 snap-start flex-col items-center justify-end overflow-hidden rounded-t-full rounded-b-sm bg-brand px-4 pb-6 text-center shadow-card transition-colors duration-300 hover:bg-brand-alt focus-visible:bg-brand-alt focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none md:w-auto"
     >
-      {/* Inner doorway: a thin gold arch that lights up on hover / focus */}
+      {photo && (
+        <>
+          <Image src={photo} alt="" fill unoptimized sizes="(min-width: 768px) 25vw, 11rem" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" />
+          <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10" />
+        </>
+      )}
       <span
         aria-hidden
         className="absolute inset-3 rounded-t-full rounded-b-[1px] border border-gold/50 transition-[border-color,box-shadow] duration-300 group-hover:border-gold group-hover:shadow-[inset_0_0_32px_rgba(176,141,87,0.35)] group-focus-visible:border-gold"
       />
-      {/* Keystone at the top of the arch */}
       <span aria-hidden className="absolute top-1.5 left-1/2 h-4 w-3.5 -translate-x-1/2 bg-gold [clip-path:polygon(0_0,100%_0,78%_100%,22%_100%)]" />
 
       <span className="relative font-heading text-[1.375rem] leading-tight text-primary-foreground">{market.name}</span>
-      {market.city && <span className="type-caption relative mt-1 text-primary-foreground/75">{market.city}</span>}
-      <span className="type-caption relative mt-3 rounded-full border border-gold/60 px-3 py-1 text-primary-foreground">
+      {market.city && <span className="type-caption relative mt-1 text-primary-foreground/80">{market.city}</span>}
+      <span className="type-caption relative mt-3 rounded-full border border-gold/60 bg-ink/30 px-3 py-1 text-primary-foreground">
         {t("shopCount", { count: market.shopCount })}
       </span>
     </Link>
