@@ -44,8 +44,18 @@ function Thumb({ src }: { src: string | null }) {
 }
 
 /** Step 1 of "Add a product": search the public catalog and pick one. */
-export function ProductPicker({ listedIds, onPick }: { listedIds: Set<string>; onPick: (product: CatalogPick) => void }) {
+export function ProductPicker({
+  listedIds,
+  onPick,
+  onAddNew,
+}: {
+  listedIds: Set<string>;
+  onPick: (product: CatalogPick) => void;
+  onAddNew?: () => void;
+}) {
+  
   const t = useTranslations("OwnerListings");
+  const tNew = useTranslations("OwnerNewProduct");
   const id = useId();
   const [text, setText] = useState("");
   const [term, setTerm] = useState("");
@@ -122,6 +132,12 @@ export function ProductPicker({ listedIds, onPick }: { listedIds: Set<string>; o
             );
           })}
         </ul>
+      )}
+
+        {onAddNew && (
+        <button type="button" onClick={onAddNew} className="type-body-medium flex h-11 items-center justify-center rounded-sm border border-dashed border-brand px-3 text-brand hover:bg-subtle">
+          {useTranslations("OwnerNewProduct")("addNew")}
+        </button>
       )}
     </div>
   );

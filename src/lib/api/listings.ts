@@ -69,3 +69,37 @@ export function updateListing(
 export async function searchCatalog(term: string): Promise<CatalogPick[]> {
   return (await publicGet<CatalogPick[]>("/products", { q: term, limit: 8 })).data;
 }
+
+
+
+// ---------- Shop-made products ----------
+
+export type SimilarProduct = { id: string; slug: string; title: string; brand?: { name: string } | null; image?: string | null };
+
+export type NewProductInput = {
+  title: string;
+  categoryId: string;
+  brandId?: string;
+  description?: string;
+  specs?: Record<string, string>;
+  msrp?: number;
+  listing: ListingInput;
+};
+
+const shopProducts = (shopId: string) => `/shops/${encodeURIComponent(shopId)}/products`;
+
+export function findSimilarProducts(shopId: string, title: string): Promise<SimilarProduct[]> {
+  return api.get<SimilarProduct[]>(`${shopProducts(shopId)}/similar`, { query: { title } });
+}
+
+// Creates the product and this shop's listing in one go (live at once).
+export function createShopProduct(shopId: string, input: NewProductInput): Promise<{ product: { id: string; slug: string; title: string } }> {
+  return api.post<{ product: { id: string; slug: string; title: string } }>(shopProducts(shopId), input);
+}
+
+// One real image per call; the server checks and re-draws it as WebP.
+export function uploadShopProductPhoto(shopId: string, productId: string, file: File): Promise<unknown> {
+  const body = new FormData();
+  body.append("image", file);
+  return api.put<unknown>(`${shopProducts(shopId)}/${encodeURIComponent(productId)}/images`, body);
+}

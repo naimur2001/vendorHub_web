@@ -18,11 +18,13 @@ import { safeMediaUrl } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
+import { NewProductForm } from "@/components/owner/new-product-form";
+
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
 const FILTERS: Filter[] = ["ACTIVE", "INACTIVE", "ALL"];
 
 // What the side panel shows: adding (search, then form) or editing one listing.
-type Panel = { kind: "add"; product: CatalogPick | null } | { kind: "edit"; listing: OwnerListing } | null;
+type Panel = { kind: "add"; product: CatalogPick | null } | { kind: "new" } | { kind: "edit"; listing: OwnerListing } | null;
 
 const panelBox = "flex flex-col items-center gap-3 rounded-md border border-line bg-card px-6 py-12 text-center";
 const primaryButton =
@@ -35,6 +37,7 @@ const chipClass = (active: boolean) =>
 
 export function ListingsManager() {
   const t = useTranslations("OwnerListings");
+    const tNew = useTranslations("OwnerNewProduct");
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -229,12 +232,26 @@ export function ListingsManager() {
       <Sheet open={panel !== null} onOpenChange={(isOpen) => !isOpen && setPanel(null)}>
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
           <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : t("addTitle")}</SheetTitle>
+            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : panel?.kind === "new" ? tNew("title") : t("addTitle")}</SheetTitle>
             <SheetDescription className="type-body text-ink-secondary">{panel?.kind === "edit" ? "" : t("addText")}</SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-4 px-4">
+          
             {panel?.kind === "add" && !panel.product && (
-              <ProductPicker listedIds={listedIds} onPick={(product) => setPanel({ kind: "add", product })} />
+              <ProductPicker listedIds={listedIds} onPick={(product) => setPanel({ kind: "add", product })} onAddNew={() => setPanel({ kind: "new" })} />
+            )}
+            {panel?.kind === "new" && (
+              <NewProductForm
+                shopId={shop.id}
+                onUseExisting={(product) => setPanel({ kind: "add", product })}
+                onCancel={() => setPanel({ kind: "add", product: null })}
+                onDone={() => {
+                  setPanel(null);
+                  setNotice(t("saved"));
+                  void queryClient.invalidateQueries({ queryKey: listingKeys.mine(shop.id) });
+                  void queryClient.invalidateQueries({ queryKey: ["owner", "dashboard"] });
+                }}
+              />
             )}
             {panel?.kind === "add" && panel.product && (
               <ListingForm
@@ -271,6 +288,9 @@ export function ListingsManager() {
                 </div>
               </>
             )}
+
+
+
           </div>
         </SheetContent>
       </Sheet>

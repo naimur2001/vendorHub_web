@@ -194,3 +194,62 @@ export function uploadMarketImage(id: string, file: File): Promise<unknown> {
 export function removeMarketImage(id: string): Promise<unknown> {
   return api.delete<unknown>(`/admin/markets/${encodeURIComponent(id)}/image`);
 }
+
+
+
+// ---------- Products (G4b) ----------
+
+export type CatalogCategory = { id: string; name: string; slug: string; parentId?: string | null; children?: CatalogCategory[] };
+export type CatalogBrand = { id: string; name: string };
+
+// GET /admin/products row (admin catalog module)
+export type AdminProduct = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  specs: Record<string, unknown> | null;
+  msrp: number | null;
+  images: string[];
+  isActive: boolean;
+  brand: { id: string; name: string } | null;
+  category: { id: string; name: string; slug: string };
+  activeListings: number;
+};
+
+export type ProductInput = {
+  title: string;
+  categoryId: string;
+  brandId: string | null;
+  description: string | null;
+  specs: Record<string, string>;
+  msrp: number | null;
+};
+
+export type ProductQuery = { q?: string; categoryId?: string; isActive?: boolean; page: number; limit: number };
+
+export const productKeys = {
+  list: (q: ProductQuery) => ["admin", "products", q] as const,
+  categories: ["admin", "categories"] as const,
+  brands: ["admin", "brands"] as const,
+};
+
+export function listAdminProducts(q: ProductQuery): Promise<ApiResult<AdminProduct[]>> {
+  return api.list<AdminProduct>("/admin/products", { query: q });
+}
+
+export async function listCategories(): Promise<CatalogCategory[]> {
+  return (await publicGet<CatalogCategory[]>("/categories")).data;
+}
+
+export async function listBrands(): Promise<CatalogBrand[]> {
+  return (await publicGet<CatalogBrand[]>("/brands")).data;
+}
+
+export function createProduct(input: ProductInput): Promise<AdminProduct> {
+  return api.post<AdminProduct>("/admin/products", input);
+}
+
+export function updateProduct(id: string, patch: Partial<ProductInput> & { isActive?: boolean }): Promise<AdminProduct> {
+  return api.patch<AdminProduct>(`/admin/products/${encodeURIComponent(id)}`, patch);
+}
