@@ -97,6 +97,7 @@ export function refreshSession(): Promise<Session | null> {
 
 export type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+  headers?: Record<string, string>; // extra request headers (e.g. Idempotency-Key)
   query?: Query;
   body?: unknown; // plain object -> JSON; FormData -> multipart (uploads)
   signal?: AbortSignal;
@@ -105,13 +106,14 @@ export type RequestOptions = {
 };
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<ApiResult<T>> {
-  const { method = "GET", query, body, signal, auth = true, cookieMode = false } = options;
-
+  // const { method = "GET", query, body, signal, auth = true, cookieMode = false } = options;
+  const { method = "GET", query, body, signal, auth = true, cookieMode = false, headers: extraHeaders } = options;
   // On page load the first refresh may still be running: wait so this request carries the token.
   if (auth && refreshing) await refreshing.catch(() => null);
 
   const send = (token: string | null) => {
     const headers: Record<string, string> = { Accept: "application/json" };
+    if (extraHeaders) Object.assign(headers, extraHeaders);
     if (cookieMode) Object.assign(headers, COOKIE_MODE_HEADERS);
     if (auth && token) headers.Authorization = `Bearer ${token}`;
 

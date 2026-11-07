@@ -65,8 +65,9 @@ export const checkoutKeys = {
   orders: (status: OrderStatus | undefined, page: number) => ["orders", status ?? "ALL", page] as const,
 };
 
-export function placeOrders(shops: ShopChoice[]): Promise<CheckoutResult> {
-  return api.post<CheckoutResult>("/checkout", { shops });
+// The key makes a retry return the first result instead of creating the orders twice.
+export function placeOrders({ shops, key }: { shops: ShopChoice[]; key: string }): Promise<CheckoutResult> {
+  return api.post<CheckoutResult>("/checkout", { shops }, { headers: { "Idempotency-Key": key } });
 }
 
 export function getCheckout(checkoutId: string): Promise<CheckoutResult> {

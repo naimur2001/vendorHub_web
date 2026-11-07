@@ -83,6 +83,8 @@ export function CheckoutView() {
   const [formError, setFormError] = useState<string | null>(null);
   // Order count and total at the moment of placing (the server empties the cart right after).
   const [submitted, setSubmitted] = useState<{ count: number; total: number } | null>(null);
+  // One key per checkout attempt: a retry with the same choices reuses it (no double orders).
+  const [idem, setIdem] = useState<{ key: string; payload: string } | null>(null);
 
   const place = useMutation({
     mutationFn: placeOrders,
@@ -219,8 +221,11 @@ export function CheckoutView() {
         ...(choice.delivery === "VENDOR_DELIVERY" && { deliveryAddress }),
       };
     });
+    const payloadText = JSON.stringify(payload);
+    const key = idem?.payload === payloadText ? idem.key : crypto.randomUUID();
+    setIdem({ key, payload: payloadText });
     setSubmitted({ count: shops.length, total });
-    place.mutate(payload);
+    place.mutate({ shops: payload, key });
   }
 
   return (
