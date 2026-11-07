@@ -372,7 +372,11 @@ export interface paths {
         /** The storefront product grid */
         get: operations["storefrontProducts"];
         put?: never;
-        post?: never;
+        /**
+         * Add a NEW catalog product together with this shop's listing (live at once)
+         * @description Here {slug} is the shop ID (the path is shared with the public storefront list). The shop must be active and at least DOCUMENTS_VERIFIED. At most 20 new products per shop per 24 hours. Brand and category must already exist. Unknown fields are rejected.
+         */
+        post: operations["createShopProduct"];
         delete?: never;
         options?: never;
         head?: never;
@@ -536,8 +540,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Place the whole cart - one independent order per shop, in one transaction
-         * @description Every shop in the cart needs one choice. Delivery needs deliveryAddress (typed) or addressId (a saved address). Prices and stock are checked again; stock is reserved; used bargains are closed; the cart is emptied. Each shop's team is notified about its own order.
+         * Place the whole cart - one independent order per shop; safe to retry with Idempotency-Key
+         * @description Every shop in the cart needs one choice. Delivery needs deliveryAddress or addressId. With the optional header Idempotency-Key (a UUID v4 made by the client for this checkout), a repeated request with the same body returns the stored answer (header Idempotent-Replayed true) and creates nothing. Keys are per user and kept 24 hours. A failed checkout frees its key, so the same key can be used again after fixing the problem.
          */
         post: operations["checkout"];
         delete?: never;
@@ -1317,7 +1321,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** All products, including inactive ones, with their active listing count */
+        /** All products (also inactive), with source, creating shop and lock state */
         get: operations["adminListProducts"];
         put?: never;
         /** Create a canonical product that shops can then list */
@@ -1923,6 +1927,202 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shops/{shopId}/products/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** "Did you mean ...?" - up to 5 active products with a similar title */
+        get: operations["shopSimilarProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * The creating shop updates its product (not when locked or hidden by Vendors Hub)
+         * @description 403 "Only Vendors Hub can change this product now" for admin products, other shops' products, locked or hidden products. Title, category and brand change only while no other shop sells it.
+         */
+        patch: operations["updateShopProduct"];
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/products/{productId}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Add one photo (same rules as edits; max 6; re-encoded WebP) */
+        put: operations["addShopProductPhoto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/products/{productId}/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove one photo (and its files) */
+        delete: operations["removeShopProductPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Add one photo to any product (locks it for shops) */
+        put: operations["adminAddProductPhoto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove one photo from any product (locks it for shops) */
+        delete: operations["adminRemoveProductPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lock a product (its creating shop can no longer change it) */
+        post: operations["adminLockProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unlock a product */
+        post: operations["adminUnlockProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Merge a duplicate into another product (listings move; duplicate switched off)
+         * @description One transaction. A shop that already lists the target keeps that listing and its moved one is deactivated. Listing ids never change, so carts and bargains stay valid; orders keep their snapshot. Both products are locked. 409 when merging into itself or into an inactive product.
+         */
+        post: operations["adminMergeProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/verify-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm the email address with the token from the link (public)
+         * @description Valid, unused and not expired: the email is verified (audited as auth.email_verified). Used, expired or unknown links: 400 "This link is invalid or has expired". Until the email is verified, these actions answer 403 with error.details.code EMAIL_NOT_VERIFIED: POST /checkout, POST /bargains, POST /shops, POST /shops/{shopId}/verifications, POST /shops/{shopId}/products, POST /reviews (admins are never blocked; browsing, cart and account pages stay open).
+         */
+        post: operations["verifyEmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/resend-verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a new verification link (3 verification emails per hour, the first one included) */
+        post: operations["resendVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1958,14 +2158,15 @@ export interface components {
         Role: "CUSTOMER" | "SHOP_OWNER" | "SHOP_STAFF" | "ADMIN";
         User: {
             /** Format: uuid */
-            id?: string;
-            name?: string;
+            id: string;
+            name: string;
             /** Format: email */
-            email?: string;
-            /** @example 01712345678 */
-            phone?: string | null;
-            role?: components["schemas"]["Role"];
-            avatarUrl?: string | null;
+            email: string | null;
+            phone: string | null;
+            role: components["schemas"]["Role"];
+            avatarUrl: string | null;
+            /** @description False until the link from the verification email was opened. */
+            emailVerified: boolean;
         };
         Session: {
             user?: components["schemas"]["User"];
@@ -2505,6 +2706,83 @@ export interface components {
             width: number;
             height: number;
         };
+        SimilarProduct: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            brand: components["schemas"]["IdName"] | null;
+            category: components["schemas"]["IdNameSlug"];
+            image: string | null;
+            alreadyListedByYou: boolean;
+        };
+        ShopProductCreate: {
+            title: string;
+            /** Format: uuid */
+            categoryId: string;
+            /** Format: uuid */
+            brandId?: string | null;
+            description?: string | null;
+            /** @description Keys 1-40 characters; string values only. */
+            specs?: {
+                [key: string]: string;
+            };
+            msrp?: number | null;
+            listing: {
+                price: number;
+                stockQty?: number | null;
+                availability?: components["schemas"]["Availability"];
+                /** @default false */
+                bargainEnabled: boolean;
+                /** @default 92 */
+                minOfferPercent: number;
+            };
+        };
+        ShopProductUpdate: {
+            title?: string;
+            /** Format: uuid */
+            categoryId?: string;
+            /** Format: uuid */
+            brandId?: string | null;
+            description?: string | null;
+            specs?: {
+                [key: string]: string;
+            };
+            msrp?: number | null;
+        };
+        ShopProduct: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            description: string | null;
+            specs: {
+                [key: string]: string;
+            } | null;
+            msrp: number | null;
+            images: string[];
+            brand: components["schemas"]["IdName"] | null;
+            category: components["schemas"]["IdNameSlug"];
+            /** @enum {string} */
+            source: "ADMIN" | "SHOP";
+            /** Format: uuid */
+            createdByShopId: string | null;
+            /** Format: date-time */
+            lockedAt: string | null;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        OwnerListing: {
+            /** Format: uuid */
+            id: string;
+            price: number;
+            stockQty: number | null;
+            availability: components["schemas"]["Availability"];
+            bargainEnabled: boolean;
+            minOfferPercent: number;
+            isActive: boolean;
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -2561,14 +2839,89 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        /** @description The product's photos after the change. */
+        ProductPhotosResult: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        /** Format: uuid */
+                        productId: string;
+                        images: string[];
+                        photos: {
+                            /** Format: uuid */
+                            id: string;
+                            url: string;
+                            thumbUrl: string;
+                            width: number;
+                            height: number;
+                        }[];
+                    };
+                };
+            };
+        };
+        /** @description The photo is larger than 5 MB. */
+        PhotoTooLarge: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description The photo is too small (at least 480 x 270 pixels). */
+        PhotoTooSmall: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description The product. */
+        DataObjectResult: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["DataObject"];
+            };
+        };
+        /** @description Please verify your email first (error.details.code = "EMAIL_NOT_VERIFIED"). */
+        EmailNotVerified: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
     };
     parameters: {
         Page: number;
         Limit: number;
         /** @description Send "cookie" from the website to keep the refresh token in an httpOnly cookie. */
         XAuthMode: "cookie";
+        ShopIdPath: string;
+        ProductIdPath: string;
+        ImageIdPath: string;
     };
-    requestBodies: never;
+    requestBodies: {
+        PhotoUpload: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description One JPG, PNG or WebP photo, max 5 MB, at least 480 x 270.
+                     */
+                    image: string;
+                };
+            };
+        };
+    };
     headers: never;
     pathItems: never;
 }
@@ -3293,6 +3646,43 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    createShopProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The shop id. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShopProductCreate"];
+            };
+        };
+        responses: {
+            /** @description The product and the listing. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            product: components["schemas"]["ShopProduct"];
+                            listing: components["schemas"]["OwnerListing"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
     storefrontCategories: {
         parameters: {
             query?: never;
@@ -3677,7 +4067,10 @@ export interface operations {
     checkout: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description UUID v4, one per checkout attempt; reuse it only to retry the same request. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3692,24 +4085,22 @@ export interface operations {
                         /** @enum {string} */
                         paymentMethod: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
                         deliveryAddress?: string;
-                        /**
-                         * Format: uuid
-                         * @description One of my saved addresses, instead of typing deliveryAddress.
-                         */
+                        /** Format: uuid */
                         addressId?: string;
                     }[];
                 };
             };
         };
         responses: {
-            /** @description The checkout with its orders (one per shop). */
+            /** @description The checkout with its orders (new, or the stored answer of an earlier identical request). */
             201: {
                 headers: {
+                    /** @description "true" when this is the stored answer of an earlier request. */
+                    "Idempotent-Replayed"?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example true */
                         success?: boolean;
                         data?: components["schemas"]["CheckoutResult"];
                     };
@@ -3717,7 +4108,24 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            409: components["responses"]["Conflict"];
+            /** @description Out of stock or changed prices, or "This order is already being placed" (same key still running). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Idempotency key reused with different data. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     getCheckout: {
@@ -5163,6 +5571,9 @@ export interface operations {
                 categoryId?: string;
                 brandId?: string;
                 isActive?: "true" | "false";
+                /** @description SHOP = products added by shops. */
+                source?: "ADMIN" | "SHOP";
+                locked?: "true" | "false";
                 page?: components["parameters"]["Page"];
                 limit?: components["parameters"]["Limit"];
             };
@@ -5172,7 +5583,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description One page of products. */
+            /** @description One page of products (each with source, createdByShop, lockedAt, activeListings). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6560,6 +6971,291 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    shopSimilarProducts: {
+        parameters: {
+            query: {
+                title: string;
+            };
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Similar products (trigram similarity, best first). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["SimilarProduct"][];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    updateShopProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+                productId: components["parameters"]["ProductIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShopProductUpdate"];
+            };
+        };
+        responses: {
+            /** @description The updated product. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopProduct"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    addShopProductPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+                productId: components["parameters"]["ProductIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["PhotoUpload"];
+        responses: {
+            200: components["responses"]["ProductPhotosResult"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["PhotoTooLarge"];
+            422: components["responses"]["PhotoTooSmall"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    removeShopProductPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+                productId: components["parameters"]["ProductIdPath"];
+                imageId: components["parameters"]["ImageIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ProductPhotosResult"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminAddProductPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: components["parameters"]["ProductIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["PhotoUpload"];
+        responses: {
+            200: components["responses"]["ProductPhotosResult"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["PhotoTooLarge"];
+            422: components["responses"]["PhotoTooSmall"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminRemoveProductPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: components["parameters"]["ProductIdPath"];
+                imageId: components["parameters"]["ImageIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ProductPhotosResult"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminLockProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: components["parameters"]["ProductIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DataObjectResult"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUnlockProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: components["parameters"]["ProductIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DataObjectResult"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminMergeProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: components["parameters"]["ProductIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    intoProductId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description What happened. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            productId: string;
+                            /** Format: uuid */
+                            intoProductId: string;
+                            moved: number;
+                            deactivated: number;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    verifyEmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Verified. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            verified: boolean;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    resendVerification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sent, or the email is already verified. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            alreadyVerified: boolean;
+                            message?: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
 }
