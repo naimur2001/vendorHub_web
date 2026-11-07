@@ -22,7 +22,7 @@ import { shopPlace } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
-
+import { isEmailNotVerified } from "@/lib/api/auth";
 type Choice = { delivery: DeliveryMethod; payment: PaymentMethod };
 type Address = { line1: string; area: string; city: string; phone: string };
 type AddressErrors = Partial<Record<keyof Address | "all", string>>;
@@ -57,6 +57,7 @@ function checkAddress(a: Address, t: (key: string) => string): AddressErrors {
 
 function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
+        if (isEmailNotVerified(err)) return "errors.verifyEmail";
     if (err.status === 409 && /already being placed/i.test(err.message)) return "errors.inProgress";
     if (err.status === 409) return Array.isArray(err.details) ? "errors.problems" : "errors.stock";
     if (err.status === 400) return err.message === "Your cart is empty" ? "errors.empty" : "errors.invalid";

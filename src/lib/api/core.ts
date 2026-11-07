@@ -15,6 +15,7 @@ export type SessionUser = {
   phone: string | null;
   role: Role;
   avatarUrl: string | null;
+  emailVerified?: boolean;
 };
 
 // What login, register and refresh return in cookie mode (no refreshToken in the JSON).

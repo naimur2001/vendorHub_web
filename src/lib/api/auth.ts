@@ -1,6 +1,6 @@
 import "client-only";
 import { api, refreshSession, setSession } from "./client";
-import type { Role, Session, SessionUser } from "./core";
+import { ApiError, type Role, type Session, type SessionUser } from "./core";
 
 // Inputs match the backend's auth.schema.js
 export type LoginInput = { email: string; password: string };
@@ -59,3 +59,20 @@ export async function changePassword(oldPassword: string, newPassword: string): 
 }
 
 export { refreshSession };
+
+
+
+// ---------- Email verification ----------
+
+export function verifyEmail(token: string): Promise<Message> {
+  return api.post<Message>("/auth/verify-email", { token }, { auth: false });
+}
+
+export function resendVerification(): Promise<{ alreadyVerified?: boolean }> {
+  return api.post<{ alreadyVerified?: boolean }>("/auth/resend-verification");
+}
+
+/** The backend's 403 for actions that need a verified email (orders, offers, shops). */
+export function isEmailNotVerified(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 403 && (err.details as { code?: unknown } | undefined)?.code === "EMAIL_NOT_VERIFIED";
+}

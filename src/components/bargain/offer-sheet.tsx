@@ -11,7 +11,7 @@ import { Link } from "@/i18n/routing";
 import { bargainKeys, createBargain, getBargainInfo, parseAmount, type Bargain, type BargainInfo } from "@/lib/api/bargains";
 import { ApiError } from "@/lib/api/core";
 import { formatTaka } from "@/lib/format";
-
+import { isEmailNotVerified } from "@/lib/api/auth";
 const triggerClass =
   "type-body-medium flex h-12 w-full items-center justify-center gap-2 rounded-sm border border-highlight px-4 text-highlight hover:bg-highlight-soft focus-visible:ring-2 focus-visible:ring-highlight focus-visible:outline-none";
 
@@ -20,6 +20,7 @@ const stepFor = (price: number) => (price >= 10_000 ? 50 : price >= 1_000 ? 10 :
 
 function offerErrorKey(err: unknown): string {
   if (err instanceof ApiError) {
+        if (isEmailNotVerified(err)) return "errors.verifyEmail";
     if (err.status === 400 && /own shop/i.test(err.message)) return "errors.ownShop";
     if (err.status === 400) return "errors.range";
     if (err.status === 409 && /out of stock/i.test(err.message)) return "errors.outOfStock";
