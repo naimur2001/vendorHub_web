@@ -1616,5 +1616,16 @@
     "empty": "No reviews yet. Customers can review a product after a completed order.",
     "showing": "Showing the newest {shown} of {total}",
     "loadError": "Reviews couldn't load right now."
+  },
+  "Notifications": {
+    "open": "Notifications",
+    "openWithCount": "Notifications, {count} unread",
+    "title": "Notifications",
+    "markAll": "Mark all as read",
+    "empty": "No notifications yet. Order updates and offers will appear here.",
+    "loading": "Loading…",
+    "loadError": "Notifications couldn't load. Try again.",
+    "retry": "Try again",
+    "unread": "Unread"
   }
 }

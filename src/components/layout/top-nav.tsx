@@ -7,7 +7,7 @@ import { useSession } from "@/components/app-providers";
 import { CartCountBadge, useCartCount } from "@/components/cart/cart-badge";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-
+import { NotificationBell } from "@/components/layout/notification-bell";
 const SEARCH_MAX_LENGTH = 100;
 
 // Brand mark: an arch with a gold keystone (same drawing as the app icon) + wordmark.
@@ -132,6 +132,7 @@ export function TopNav() {
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <CartLink />
+                    <NotificationBell />
           {/* Reads the current address: on pages whose address is only known at request time
               (e.g. /products/[slug]) it must wait inside Suspense. */}
           <Suspense fallback={accountPlaceholder}>
