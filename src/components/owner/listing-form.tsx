@@ -136,7 +136,7 @@ export function ProductPicker({
 
         {onAddNew && (
         <button type="button" onClick={onAddNew} className="type-body-medium flex h-11 items-center justify-center rounded-sm border border-dashed border-brand px-3 text-brand hover:bg-subtle">
-          {useTranslations("OwnerNewProduct")("addNew")}
+             {tNew("addNew")}
         </button>
       )}
     </div>
