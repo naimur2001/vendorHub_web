@@ -57,6 +57,7 @@ function checkAddress(a: Address, t: (key: string) => string): AddressErrors {
 
 function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
+    if (err.status === 409 && /already being placed/i.test(err.message)) return "errors.inProgress";
     if (err.status === 409) return Array.isArray(err.details) ? "errors.problems" : "errors.stock";
     if (err.status === 400) return err.message === "Your cart is empty" ? "errors.empty" : "errors.invalid";
     if (err.status === 0) return "errors.network";
@@ -94,9 +95,16 @@ export function CheckoutView() {
       // replace: the browser's Back button cannot send the orders again
       router.replace(`/checkout/${result.checkoutId}`);
     },
-    onError: (err) => {
+    onError: (err, vars) => {
+      // Same key still running on the server: keep waiting, then ask again with the same key
+      // (the server returns the finished orders instead of creating new ones).
+      if (err instanceof ApiError && err.status === 409 && /already being placed/i.test(err.message)) {
+        setFormError(t("errors.inProgress"));
+        setTimeout(() => place.mutate(vars), 3000);
+        return;
+      }
       setFormError(t(errorKey(err)));
-      void queryClient.invalidateQueries({ queryKey: cartKeys.cart }); // show the cart as it is now
+      void queryClient.invalidateQueries({ queryKey: cartKeys.cart });
     },
   });
 
@@ -127,7 +135,7 @@ export function CheckoutView() {
 
    // While placing, and after success until the confirmation page opens: the "doorway" screen.
   // Otherwise the page would briefly show the now-empty cart.
-  if (place.isPending || place.isSuccess) {
+  if (place.isPending || place.isSuccess || formError === t("errors.inProgress")) {
     return (
       <PlacingOrders
         phase={place.isSuccess ? "opening" : "placing"}

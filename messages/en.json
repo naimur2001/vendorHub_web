@@ -557,6 +557,7 @@
     "errors": {
       "problems": "Some items are no longer available. Your cart was updated. Check it and try again.",
       "stock": "Someone just bought the last one of an item. Check your cart and try again.",
+      "inProgress": "Your order is still being placed. Please wait a moment…",
       "invalid": "A choice isn't possible for one of the shops. Check delivery, payment and the address.",
       "empty": "Your cart is empty.",
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
