@@ -21,6 +21,9 @@ import { ApiError } from "@/lib/api/core";
 import { shopPlace } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ReviewForm } from "@/components/reviews/review-form";
+
+
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
   PLACED: "bg-info-soft text-verified",
@@ -142,7 +145,7 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
   const format = useFormatter();
   const queryClient = useQueryClient();
   const reasonId = useId();
-
+  const tReviews = useTranslations("Reviews");
   const [payError, setPayError] = useState<string | null>(null);
   const [justPaid, setJustPaid] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -372,6 +375,23 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
           {t("cancel.done")}
         </p>
       )}
+
+      {order.status === "COMPLETED" && (
+        <section className="flex flex-col gap-3 border-t border-gold pt-4">
+          <div>
+            <h3 className="type-h3 text-ink">{tReviews("rateTitle")}</h3>
+            <p className="type-caption text-ink-muted">{tReviews("rateText")}</p>
+          </div>
+          <ReviewForm orderId={order.id} type="SHOP_TRUST" title={tReviews("shopTitle", { shop: order.shop.name })} />
+          {order.items
+            .filter((item) => item.productId)
+            .map((item) => (
+              <ReviewForm key={item.id} orderId={order.id} type="PRODUCT" productId={item.productId} title={tReviews("productTitle", { product: item.title })} />
+            ))}
+        </section>
+      )}
+
+
     </article>
   );
 }

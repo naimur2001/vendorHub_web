@@ -1587,5 +1587,23 @@
       "phone": "Use a Bangladesh mobile number like 01712345678.",
       "generic": "That didn't work. Try again in a moment."
     }
+  },
+  "Reviews": {
+    "rateTitle": "Rate your purchase",
+    "rateText": "Your review helps other customers choose good shops.",
+    "shopTitle": "The shop: {shop}",
+    "productTitle": "{product}",
+    "stars": "Your rating",
+    "star": "{count, plural, one {# star} other {# stars}}",
+    "comment": "Comment (optional)",
+    "commentPlaceholder": "What went well, what could be better?",
+    "send": "Send review",
+    "update": "Update review",
+    "sending": "Sending…",
+    "sent": "Thank you! Your review is published.",
+    "updated": "Your review is updated.",
+    "already": "You've already reviewed this. You can update it here.",
+    "pickStars": "Choose 1 to 5 stars.",
+    "error": "The review couldn't be saved. Try again in a moment."
   }
 }

@@ -47,7 +47,8 @@ export type Order = {
     addressLine: string;
     verificationLevel: VerificationLevel;
   };
-  items: { id: string; title: string; unitPrice: number; quantity: number; lineTotal: number; bargained: boolean }[];
+  items: { id: string; title: string; unitPrice: number; quantity: number; lineTotal: number; bargained: boolean; productId?: string; productSlug?: string }[];
+
 };
 
 export type CheckoutResult = { checkoutId: string; totalAmount: number; createdAt?: string; orders: Order[] };
