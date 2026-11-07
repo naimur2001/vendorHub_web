@@ -12,6 +12,8 @@ import { Link } from "@/i18n/routing";
 import { getProduct, type ProductDetail } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/core";
 import { publicGet } from "@/lib/api/public";
+import { ProductReviews } from "@/components/reviews/product-reviews";
+
 
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = {
@@ -177,6 +179,13 @@ async function ProductView({ params, searchParams }: Props) {
           </div>
         </div>
       </div>
+
+
+      <Suspense fallback={<div className="h-40 animate-pulse rounded-md bg-subtle" aria-hidden />}>
+        <ProductReviews slug={product.slug} />
+      </Suspense>
+
+      
     </div>
   );
 }

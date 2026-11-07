@@ -1605,5 +1605,16 @@
     "already": "You've already reviewed this. You can update it here.",
     "pickStars": "Choose 1 to 5 stars.",
     "error": "The review couldn't be saved. Try again in a moment."
+  },
+  "ProductReviews": {
+    "title": "Customer reviews",
+    "average": "{average} out of 5",
+    "count": "{count, plural, one {# review} other {# reviews}}",
+    "bar": "{stars} stars: {count}",
+    "stars": "{rating} out of 5 stars",
+    "boughtAt": "Bought at {shop}",
+    "empty": "No reviews yet. Customers can review a product after a completed order.",
+    "showing": "Showing the newest {shown} of {total}",
+    "loadError": "Reviews couldn't load right now."
   }
 }
