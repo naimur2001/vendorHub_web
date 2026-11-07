@@ -526,6 +526,8 @@
     "orderTotal": "Order total",
     "addressTitle": "Delivery address",
     "addressText": "{count, plural, one {Used by the shop that delivers.} other {Used by the # shops that deliver.}}",
+    "useSaved": "Use a saved address",
+    "chooseSaved": "Choose…",
     "line1": "House and road",
     "line1Placeholder": "House 12, Road 5, Block C",
     "area": "Area (optional)",
@@ -1545,5 +1547,45 @@
     "bannerText": "Please verify your email to place orders and make offers. We sent you a link.",
     "bannerResend": "Resend email",
     "error": "That didn't work. Try again in a moment."
+  },
+  "Addresses": {
+    "metaTitle": "Saved addresses",
+    "title": "Saved addresses",
+    "subtitle": "For faster checkout. The default address is suggested first.",
+    "add": "Add address",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Click again to delete",
+    "makeDefault": "Set as default",
+    "default": "Default",
+    "empty": "No saved addresses yet.",
+    "saved": "Saved.",
+    "deleted": "Deleted.",
+    "loading": "Loading addresses…",
+    "loadError": "Addresses couldn't load. Try again.",
+    "retry": "Try again",
+    "guestTitle": "Log in to see your addresses",
+    "logIn": "Log in",
+    "form": {
+      "addTitle": "Add an address",
+      "editTitle": "Edit address",
+      "label": "Name (optional)",
+      "labelPlaceholder": "Home, Office…",
+      "line1": "House and road",
+      "line1Placeholder": "House 12, Road 5, Block C",
+      "area": "Area (optional)",
+      "city": "City",
+      "phone": "Phone",
+      "isDefault": "Use as my default address",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "line1": "Enter the house and road (5 to 200 characters).",
+      "city": "Enter the city (2 to 60 characters).",
+      "phone": "Use a Bangladesh mobile number like 01712345678.",
+      "generic": "That didn't work. Try again in a moment."
+    }
   }
 }

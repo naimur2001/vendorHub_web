@@ -23,6 +23,10 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
 import { isEmailNotVerified } from "@/lib/api/auth";
+import { addressKeys, listAddresses } from "@/lib/api/addresses";
+
+
+
 type Choice = { delivery: DeliveryMethod; payment: PaymentMethod };
 type Address = { line1: string; area: string; city: string; phone: string };
 type AddressErrors = Partial<Record<keyof Address | "all", string>>;
@@ -78,7 +82,7 @@ export function CheckoutView() {
   const { status, user } = useSession();
 
   const cart = useQuery({ queryKey: cartKeys.cart, queryFn: getCart, enabled: status === "authenticated" });
-
+  const saved = useQuery({ queryKey: addressKeys.all, queryFn: listAddresses, enabled: status === "authenticated" });
   const [choices, setChoices] = useState<Record<string, Choice>>({});
   const [address, setAddress] = useState<Address>({ line1: "", area: "", city: "Dhaka", phone: "" });
   const [addressErrors, setAddressErrors] = useState<AddressErrors>({});
@@ -265,6 +269,30 @@ export function CheckoutView() {
               {t("addressTitle")}
             </legend>
             <p className="type-caption -mt-2 text-ink-muted">{t("addressText", { count: deliveringCount })}</p>
+                    
+                    
+                       {(saved.data ?? []).length > 0 && (
+              <label className="flex flex-col gap-1.5">
+                <span className="type-body-medium text-ink">{t("useSaved")}</span>
+                <select
+                  defaultValue=""
+                  onChange={(e) => {
+                    const a = saved.data?.find((x) => x.id === e.target.value);
+                    if (a) setAddress({ line1: a.line1 ?? "", area: a.area ?? "", city: a.city, phone: a.phone });
+                  }}
+                  className="type-body h-12 rounded-md border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
+                >
+                  <option value="">{t("chooseSaved")}</option>
+                  {saved.data?.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {[a.label, a.line1, a.area].filter(Boolean).join(" · ")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+           
+           
             <TextField
               label={t("line1")}
               placeholder={t("line1Placeholder")}
