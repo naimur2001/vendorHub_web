@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Clock, Inbox, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Inbox } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

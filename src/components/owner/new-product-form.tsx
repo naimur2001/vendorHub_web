@@ -14,6 +14,7 @@ import {
   uploadShopProductPhoto,
   type CatalogPick,
   type ManualAvailability,
+  type NewProductInput,
 } from "@/lib/api/listings";
 import { cn } from "@/lib/utils";
 
@@ -178,7 +179,7 @@ export function NewProductForm({ shopId, onUseExisting, onDone, onCancel }: Prop
   }, [categoriesQ.data]);
 
   const save = useMutation({
-    mutationFn: createShopProduct.bind(null, shopId),
+    mutationFn: (input: NewProductInput) => createShopProduct(shopId, input),
     onSuccess: (r) => setCreated({ id: r.product.id }),
     onError: (err) => setErrors({ form: t(apiErrorKey(err)) }),
   });
