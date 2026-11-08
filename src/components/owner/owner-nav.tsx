@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Inbox, LayoutDashboard, PackageCheck, ShieldCheck, type LucideIcon } from "lucide-react";
+import { Boxes, Inbox, LayoutDashboard, PackageCheck, ShieldCheck, Settings, type LucideIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/components/app-providers";
@@ -11,7 +11,7 @@ import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { cn } from "@/lib/utils";
 // import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { useLinkStatus } from "next/link";
-type TabKey = "dashboard" | "orders" | "offers" | "listings" | "verification";
+type TabKey = "dashboard" | "orders" | "offers" | "listings" | "verification" | "settings";
 
 type Tab = {
   key: TabKey;
@@ -29,6 +29,7 @@ const TABS: Tab[] = [
   { key: "offers", href: "/owner/bargains", icon: Inbox, keepShop: true, count: (d) => d.actions.bargainsWaiting },
   { key: "listings", href: "/owner/listings", icon: Boxes, keepShop: true, count: (d) => d.actions.lowStockCount },
   { key: "verification", href: "/owner/setup", icon: ShieldCheck, ownerOnly: true },
+  { key: "settings", href: "/owner/settings", icon: Settings, ownerOnly: true, keepShop: true },
 ];
 
 

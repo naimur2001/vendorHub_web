@@ -1058,6 +1058,7 @@
     "offers": "Offers",
     "listings": "Listings",
     "verification": "Verification",
+    "settings": "Settings",
     "waiting": "{label}, {count} waiting"
   },
   "Admin": {
@@ -1627,5 +1628,82 @@
     "loadError": "Notifications couldn't load. Try again.",
     "retry": "Try again",
     "unread": "Unread"
+  },
+  "OwnerSettings": {
+    "metaTitle": "Shop settings",
+    "title": "Shop settings",
+    "subtitle": "How your shop looks and works for customers.",
+    "ownerOnly": "Only the shop owner can change the settings.",
+    "loading": "Loading settings…",
+    "loadError": "Settings couldn't load. Try again.",
+    "retry": "Try again",
+    "saved": "Saved. The storefront shows the change within a few minutes.",
+    "images": {
+      "title": "Logo and banner",
+      "logo": "Logo",
+      "logoHint": "A square picture works best. It's shown as 512 × 512.",
+      "banner": "Banner",
+      "bannerHint": "A wide photo of your shop. It's shown up to 1600 pixels wide.",
+      "none": "None yet",
+      "choose": "Choose a picture",
+      "upload": "Upload",
+      "uploading": "Uploading…",
+      "chooseAnother": "Choose another",
+      "remove": "Remove",
+      "previewAlt": "Preview",
+      "rules": "JPG, PNG or WebP, up to 5 MB.",
+      "errors": {
+        "type": "Only JPG, PNG or WebP pictures are allowed.",
+        "size": "The picture is larger than 5 MB.",
+        "small": "The picture is too small for this use.",
+        "rejected": "The server didn't accept this file as a picture.",
+        "rateLimit": "Too many uploads. Try again in a few minutes.",
+        "generic": "The picture couldn't be saved. Try again."
+      }
+    },
+    "profile": {
+      "title": "Shop profile",
+      "name": "Shop name",
+      "description": "Description (optional)",
+      "market": "Market or mall",
+      "noMarket": "Not in a market",
+      "levelFloor": "Floor (optional)",
+      "shopNumber": "Shop number (optional)",
+      "addressLine": "Address",
+      "location": "Map location (optional)",
+      "locationHint": "Paste the coordinates from Google Maps, e.g. 23.8133, 90.4243.",
+      "delivery": "We deliver",
+      "pickup": "Customers can pick up in the shop",
+      "returnPolicy": "Return policy (optional)",
+      "returnWindow": "Return window in days (0 = no returns)",
+      "save": "Save profile",
+      "saving": "Saving…"
+    },
+    "staff": {
+      "title": "Staff",
+      "text": "Staff can handle orders, offers and listings, but not these settings.",
+      "owner": "Owner",
+      "member": "Staff",
+      "email": "Email of an existing Vendors Hub account",
+      "add": "Add staff",
+      "remove": "Remove",
+      "confirmRemove": "Click again to remove",
+      "added": "Staff member added.",
+      "removed": "Staff member removed.",
+      "notFound": "No account with that email. Ask them to register first.",
+      "already": "This person is already on the team or owns another shop.",
+      "empty": "No staff yet."
+    },
+    "errors": {
+      "name": "Write a name of 2 to 100 characters.",
+      "address": "Write an address of 5 to 200 characters.",
+      "description": "Use 1000 characters or fewer.",
+      "returnPolicy": "Use 2000 characters or fewer.",
+      "returnWindow": "Enter a whole number from 0 to 60.",
+      "location": "Paste two numbers like 23.8133, 90.4243.",
+      "service": "Offer delivery or pickup (or both).",
+      "email": "Enter a valid email.",
+      "generic": "That didn't work. Try again in a moment."
+    }
   }
 }
