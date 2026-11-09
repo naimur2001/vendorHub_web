@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AccountPanel } from "@/components/layout/account-menu";
-
+import { CustomerOverview } from "@/components/account/customer-overview";
 type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,6 +20,7 @@ export default async function AccountPage({ params }: Props) {
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
       <h1 className="type-h2 text-ink">{t("title")}</h1>
       <AccountPanel />
+      <CustomerOverview />
     </div>
   );
 }

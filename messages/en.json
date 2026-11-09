@@ -1070,6 +1070,7 @@
     "navLabel": "Admin sections",
     "nav": {
       "queue": "Verification queue",
+            "overview": "Dashboard",
       "markets": "Markets",
       "products": "Products",
       "catalog": "Brands & categories",
@@ -1845,5 +1846,44 @@
     "next": "Next",
     "pageOf": "Page {page} of {total}",
     "reasonError": "Write a reason of 5 to 500 characters."
+  },
+  "Overview": {
+    "title": "Overview",
+    "orders": "Orders",
+    "spent": "Spent (completed)",
+    "cart": "In your cart",
+    "cartItems": "{items, plural, one {# item} other {# items}} from {shops, plural, one {# shop} other {# shops}}",
+    "offersWaiting": "Offers waiting for you",
+    "offersReady": "Agreed offers to buy",
+    "following": "Shops you follow",
+    "rateTitle": "Rate these shops",
+    "rate": "Rate",
+    "recent": "Latest orders",
+    "noOrders": "No orders yet.",
+    "loading": "Loading…"
+  },
+  "AdminOverview": {
+    "title": "Dashboard",
+    "subtitle": "The whole marketplace at a glance.",
+    "users": "Users",
+    "usersNew": "{count} new this week · {blocked} blocked",
+    "shops": "Shops",
+    "shopsActive": "{active} active · {count} new this week",
+    "orders": "Orders",
+    "verification": "Verification queue",
+    "pending": "{count} pending · {flagged} flagged · {waiting} waiting for owner",
+    "liveOffers": "Live offers",
+    "catalog": "Catalog",
+    "catalogText": "{products} products · {listings} listings · {reviews} reviews",
+    "sales": "Sales",
+    "last24h": "24 hours",
+    "last7d": "7 days",
+    "last30d": "30 days",
+    "ordersCount": "{count, plural, one {# order} other {# orders}}",
+    "topShops": "Top shops (30 days)",
+    "activity": "Latest activity",
+    "loading": "Loading the dashboard…",
+    "loadError": "The dashboard couldn't load. Try again.",
+    "retry": "Try again"
   }
 }
