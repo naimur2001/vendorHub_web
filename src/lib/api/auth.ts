@@ -84,6 +84,6 @@ export function updateProfile(patch: { name?: string; phone?: string | null }): 
   return api.patch<unknown>("/users/me", patch);
 }
 
-export function changePassword(currentPassword: string, newPassword: string): Promise<unknown> {
-  return api.post<unknown>("/auth/change-password", { currentPassword, newPassword });
-}
+// export function changePassword(currentPassword: string, newPassword: string): Promise<unknown> {
+//   return api.post<unknown>("/auth/change-password", { currentPassword, newPassword });
+// }

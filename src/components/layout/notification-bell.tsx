@@ -21,7 +21,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const id = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
 
 /** Where a notification leads. Built here from checked ids, never from a URL in the data. */
-function targetFor(n: Notification, isTeam: boolean, isAdmin: boolean): string {
+   function targetFor(n: Notification, isTeam: boolean, isAdmin: boolean): string {
   const d = n.data ?? {};
   if (n.type.startsWith("RETURN")) return isAdmin && n.type === "RETURN_ESCALATED" ? "/admin/disputes" : isTeam ? "/owner/returns" : "/account/returns";
   if (n.type === "ORDER_PLACED" && id(d.checkoutId)) return `/checkout/${id(d.checkoutId)}`;
