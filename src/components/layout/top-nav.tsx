@@ -132,7 +132,10 @@ export function TopNav() {
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <CartLink />
-                    <NotificationBell />
+                      {/* The bell reads the current time ("2 min ago"), so it renders after the page shell */}
+          <Suspense fallback={<span className="size-11" aria-hidden />}>
+            <NotificationBell />
+          </Suspense>
           {/* Reads the current address: on pages whose address is only known at request time
               (e.g. /products/[slug]) it must wait inside Suspense. */}
           <Suspense fallback={accountPlaceholder}>
