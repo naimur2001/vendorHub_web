@@ -1,223 +1,125 @@
 "use client";
 
-import { ChevronRight, Eye, Handshake, Inbox, LoaderCircle, LogOut, MapPin,ShieldCheck, Package, Store, type LucideIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, LoaderCircle } from "lucide-react";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSession } from "@/components/app-providers";
-import { useQuery } from "@tanstack/react-query";
-import { getMyShops, shopKeys } from "@/lib/api/shops";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useRouter } from "@/i18n/routing";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Link, useRouter } from "@/i18n/routing";
-import { logout } from "@/lib/api/auth";
-import type { SessionUser } from "@/lib/api/core";
+  getUnreadCount,
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  notificationKeys,
+  type Notification,
+} from "@/lib/api/notifications";
+import { cn } from "@/lib/utils";
 
-export function initials(name: string): string {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join("") || "?"
-  );
-}
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const id = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
 
-type LinkKey = "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "addresses" | "adminPortal";
-type AccountLink = { href: string; key: LinkKey; icon: LucideIcon };
-
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-// The first shop the user owns or works at, for "View my storefront" (shared cache with the dashboard).
-function useStorefrontSlug(user: SessionUser | null | undefined): string | undefined {
-  const isTeam = user?.role === "SHOP_OWNER" || user?.role === "SHOP_STAFF";
-  const { data } = useQuery({ queryKey: shopKeys.mine, queryFn: getMyShops, enabled: isTeam, staleTime: 5 * 60_000 });
-  const slug = isTeam ? data?.[0]?.slug : undefined;
-  return slug && SLUG.test(slug) ? slug : undefined;
-}
-
-// The same entries in the desktop menu and on the /account page.
-function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
-  const links: AccountLink[] = [];
-    if (user.role === "ADMIN") links.push({ href: "/admin", key: "adminPortal", icon: ShieldCheck });
-  if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
-  if (storefrontSlug) links.push({ href: `/shops/${storefrontSlug}`, key: "storefront", icon: Eye });
-  if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") {
-    links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
+/** Where a notification leads. Built here from checked ids, never from a URL in the data. */
+function targetFor(n: Notification, isTeam: boolean, isAdmin: boolean): string {
+  const d = n.data ?? {};
+  if (n.type.startsWith("RETURN")) {
+    if (isAdmin && n.type === "RETURN_ESCALATED") return "/admin/disputes";
+    return isTeam ? "/owner/returns" : "/account/returns";
   }
-  links.push(
-    { href: "/account/orders", key: "orders", icon: Package },
-    { href: "/bargains", key: "bargains", icon: Handshake },
-    { href: "/account/addresses", key: "addresses", icon: MapPin },
-  );
-  return links;
+  if (n.type === "ORDER_PLACED" && id(d.checkoutId)) return `/checkout/${id(d.checkoutId)}`;
+  if (n.type === "ORDER_STATUS") return "/account/orders";
+  if (n.type === "ORDER_NEW" || n.type === "ORDER_CANCELLED") return "/owner/orders";
+  if (n.type.startsWith("BARGAIN")) return isTeam ? "/owner/bargains" : "/bargains";
+  if (n.type.startsWith("VERIFICATION")) return "/owner/setup";
+  return "/";
 }
-// Log out: server clears the cookie, memory token and cached data are dropped, then home.
-function useLogout() {
+
+export function NotificationBell() {
+  const t = useTranslations("Notifications");
+  const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
   const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  async function run() {
-    if (pending) return;
-    setPending(true);
-    try {
-      await logout();
-    } finally {
-      setPending(false);
-      router.replace("/");
-    }
-  }
-
-  return { run, pending };
-}
-
-function Avatar({ name, size }: { name: string; size: "sm" | "lg" }) {
-  return (
-    <span
-      className={
-        size === "sm"
-          ? "type-caption flex size-9 items-center justify-center rounded-full bg-brand text-primary-foreground"
-          : "flex size-14 items-center justify-center rounded-full bg-brand font-heading text-[1.3125rem] text-primary-foreground"
-      }
-      aria-hidden
-    >
-      {initials(name)}
-    </span>
-  );
-}
-
-/** Desktop: the initials in the top bar open this menu. */
-export function AccountMenu({ user }: { user: SessionUser }) {
-  const storefrontSlug = useStorefrontSlug(user);
-  const t = useTranslations("Account");
-  const tNav = useTranslations("Nav");
-  const { run: logOut, pending } = useLogout();
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={tNav("yourAccount", { name: user.name })}
-        className="flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
-      >
-        <Avatar name={user.name} size="sm" />
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" sideOffset={8} className="w-64">
-        <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
-          <span className="type-body-medium truncate text-ink">{user.name}</span>
-          <span className="type-caption truncate font-normal text-ink-muted">{user.email}</span>
-          <span className="type-caption font-normal text-highlight">{t(`roles.${user.role}`)}</span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
-        {linksFor(user,storefrontSlug).map(({ href, key, icon: Icon }) => (
-          <DropdownMenuItem key={key} asChild className="type-body min-h-10 cursor-pointer gap-3">
-            <Link href={href}>
-              <Icon className="size-4 text-ink-muted" aria-hidden />
-              {t(key)}
-            </Link>
-          </DropdownMenuItem>
-        ))}
-
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          disabled={pending}
-          onSelect={() => void logOut()}
-          className="type-body min-h-10 cursor-pointer gap-3 text-brand"
-        >
-          {pending ? (
-            <LoaderCircle className="size-4 animate-spin" aria-hidden />
-          ) : (
-            <LogOut className="size-4" aria-hidden />
-          )}
-          {pending ? t("loggingOut") : t("logOut")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-/** Phones (Account tab) and anyone opening /account: the same entries as a page. */
-export function AccountPanel() {
-  const t = useTranslations("Account");
+  const queryClient = useQueryClient();
   const { status, user } = useSession();
-  const { run: logOut, pending } = useLogout();
+  const [open, setOpen] = useState(false);
+  const signedIn = status === "authenticated";
+  const isTeam = user?.role === "SHOP_OWNER" || user?.role === "SHOP_STAFF";
+  const isAdmin = user?.role === "ADMIN";
 
-  if (status === "loading") {
-    return (
-      <p role="status" className="type-body flex items-center justify-center gap-2 py-12 text-ink-secondary">
-        <LoaderCircle className="size-5 animate-spin" aria-hidden />
-      </p>
-    );
-  }
+  const count = useQuery({ queryKey: notificationKeys.count, queryFn: getUnreadCount, enabled: signedIn, refetchInterval: 60_000 });
+  const list = useQuery({ queryKey: notificationKeys.list, queryFn: listNotifications, enabled: signedIn && open });
 
-  if (status === "guest" || !user) {
-    return (
-      <div className="flex flex-col items-center gap-4 rounded-md border border-line bg-card p-6 text-center">
-        <h2 className="type-h3 text-ink">{t("guestTitle")}</h2>
-        <p className="type-body text-ink-secondary">{t("guestText")}</p>
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href={`/auth/login?next=${encodeURIComponent("/account")}`}
-            className="type-body-medium flex h-12 items-center justify-center rounded-sm bg-action px-6 text-primary-foreground hover:bg-action-hover"
-          >
-            {t("logIn")}
-          </Link>
-          <Link
-            href="/auth/register"
-            className="type-body-medium flex h-12 items-center justify-center rounded-sm border border-brand px-6 text-brand hover:bg-subtle"
-          >
-            {t("createAccount")}
-          </Link>
-        </div>
-      </div>
-    );
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+  const readOne = useMutation({ mutationFn: markNotificationRead, onSuccess: refresh });
+  const readAll = useMutation({ mutationFn: markAllNotificationsRead, onSuccess: refresh });
+
+  if (!signedIn) return null;
+  const unread = count.data?.unread ?? 0;
+
+  function go(n: Notification) {
+    if (!n.read) readOne.mutate(n.id);
+    setOpen(false);
+    router.push(targetFor(n, isTeam, isAdmin));
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4 rounded-md border border-line bg-card p-4">
-        <Avatar name={user.name} size="lg" />
-        <div className="min-w-0">
-          <p className="type-h3 truncate text-ink">{user.name}</p>
-          <p className="type-body truncate text-ink-secondary">{user.email}</p>
-          <p className="type-caption text-highlight">{t(`roles.${user.role}`)}</p>
-        </div>
-      </div>
-
-      <nav aria-label={t("menuLabel")}>
-        <ul className="flex flex-col border-t border-line">
-          {linksFor(user).map(({ href, key, icon: Icon }) => (
-            <li key={key} className="border-b border-line">
-              <Link
-                href={href}
-                className="type-body-medium flex min-h-14 items-center gap-3 px-1 text-ink hover:bg-subtle focus-visible:bg-subtle focus-visible:outline-none"
-              >
-                <Icon className="size-5 text-ink-muted" aria-hidden />
-                <span className="flex-1">{t(key)}</span>
-                <ChevronRight className="size-5 text-ink-muted" aria-hidden />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
+    <Sheet open={open} onOpenChange={setOpen}>
       <button
         type="button"
-        onClick={() => void logOut()}
-        disabled={pending}
-        aria-busy={pending}
-        className="type-body-medium flex h-12 w-full items-center justify-center gap-2 rounded-sm border border-brand text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:opacity-70"
+        onClick={() => setOpen(true)}
+        aria-label={unread > 0 ? t("openWithCount", { count: unread }) : t("open")}
+        className="relative flex size-11 items-center justify-center rounded-full text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
       >
-        {pending ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <LogOut className="size-5" aria-hidden />}
-        {pending ? t("loggingOut") : t("logOut")}
+        <Bell className="size-5" aria-hidden />
+        {unread > 0 && (
+          <span aria-hidden className="type-caption absolute top-0.5 right-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 leading-none text-primary-foreground ring-2 ring-card">
+            {unread > 99 ? "99+" : unread}
+          </span>
+        )}
       </button>
-    </div>
+      <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
+        <SheetHeader className="flex-row items-center justify-between">
+          <SheetTitle className="type-h3 text-ink">{t("title")}</SheetTitle>
+          <SheetDescription className="sr-only">{t("title")}</SheetDescription>
+          {unread > 0 && (
+            <button type="button" onClick={() => readAll.mutate()} disabled={readAll.isPending} className="type-body-medium mr-8 text-brand underline-offset-4 hover:underline">
+              {t("markAll")}
+            </button>
+          )}
+        </SheetHeader>
+        <div className="px-4">
+          {list.isPending ? (
+            <p role="status" className="type-body flex items-center gap-2 py-8 text-ink-secondary">
+              <LoaderCircle className="size-4 animate-spin" aria-hidden />
+              {t("loading")}
+            </p>
+          ) : list.isError ? (
+            <button type="button" onClick={() => list.refetch()} className="type-body-medium py-8 text-brand">{t("retry")}</button>
+          ) : list.data.length === 0 ? (
+            <p className="type-body py-8 text-ink-secondary">{t("empty")}</p>
+          ) : (
+            <ul className="flex flex-col">
+              {list.data.map((n) => (
+                <li key={n.id}>
+                  <button
+                    type="button"
+                    onClick={() => go(n)}
+                    className={cn("flex w-full flex-col gap-0.5 border-t border-line px-2 py-3 text-left first:border-t-0 hover:bg-subtle focus-visible:bg-subtle focus-visible:outline-none", !n.read && "bg-highlight-soft/40")}
+                  >
+                    <span className="flex items-center gap-2">
+                      {!n.read && <span className="size-2 shrink-0 rounded-full bg-brand" aria-label={t("unread")} />}
+                      <span className={cn("type-body text-ink", !n.read && "font-medium")}>{n.title}</span>
+                    </span>
+                    {n.body && <span className="type-caption text-ink-secondary">{n.body}</span>}
+                    <span className="type-caption text-ink-muted">{format.relativeTime(new Date(n.createdAt), now)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

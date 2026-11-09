@@ -22,7 +22,7 @@ import { shopPlace } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ReviewForm } from "@/components/reviews/review-form";
-
+import { RequestReturn } from "@/components/returns/return-detail";
 
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
@@ -388,6 +388,9 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
             .map((item) => (
               <ReviewForm key={item.id} orderId={order.id} type="PRODUCT" productId={item.productId} title={tReviews("productTitle", { product: item.title })} />
             ))}
+
+
+                  <RequestReturn orderId={order.id} />
         </section>
       )}
 

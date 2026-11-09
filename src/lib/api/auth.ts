@@ -76,3 +76,14 @@ export function resendVerification(): Promise<{ alreadyVerified?: boolean }> {
 export function isEmailNotVerified(err: unknown): boolean {
   return err instanceof ApiError && err.status === 403 && (err.details as { code?: unknown } | undefined)?.code === "EMAIL_NOT_VERIFIED";
 }
+
+
+// ---------- Profile ----------
+
+export function updateProfile(patch: { name?: string; phone?: string | null }): Promise<unknown> {
+  return api.patch<unknown>("/users/me", patch);
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<unknown> {
+  return api.post<unknown>("/auth/change-password", { currentPassword, newPassword });
+}

@@ -318,3 +318,35 @@ export function renameCategory(id: string, name: string): Promise<unknown> {
 export function deleteCategory(id: string): Promise<unknown> {
   return api.delete<unknown>(`/admin/categories/${encodeURIComponent(id)}`);
 }
+
+
+// ---------- Users and shops (batch 2) ----------
+
+export type Role = "CUSTOMER" | "SHOP_OWNER" | "SHOP_STAFF" | "ADMIN";
+export const ROLES: Role[] = ["CUSTOMER", "SHOP_OWNER", "SHOP_STAFF", "ADMIN"];
+
+export type AdminUser = { id: string; name: string; email: string; phone?: string | null; role: Role; isActive: boolean; createdAt: string };
+export type AdminShop = {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  verificationLevel: VerificationLevel;
+  owner?: { name: string; email: string } | null;
+};
+
+export function listUsers(q: { q?: string; role?: Role; page: number }): Promise<ApiResult<AdminUser[]>> {
+  return api.list<AdminUser>("/admin/users", { query: { ...q, limit: 20 } });
+}
+export function setUserStatus(id: string, isActive: boolean, reason: string): Promise<unknown> {
+  return api.patch<unknown>(`/admin/users/${encodeURIComponent(id)}/status`, { isActive, reason });
+}
+export function setUserRole(id: string, role: Role, reason: string): Promise<unknown> {
+  return api.patch<unknown>(`/admin/users/${encodeURIComponent(id)}/role`, { role, reason });
+}
+export function listAdminShops(q: { q?: string; page: number }): Promise<ApiResult<AdminShop[]>> {
+  return api.list<AdminShop>("/admin/shops", { query: { ...q, limit: 20 } });
+}
+export function setShopStatus(id: string, isActive: boolean, reason: string): Promise<unknown> {
+  return api.patch<unknown>(`/admin/shops/${encodeURIComponent(id)}/status`, { isActive, reason });
+}
