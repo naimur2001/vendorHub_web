@@ -9,13 +9,15 @@ export type TryOnInfo = { available: boolean; views: TryOnView[]; startView: Try
 const asViews = (v: unknown): TryOnView[] | null =>
   Array.isArray(v) && v.length > 0 && v.every((x) => ALL.includes(x as TryOnView)) ? (v as TryOnView[]) : null;
 
-/** GET /products/:slug/try-on, read defensively (only known view names are used). */
+/** GET /products/:slug/try-on. The backend signals availability with a non-empty `views` list. */
 export async function getTryOnInfo(slug: string): Promise<TryOnInfo> {
   const r = (await api.get<Record<string, unknown>>(`/products/${encodeURIComponent(slug)}/try-on`, { auth: false })) ?? {};
-  const views = asViews(r.views) ?? ALL;
+  const listed = asViews(r.views); // empty list = not available for this product
+  const views = listed ?? ALL;
   const start = ALL.includes(r.startView as TryOnView) ? (r.startView as TryOnView) : "FRONT";
   const order = asViews(r.createOrder) ?? [start, ...views.filter((v) => v !== start)];
-  return { available: r.available === true || r.eligible === true, views, startView: start, createOrder: order, notice: typeof r.notice === "string" ? r.notice : null };
+  const notice = typeof r.notice === "string" ? r.notice : typeof r.note === "string" ? r.note : null;
+  return { available: r.available === true || r.eligible === true || listed !== null, views, startView: start, createOrder: order, notice };
 }
 
 /** POST /try-on: one picture. Returns a data:image/… URL (kept in memory only). */
