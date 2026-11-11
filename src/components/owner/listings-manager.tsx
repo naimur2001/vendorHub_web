@@ -1,6 +1,5 @@
 "use client";
 
-import { ListingPhotosButton } from "@/components/owner/listing-photos";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleCheck, LoaderCircle, PackagePlus, PackageSearch } from "lucide-react";
 import Image from "next/image";
@@ -349,7 +348,7 @@ function ListingRow({ listing: l, onEdit }: { listing: OwnerListing; onEdit: () 
       >
         {t("edit")}
       </button>
-                  <ListingPhotosButton shopId={shopId} listing={l} />
+                   <ListingPhotosButton shopId={l.shopId} listing={l} />
     </article>
   );
 }
