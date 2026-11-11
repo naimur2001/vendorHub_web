@@ -169,4 +169,5 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
       </SheetContent>
     </Sheet>
   );
+  
 }
