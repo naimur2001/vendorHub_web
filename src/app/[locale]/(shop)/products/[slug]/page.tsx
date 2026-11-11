@@ -13,7 +13,7 @@ import { getProduct, type ProductDetail } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/core";
 import { publicGet } from "@/lib/api/public";
 import { ProductReviews } from "@/components/reviews/product-reviews";
-
+import { TryOn } from "@/components/catalog/try-on";
 
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = {
@@ -143,10 +143,11 @@ async function ProductView({ params, searchParams }: Props) {
 
           {selectedListing ? (
             <SelectedListingCard listing={selectedListing} otherCount={otherListings.length} productSlug={product.slug} />
+            
           ) : (
             <p className="type-body rounded-md border border-line bg-card p-5 text-ink-secondary">{t("noListings")}</p>
           )}
-
+<TryOn slug={product.slug} productId={product.id} />
           <OtherShops slug={product.slug} listings={otherListings} />
 
           <div className="flex flex-col border-t border-line">

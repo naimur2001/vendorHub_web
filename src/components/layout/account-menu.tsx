@@ -63,7 +63,7 @@ function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
   if (user.role === "ADMIN") links.push({ href: "/admin", key: "adminPortal", icon: ShieldCheck });
   if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
   if (storefrontSlug) links.push({ href: `/shops/${storefrontSlug}`, key: "storefront", icon: Eye });
-    if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
+    // if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
   if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
   links.push(
     { href: "/account/orders", key: "orders", icon: Package },

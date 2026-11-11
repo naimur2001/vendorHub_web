@@ -1939,5 +1939,32 @@
       "small": "The picture is too small.",
       "generic": "That didn't work. Try again in a moment."
     }
+  },
+  "TryOn": {
+    "button": "Try it on",
+    "title": "Virtual try-on",
+    "intro": "Upload a clear photo of yourself, standing, facing the camera. The AI shows you wearing this item from five angles.",
+    "agree": "I understand and want to continue",
+    "choose": "Choose your photo",
+    "start": "Create my pictures",
+    "rules": "JPG, PNG or WebP, up to 5 MB. Your photo and the pictures are not stored; they disappear when you close this panel.",
+    "view": { "LEFT": "Left", "LEFT_45": "Left 45°", "FRONT": "Front", "RIGHT_45": "Right 45°", "RIGHT": "Right" },
+    "creating": "Creating {view}… (10–30 seconds)",
+    "waiting": "Waiting",
+    "failedView": "Couldn't create this view",
+    "aiNote": "AI-generated picture. Fit and colour may differ from the real item.",
+    "again": "Use another photo",
+    "loginTitle": "Log in to try it on",
+    "logIn": "Log in",
+    "close": "Close",
+    "errors": {
+      "type": "Use a JPG, PNG or WebP photo.",
+      "size": "The photo is larger than 5 MB.",
+      "limit": "You've reached today's try-on limit. Try again tomorrow.",
+      "photo": "The AI couldn't use this photo. Try a clearer, full-body photo facing the camera.",
+      "unavailable": "Try-on isn't available right now. Try again later.",
+      "notEligible": "Try-on isn't available for this product.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }
