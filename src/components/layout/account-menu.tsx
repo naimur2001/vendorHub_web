@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Store,
   UserRound,
+  LayoutDashboard,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -43,9 +44,8 @@ export function initials(name: string): string {
   );
 }
 
-type LinkKey = "adminPortal" | "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "returns" | "profile" | "addresses";
+type LinkKey = "adminPortal" | "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "returns" | "profile" | "addresses" | "account";
 type AccountLink = { href: string; key: LinkKey; icon: LucideIcon };
-
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 // The first shop the user owns or works at, for "View my storefront".
@@ -62,6 +62,7 @@ function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
   if (user.role === "ADMIN") links.push({ href: "/admin", key: "adminPortal", icon: ShieldCheck });
   if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
   if (storefrontSlug) links.push({ href: `/shops/${storefrontSlug}`, key: "storefront", icon: Eye });
+    if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
   if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
   links.push(
     { href: "/account/orders", key: "orders", icon: Package },
@@ -115,7 +116,7 @@ export function AccountMenu({ user }: { user: SessionUser }) {
   const { run: logOut, pending } = useLogout();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu  modal={false}>
       <DropdownMenuTrigger
         aria-label={tNav("yourAccount", { name: user.name })}
         className="flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
@@ -123,7 +124,7 @@ export function AccountMenu({ user }: { user: SessionUser }) {
         <Avatar name={user.name} size="sm" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={8} className="w-64">
+      <DropdownMenuContent align="end" sideOffset={8} className="z-[70] w-64">
         <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
           <span className="type-body-medium truncate text-ink">{user.name}</span>
           <span className="type-caption truncate font-normal text-ink-muted">{user.email}</span>
