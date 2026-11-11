@@ -1,5 +1,6 @@
 "use client";
 
+import { ListingPhotosButton } from "@/components/owner/listing-photos";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleCheck, LoaderCircle, PackagePlus, PackageSearch } from "lucide-react";
 import Image from "next/image";
@@ -19,6 +20,9 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { NewProductForm } from "@/components/owner/new-product-form";
+import { ListingPhotosButton } from "@/components/owner/listing-photos";
+
+
 
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
 const FILTERS: Filter[] = ["ACTIVE", "INACTIVE", "ALL"];
@@ -345,6 +349,7 @@ function ListingRow({ listing: l, onEdit }: { listing: OwnerListing; onEdit: () 
       >
         {t("edit")}
       </button>
+                  <ListingPhotosButton shopId={shopId} listing={l} />
     </article>
   );
 }

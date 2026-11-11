@@ -1966,5 +1966,24 @@
       "notEligible": "Try-on isn't available for this product.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "ListingPhotos": {
+    "button": "Photos",
+    "title": "Photos of {product}",
+    "text": "Photos show on the product page for every shop that sells it.",
+    "none": "No photos yet.",
+    "choose": "Choose a photo",
+    "upload": "Upload",
+    "uploading": "Uploading…",
+    "added": "Photo added.",
+    "rules": "JPG, PNG or WebP, up to 5 MB.",
+    "errors": {
+      "locked": "Vendors Hub manages this product's photos, so they can't be changed here.",
+      "type": "Only JPG, PNG or WebP pictures are allowed.",
+      "size": "The picture is larger than 5 MB.",
+      "small": "The picture is too small.",
+      "limit": "Too many uploads. Try again later.",
+      "generic": "That didn't work. Try again in a moment."
+    }
   }
 }
