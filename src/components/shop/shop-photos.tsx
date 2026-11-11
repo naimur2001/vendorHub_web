@@ -136,3 +136,40 @@ export function AdminShopPhotos({ shopId, slug }: { shopId: string; slug: string
     </ul>
   );
 }
+
+
+
+/** Storefront: the shop's photos for customers (nothing shown when there are none). */
+export function ShopGallery({ slug }: { slug: string }) {
+  const t = useTranslations("ShopPhotos");
+  const photos = useQuery({ queryKey: photoKeys.list(slug), queryFn: () => listShopPhotos(slug), staleTime: 5 * 60_000 });
+  const list = photos.data ?? [];
+  if (list.length === 0) return null;
+  return (
+    <section aria-labelledby="gallery-heading" className="flex flex-col gap-3">
+      <h2 id="gallery-heading" className="type-h3 text-ink">{t("galleryTitle")}</h2>
+      <div className="scroll-row -mx-4 px-4 md:mx-0 md:px-0">
+        <ul className="flex w-max gap-3 pb-1">
+          {list.map((p) => {
+            const src = safeMediaUrl(p.url);
+            const wide = p.kind === "PANORAMA_360";
+            return (
+              <li key={p.id} className={cn("flex flex-col gap-1", wide ? "w-96" : "w-56")}>
+                <div className={cn("relative overflow-hidden rounded-md border border-line bg-subtle", wide ? "aspect-[2/1]" : "aspect-[4/3]")}>
+                  {src && <Image src={src} alt={p.caption ?? t(`kind.${p.kind}`)} fill unoptimized sizes={wide ? "24rem" : "14rem"} className="object-cover" />}
+                  {wide && <span className="type-caption absolute bottom-1 left-1 rounded-full bg-ink/70 px-2 py-0.5 text-primary-foreground">{t("panorama")}</span>}
+                </div>
+                <p className="type-caption text-ink-secondary">{p.caption ?? t(`kind.${p.kind}`)}</p>
+                {p.verified && (
+                  <p className="type-caption flex items-center gap-1 text-verified">
+                    <BadgeCheck className="size-3.5" aria-hidden />{t("verified")}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}

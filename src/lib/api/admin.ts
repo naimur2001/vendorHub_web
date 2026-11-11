@@ -350,3 +350,36 @@ export function listAdminShops(q: { q?: string; page: number }): Promise<ApiResu
 export function setShopStatus(id: string, isActive: boolean, reason: string): Promise<unknown> {
   return api.patch<unknown>(`/admin/shops/${encodeURIComponent(id)}/status`, { isActive, reason });
 }
+
+
+
+
+// ---------- Product photos and lock (admin) ----------
+
+export type ProductImage = { id?: string; url: string };
+
+/** Images may come as objects or as plain URLs (older products). */
+export function productImages(p: AdminProduct): ProductImage[] {
+  const raw = (p as { images?: unknown }).images;
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((i): ProductImage[] =>
+    typeof i === "string" ? [{ url: i }] : i && typeof i === "object" && typeof (i as ProductImage).url === "string" ? [i as ProductImage] : [],
+  );
+}
+
+export function isProductLocked(p: AdminProduct): boolean {
+  const x = p as { locked?: unknown; lockedByAdmin?: unknown; isLocked?: unknown };
+  return Boolean(x.locked ?? x.lockedByAdmin ?? x.isLocked);
+}
+
+export function uploadProductImage(id: string, file: File): Promise<unknown> {
+  const body = new FormData();
+  body.append("image", file);
+  return api.put<unknown>(`/admin/products/${encodeURIComponent(id)}/images`, body);
+}
+export function removeProductImage(id: string, imageId: string): Promise<unknown> {
+  return api.delete<unknown>(`/admin/products/${encodeURIComponent(id)}/images/${encodeURIComponent(imageId)}`);
+}
+export function setProductLock(id: string, locked: boolean): Promise<unknown> {
+  return api.post<unknown>(`/admin/products/${encodeURIComponent(id)}/${locked ? "lock" : "unlock"}`);
+}

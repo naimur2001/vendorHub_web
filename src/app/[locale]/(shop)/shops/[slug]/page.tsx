@@ -11,7 +11,7 @@ import { publicGet } from "@/lib/api/public";
 import { getStorefront, type Storefront } from "@/lib/api/storefront";
 import { parseStorefrontParams, storefrontHref } from "@/lib/storefront-params";
 import { cn } from "@/lib/utils";
-
+import { ShopGallery } from "@/components/shop/shop-photos";
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -86,7 +86,7 @@ async function StorefrontView({ params, searchParams }: Props) {
   return (
     <div className="flex flex-col gap-8">
       <StorefrontHeader shop={shop} />
-
+<ShopGallery slug={shop.slug} />
       <div className="grid gap-8 md:grid-cols-2">
         <section aria-labelledby="about-heading" className="flex flex-col gap-3">
           <h2 id="about-heading" className="type-h3 text-ink">

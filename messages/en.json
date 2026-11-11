@@ -1909,11 +1909,34 @@
     "full": "This shop has 12 photos, the maximum.",
     "photos": "Photos",
     "hide": "Hide photos",
+    "galleryTitle": "Photos of the shop",
+    "panorama": "360° view",
     "errors": {
       "type": "Only JPG, PNG or WebP pictures are allowed.",
       "size": "The picture is larger than 5 MB.",
       "duplicate": "This photo is already in the gallery, or the gallery is full.",
       "rejected": "The server didn't accept this file as a picture.",
+      "generic": "That didn't work. Try again in a moment."
+    }
+  },
+  "ProductPhotos": {
+    "button": "Photos",
+    "title": "Product photos",
+    "text": "These photos show on the product page. Uploading here locks the product, so shops can't change its photos.",
+    "choose": "Choose a photo",
+    "upload": "Upload",
+    "uploading": "Uploading…",
+    "remove": "Remove",
+    "none": "No photos yet.",
+    "rules": "JPG, PNG or WebP, up to 5 MB.",
+    "locked": "Locked: only admins change these photos.",
+    "unlocked": "Unlocked: shops can add photos.",
+    "lock": "Lock for shops",
+    "unlock": "Unlock for shops",
+    "errors": {
+      "type": "Only JPG, PNG or WebP pictures are allowed.",
+      "size": "The picture is larger than 5 MB.",
+      "small": "The picture is too small.",
       "generic": "That didn't work. Try again in a moment."
     }
   }

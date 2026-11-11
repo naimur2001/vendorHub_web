@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, GitMerge, LoaderCircle, Pencil, Plus, Search, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, GitMerge, LoaderCircle, Pencil, Plus, Search, X,Image as ImageIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
@@ -25,9 +25,12 @@ import { parseAmount } from "@/lib/api/bargains";
 import { ApiError } from "@/lib/api/core";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ProductPhotos } from "@/components/admin/product-photos";
+
+
 
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
-type Panel = { kind: "add" } | { kind: "edit"; product: AdminProduct } | { kind: "merge"; product: AdminProduct } | null;
+type Panel = { kind: "add" } | { kind: "edit"; product: AdminProduct } | { kind: "merge"; product: AdminProduct } | { kind: "photos"; product: AdminProduct } | null;
 type SpecRow = { key: string; value: string };
 
 const inputClass =
@@ -252,6 +255,7 @@ function MergePanel({ product, onDone, onCancel }: { product: AdminProduct; onDo
 export function ProductsManager() {
   const t = useTranslations("AdminProducts");
   const tR = useTranslations("AdminProductReview");
+  const tPhotos = useTranslations("ProductPhotos");
   const locale = useLocale();
   const queryClient = useQueryClient();
   const searchId = useId();
@@ -405,6 +409,21 @@ export function ProductsManager() {
                     <Pencil className="size-4" aria-hidden />
                     {t("edit")}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotice(null);
+                      setPanel({ kind: "photos", product: p });
+                    }}
+                    className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm px-3 text-ink-secondary hover:bg-subtle"
+                  >
+                    <ImageIcon className="size-4" aria-hidden />
+                    {tPhotos("button")}
+                  </button>
+                  
+
+
+                  
                   {p.source === "SHOP" && !p.reviewedAt && (
                     <button type="button" onClick={() => review.mutate(p.id)} disabled={review.isPending} className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm px-3 text-success-ink hover:bg-success-soft disabled:opacity-60">
                       <BadgeCheck className="size-4" aria-hidden />
@@ -458,7 +477,7 @@ export function ProductsManager() {
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
           <SheetHeader>
             <SheetTitle className="type-h3 text-ink">
-              {panel?.kind === "edit" ? t("form.editTitle") : panel?.kind === "merge" ? tR("mergeTitle") : t("form.addTitle")}
+              {panel?.kind === "edit" ? t("form.editTitle") : panel?.kind === "merge" ? tR("mergeTitle") : panel?.kind === "photos" ? tPhotos("title") : t("form.addTitle")}
             </SheetTitle>
             <SheetDescription className="type-caption text-ink-muted">{t("subtitle")}</SheetDescription>
           </SheetHeader>
@@ -468,6 +487,7 @@ export function ProductsManager() {
               <ProductForm key={panel.product.id} product={panel.product} categories={categories} brands={brands} onSaved={() => closeAnd(t("saved"))} onCancel={() => setPanel(null)} />
             )}
             {panel?.kind === "merge" && <MergePanel product={panel.product} onCancel={() => setPanel(null)} onDone={() => closeAnd(tR("merged"))} />}
+            {panel?.kind === "photos" && <ProductPhotos key={panel.product.id} product={panel.product} onChanged={() => setNotice(t("saved"))} />}
           </div>
         </SheetContent>
       </Sheet>
