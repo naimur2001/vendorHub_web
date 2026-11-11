@@ -15,7 +15,8 @@ type Frame = { state: "waiting" | "creating" | "done" | "failed"; url?: string }
 
 function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.status === 429) return "errors.limit";
+    // Our daily limit vs the AI provider's quota: same status, different meaning.
+    if (err.status === 429) return /quota|gemini|provider|ai\b/i.test(err.message) ? "errors.unavailable" : "errors.limit";
     if (err.status === 422 || err.status === 400) return "errors.photo";
     if (err.status === 409) return "errors.notEligible";
     if (err.status >= 502) return "errors.unavailable";
