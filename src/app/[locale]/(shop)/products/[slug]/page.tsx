@@ -147,7 +147,9 @@ async function ProductView({ params, searchParams }: Props) {
           ) : (
             <p className="type-body rounded-md border border-line bg-card p-5 text-ink-secondary">{t("noListings")}</p>
           )}
-                   <TryOn slug={product.slug} productId={product.id} />
+          <Suspense fallback={null}>
+            <TryOn slug={product.slug} productId={product.id} />
+          </Suspense>
 
           <OtherShops slug={product.slug} listings={otherListings} />
 

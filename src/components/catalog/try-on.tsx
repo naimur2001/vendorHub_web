@@ -5,7 +5,7 @@ import { CircleAlert, LoaderCircle, Shirt } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/components/app-providers";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import { createTryOn, dataUrlToBlob, getTryOnInfo, type TryOnView } from "@/lib/api/try-on";
@@ -23,6 +23,102 @@ function errorKey(err: unknown): string {
   return "errors.generic";
 }
 
+/** One big picture: drag/swipe, arrows or the slider turn it; "Turn automatically" sways left↔right. */
+/** 3D ring: the pictures stand in a circle; drag/swipe or the arrows turn it, "Turn automatically" spins it 360°. */
+function TurnViewer({ views, frames, start }: { views: TryOnView[]; frames: Partial<Record<TryOnView, Frame>>; start: TryOnView }) {
+  const t = useTranslations("TryOn");
+  const n = views.length;
+  const step = 360 / n;
+  const cardW = 150; // px
+  const radius = Math.round(cardW / 2 / Math.tan(Math.PI / n)) + 70;
+
+  const [angle, setAngle] = useState(-Math.max(0, views.indexOf(start)) * step);
+  const [snap, setSnap] = useState(true); // smooth move after release or arrow clicks
+  const [auto, setAuto] = useState(false);
+  const drag = useRef<{ x: number; a: number } | null>(null);
+  const ready = views.every((v) => frames[v]?.state === "done");
+
+  // Continuous spin (paused by the user or by "reduce motion").
+  useEffect(() => {
+    if (!auto || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setSnap(false);
+    let raf = 0;
+    let prev = performance.now();
+    const tick = (now: number) => {
+      setAngle((a) => a - (now - prev) * 0.03); // ~30° per second
+      prev = now;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [auto]);
+
+  const settle = (a: number) => { setSnap(true); setAngle(Math.round(a / step) * step); };
+  const front = ((Math.round(-angle / step) % n) + n) % n;
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div
+        className="relative h-80 w-full cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
+        style={{ perspective: "1100px" }}
+        onPointerDown={(e) => { setAuto(false); setSnap(false); drag.current = { x: e.clientX, a: angle }; e.currentTarget.setPointerCapture(e.pointerId); }}
+        onPointerMove={(e) => { if (drag.current) setAngle(drag.current.a + (e.clientX - drag.current.x) * 0.4); }}
+        onPointerUp={() => { if (drag.current) settle(angle); drag.current = null; }}
+        onPointerCancel={() => { if (drag.current) settle(angle); drag.current = null; }}
+        role="img"
+        aria-label={t(`view.${views[front]}`)}
+      >
+        <div
+          className={cn("absolute top-1/2 left-1/2", snap && "motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out")}
+          style={{ transformStyle: "preserve-3d", transform: `translate(-50%, -50%) translateZ(${-radius}px) rotateX(-8deg) rotateY(${angle}deg)` }}
+        >
+          {views.map((v, k) => {
+            const fr = frames[v];
+            // How much this card faces us: 1 = front, -1 = back (dim the back ones).
+            const facing = Math.cos(((k * step + angle) * Math.PI) / 180);
+            return (
+              <div
+                key={v}
+                className="absolute overflow-hidden rounded-xl border border-line bg-subtle shadow-card"
+                style={{
+                  width: cardW,
+                  height: cardW * (4 / 3),
+                  left: -cardW / 2,
+                  top: -(cardW * (4 / 3)) / 2,
+                  transform: `rotateY(${k * step}deg) translateZ(${radius}px)`,
+                  opacity: 0.35 + 0.65 * Math.max(0, facing),
+                }}
+              >
+                {fr?.state === "done" && fr.url ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- in-memory data URL, never stored
+                  <img src={fr.url} alt="" draggable={false} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full items-center justify-center px-2 text-center">
+                    {fr?.state === "creating" ? <LoaderCircle className="size-6 animate-spin text-ink-muted" aria-hidden /> : fr?.state === "failed" ? <CircleAlert className="size-5 text-error" aria-hidden /> : <span className="type-caption text-ink-muted">{t("waiting")}</span>}
+                  </span>
+                )}
+                <span className="type-caption absolute inset-x-0 bottom-0 bg-ink/55 py-0.5 text-center text-primary-foreground">{t(`view.${v}`)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button type="button" onClick={() => { setAuto(false); settle(angle + step); }} aria-label={t("prev")} className="flex size-10 items-center justify-center rounded-full border border-line-strong text-ink hover:bg-subtle">‹</button>
+        <span className="type-body-medium min-w-24 text-center text-ink">{t(`view.${views[front]}`)}</span>
+        <button type="button" onClick={() => { setAuto(false); settle(angle - step); }} aria-label={t("next")} className="flex size-10 items-center justify-center rounded-full border border-line-strong text-ink hover:bg-subtle">›</button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="type-caption text-ink-muted">{t("rotate")}</span>
+        <button type="button" onClick={() => (auto ? (setAuto(false), settle(angle)) : setAuto(true))} disabled={!ready} className="type-body-medium h-9 rounded-sm border border-brand px-3 text-brand hover:bg-subtle disabled:opacity-40">
+          {auto ? t("stop") : t("autoRotate")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Product page: "Try it on" (only when the backend says this product is eligible). */
 export function TryOn({ slug, productId }: { slug: string; productId: string }) {
   const t = useTranslations("TryOn");
@@ -35,7 +131,7 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const cancelled = useRef(false);
-  const roll = useRef<HTMLDivElement>(null);
+  // const roll = useRef<HTMLDivElement>(null);
 
   // Closing the panel drops everything (pictures live in memory only).
   function reset() {
@@ -49,9 +145,9 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
 
   // Scroll the roll to the start view once it exists.
   const start = info.data?.startView ?? "FRONT";
-  useEffect(() => {
-    if (frames[start]?.state === "done") roll.current?.querySelector(`[data-view="${start}"]`)?.scrollIntoView({ inline: "center", block: "nearest" });
-  }, [frames, start]);
+  // useEffect(() => {
+  //   if (frames[start]?.state === "done") roll.current?.querySelector(`[data-view="${start}"]`)?.scrollIntoView({ inline: "center", block: "nearest" });
+  // }, [frames, start]);
 
   if (!info.data?.available) return null;
   const { views, createOrder } = info.data;
@@ -82,6 +178,7 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
       } catch (err) {
         if (cancelled.current) return;
         setFrames((f) => ({ ...f, [view]: { state: "failed" } }));
+        console.warn("try-on failed", view, err instanceof ApiError ? String(err.status) + " " + err.message : err);
         // Without the first picture (or at the daily limit) the rest can't follow.
         if (i === 0 || (err instanceof ApiError && err.status === 429)) {
           setError(t(errorKey(err)));
@@ -96,16 +193,16 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
   const started = Object.keys(frames).length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
       <button type="button" onClick={() => setOpen(true)} className="type-body-medium flex h-11 items-center justify-center gap-2 rounded-sm border border-brand px-4 text-brand hover:bg-subtle">
         <Shirt className="size-5" aria-hidden />
         {t("button")}
       </button>
-      <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle className="type-h3 text-ink">{t("title")}</SheetTitle>
-          <SheetDescription className="type-caption text-ink-muted">{t("aiNote")}</SheetDescription>
-        </SheetHeader>
+      <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto bg-card sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="type-h3 text-ink">{t("title")}</DialogTitle>
+          <DialogDescription className="type-caption text-ink-muted">{t("aiNote")}</DialogDescription>
+        </DialogHeader>
         <div className="flex flex-col gap-4 px-4">
           {status !== "authenticated" ? (
             <div className="flex flex-col items-start gap-3">
@@ -136,29 +233,8 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
                 </p>
               )}
               {/* The swipe roll: left → front → right */}
-              <div ref={roll} className="scroll-row -mx-4 snap-x snap-mandatory px-4">
-                <ul className="flex w-max gap-3 pb-1">
-                  {views.map((v) => {
-                    const f = frames[v];
-                    return (
-                      <li key={v} data-view={v} className="flex w-60 snap-center flex-col gap-1">
-                        <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-md border border-line bg-subtle">
-                          {f?.state === "done" && f.url ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- in-memory data URL, never stored
-                            <img src={f.url} alt={t(`view.${v}`)} className="h-full w-full object-cover" />
-                          ) : f?.state === "creating" ? (
-                            <LoaderCircle className="size-8 animate-spin text-ink-muted" aria-hidden />
-                          ) : f?.state === "failed" ? (
-                            <span className="type-caption flex items-center gap-1 px-3 text-center text-error"><CircleAlert className="size-4 shrink-0" aria-hidden />{t("failedView")}</span>
-                          ) : (
-                            <span className="type-caption text-ink-muted">{t("waiting")}</span>
-                          )}
-                        </div>
-                        <span className={cn("type-caption text-center", v === start ? "font-medium text-ink" : "text-ink-secondary")}>{t(`view.${v}`)}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
+              <div  className="scroll-row -mx-4 snap-x snap-mandatory px-4">
+                             <TurnViewer views={views} frames={frames} start={start} />
               </div>
               <p className="type-caption text-ink-muted">{t("aiNote")}</p>
               {!running && <button type="button" onClick={reset} className="type-body-medium h-11 self-start rounded-sm border border-brand px-4 text-brand hover:bg-subtle">{t("again")}</button>}
@@ -166,8 +242,8 @@ export function TryOn({ slug, productId }: { slug: string; productId: string }) 
           )}
           {error && <p role="alert" className="type-body text-error">{error}</p>}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
   
 }
