@@ -21,9 +21,9 @@ export function ProductPhotos({ product, onChanged }: { product: AdminProduct; o
 
   // The response is the updated product when the backend sends it; otherwise reload the list.
   function apply(r: unknown) {
-    if (r && typeof r === "object" && "images" in r) setImages(productImages(r as AdminProduct));
-    if (r && typeof r === "object" && ("locked" in r || "lockedByAdmin" in r || "isLocked" in r)) setLocked(isProductLocked(r as AdminProduct));
-    void queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+        const prod = r as unknown as AdminProduct;
+    if (r && typeof r === "object" && "images" in r) setImages(productImages(prod));
+    if (r && typeof r === "object" && ("locked" in r || "lockedByAdmin" in r || "isLocked" in r)) setLocked(isProductLocked(prod));
     onChanged();
   }
   const fail = (err: unknown) =>
