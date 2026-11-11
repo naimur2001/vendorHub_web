@@ -15,6 +15,7 @@ import {
   Store,
   UserRound,
   LayoutDashboard,
+  
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -58,7 +59,7 @@ function useStorefrontSlug(user: SessionUser | null | undefined): string | undef
 
 // The same entries in the desktop menu and on the /account page.
 function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
-  const links: AccountLink[] = [];
+   const links: AccountLink[] = [{ href: "/account", key: "account", icon: LayoutDashboard }];
   if (user.role === "ADMIN") links.push({ href: "/admin", key: "adminPortal", icon: ShieldCheck });
   if (user.role === "SHOP_OWNER") links.push({ href: "/owner", key: "ownerArea", icon: Store });
   if (storefrontSlug) links.push({ href: `/shops/${storefrontSlug}`, key: "storefront", icon: Eye });
