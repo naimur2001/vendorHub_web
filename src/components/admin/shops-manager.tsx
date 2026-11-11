@@ -9,13 +9,15 @@ import { Link } from "@/i18n/routing";
 import { listAdminShops, setShopStatus, type AdminShop } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
-
+import { AdminShopPhotos } from "@/components/shop/shop-photos";
 function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void }) {
   const t = useTranslations("AdminShops");
   const c = useTranslations("AdminCommon");
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+    const tPhotos = useTranslations("ShopPhotos");
+  const [showPhotos, setShowPhotos] = useState(false);
   const act = useMutation({
     mutationFn: () => setShopStatus(s.id, !s.isActive, reason.trim()),
     onSuccess: () => { setOpen(false); setReason(""); onDone(t("done")); },
@@ -33,6 +35,12 @@ function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void })
       {!open ? (
         <div className="flex flex-wrap gap-2">
           <Link href={`/shops/${s.slug}`} className="type-body-medium flex h-9 items-center gap-1 rounded-sm px-2 text-brand hover:bg-subtle">{t("view")}<ExternalLink className="size-4" aria-hidden /></Link>
+
+          <button type="button" onClick={() => setShowPhotos((v) => !v)} className="type-body-medium h-9 rounded-sm px-3 text-ink-secondary hover:bg-subtle">
+            {showPhotos ? tPhotos("hide") : tPhotos("photos")}
+          </button>
+
+
           <button type="button" onClick={() => setOpen(true)} className={cn("type-body-medium h-9 rounded-sm px-3", s.isActive ? "text-error hover:bg-error-soft" : "text-success-ink hover:bg-success-soft")}>{s.isActive ? t("deactivate") : t("reactivate")}</button>
         </div>
       ) : (
@@ -45,6 +53,7 @@ function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void })
           </div>
         </form>
       )}
+            {showPhotos && <AdminShopPhotos shopId={s.id} slug={s.slug} />}
     </li>
   );
 }

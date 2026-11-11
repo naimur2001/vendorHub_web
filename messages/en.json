@@ -1885,5 +1885,35 @@
     "loading": "Loading the dashboard…",
     "loadError": "The dashboard couldn't load. Try again.",
     "retry": "Try again"
+  },
+  "ShopPhotos": {
+    "title": "Shop photos",
+    "text": "Real photos of your shop help customers trust it. The signboard is the strongest proof. Up to 12 photos.",
+    "kind": { "EXTERIOR": "Shop front", "SIGNBOARD": "Signboard", "INTERIOR": "Inside", "DISPLAY": "Display", "PANORAMA_360": "360° panorama", "OTHER": "Other" },
+    "kindLabel": "What it shows",
+    "caption": "Caption (optional)",
+    "choose": "Choose a photo",
+    "add": "Add photo",
+    "adding": "Adding…",
+    "rules": "JPG, PNG or WebP, up to 5 MB. A 360° panorama should be a 2:1 photo.",
+    "cover": "Cover",
+    "makeCover": "Make cover",
+    "verified": "Verified photo",
+    "unverified": "Not checked yet",
+    "verify": "Mark verified",
+    "unverify": "Remove verified mark",
+    "delete": "Delete",
+    "confirmDelete": "Click again to delete",
+    "empty": "No photos yet.",
+    "full": "This shop has 12 photos, the maximum.",
+    "photos": "Photos",
+    "hide": "Hide photos",
+    "errors": {
+      "type": "Only JPG, PNG or WebP pictures are allowed.",
+      "size": "The picture is larger than 5 MB.",
+      "duplicate": "This photo is already in the gallery, or the gallery is full.",
+      "rejected": "The server didn't accept this file as a picture.",
+      "generic": "That didn't work. Try again in a moment."
+    }
   }
 }

@@ -15,6 +15,9 @@ import { addStaff, listStaff, removeShopImage, removeStaff, updateShop, uploadSh
 import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { getStorefront, safeMediaUrl, type Storefront } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
+import { OwnerShopPhotos } from "@/components/shop/shop-photos";
+
+
 
 const inputClass =
   "type-body h-11 w-full rounded-md border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none";
@@ -311,7 +314,7 @@ export function ShopSettings() {
   const owned = (shops.data ?? []).filter((s) => s.membership === "OWNER");
   const shop = owned.find((s) => s.id === searchParams.get("shop")) ?? owned[0];
   const profile = useQuery({ queryKey: ["owner", "profile", shop?.slug ?? ""], queryFn: () => getStorefront(shop?.slug ?? ""), enabled: Boolean(shop) });
-
+  const tPhotos = useTranslations("ShopPhotos");
   const changed = () => {
     void queryClient.invalidateQueries({ queryKey: ["owner", "profile"] });
     void queryClient.invalidateQueries({ queryKey: shopKeys.mine });
@@ -333,7 +336,12 @@ export function ShopSettings() {
     <div className="flex flex-col gap-6">
       <Section title={t("images.title")}>
         <div className="grid gap-6 md:grid-cols-[10rem_1fr]">
+          
           <ImageSlot shopId={p.id} kind="logo" current={safeMediaUrl(p.logoUrl)} onChanged={changed} />
+                <Section title={tPhotos("title")}>
+        <OwnerShopPhotos shopId={p.id} slug={p.slug} />
+      </Section>
+
           <ImageSlot shopId={p.id} kind="banner" current={safeMediaUrl(p.bannerUrl)} onChanged={changed} />
         </div>
       </Section>
