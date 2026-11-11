@@ -125,7 +125,7 @@ export function AccountMenu({ user }: { user: SessionUser }) {
         <Avatar name={user.name} size="sm" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={8} className="z-[70] w-64">
+      <DropdownMenuContent align="end" sideOffset={8} className=" z-70 w-64">
         <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
           <span className="type-body-medium truncate text-ink">{user.name}</span>
           <span className="type-caption truncate font-normal text-ink-muted">{user.email}</span>
