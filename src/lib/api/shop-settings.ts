@@ -34,8 +34,24 @@ export function removeShopImage(shopId: string, kind: "logo" | "banner"): Promis
   return api.delete<unknown>(`${base(shopId)}/${kind}`);
 }
 
-export function listStaff(shopId: string): Promise<StaffMember[]> {
-  return api.get<StaffMember[]>(`${base(shopId)}/staff`);
+type Raw = Record<string, unknown>;
+
+// One entry per person; accepts a plain list or { owner, staff: [...] }, with or without a nested `user`.
+function toMember(x: Raw, role?: string): StaffMember {
+  const u = (x.user as Raw | undefined) ?? x;
+  return {
+    userId: String(x.userId ?? u.id ?? ""),
+    name: String(u.name ?? ""),
+    email: String(u.email ?? ""),
+    role: role ?? (x.role as string | undefined) ?? (x.membership as string | undefined),
+  };
+}
+
+export async function listStaff(shopId: string): Promise<StaffMember[]> {
+  const r = await api.get<unknown>(`${base(shopId)}/staff`);
+  if (Array.isArray(r)) return (r as Raw[]).map((x) => toMember(x));
+  const o = (r ?? {}) as { owner?: Raw; staff?: Raw[] };
+  return [...(o.owner ? [toMember(o.owner, "OWNER")] : []), ...(o.staff ?? []).map((x) => toMember(x, "STAFF"))];
 }
 export function addStaff(shopId: string, email: string): Promise<unknown> {
   return api.post<unknown>(`${base(shopId)}/staff`, { email });
