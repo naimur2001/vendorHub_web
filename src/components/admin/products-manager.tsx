@@ -27,7 +27,7 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ProductPhotos } from "@/components/admin/product-photos";
 
-
+import { refreshPublicPages } from "@/lib/refresh-public";
 
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
 type Panel = { kind: "add" } | { kind: "edit"; product: AdminProduct } | { kind: "merge"; product: AdminProduct } | { kind: "photos"; product: AdminProduct } | null;
@@ -274,6 +274,7 @@ export function ProductsManager() {
   const refresh = (text: string) => {
     setNotice(text);
     void queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+    refreshPublicPages(["products", "catalog"]);
   };
 
   const toggle = useMutation({

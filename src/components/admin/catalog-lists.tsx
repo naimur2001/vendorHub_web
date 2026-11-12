@@ -18,6 +18,8 @@ import {
 } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
+import { refreshPublicPages } from "@/lib/refresh-public";
+
 
 const inputClass =
   "type-body h-11 w-full rounded-md border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none";
@@ -102,6 +104,7 @@ export function CatalogLists() {
       setMessage({ kind: "ok", text: o.kind === "delete" ? t("deleted") : t("saved") });
       if (o.kind === "create") (o.target === "brand" ? setBrandName : setCatName)("");
       void queryClient.invalidateQueries({ queryKey: o.target === "brand" ? productKeys.brands : productKeys.categories });
+              refreshPublicPages(["catalog", "products"]);
     },
     onError: (err, o) => {
       let key = "errors.generic";

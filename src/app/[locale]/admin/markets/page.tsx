@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { MarketsManager } from "@/components/admin/markets-manager";
+import { refreshPublicPages } from "@/lib/refresh-public";
 
 type Props = { params: Promise<{ locale: string }> };
 

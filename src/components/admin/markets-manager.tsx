@@ -1,5 +1,6 @@
 "use client";
 
+import { refreshPublicPages } from "@/lib/refresh-public";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, ExternalLink, ImagePlus, LoaderCircle, MapPin, Pencil, Plus, Store, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -183,12 +184,12 @@ function PhotoField({ marketId, marketName }: { marketId: string; marketName: st
 
   const upload = useMutation({
     mutationFn: (file: File) => uploadMarketImage(marketId, file),
-    onSuccess: () => changed(t("uploaded")),
+    onSuccess: () => { changed(t("uploaded")); refreshPublicPages(["markets"]); },
     onError: (err) => setMessage({ kind: "error", text: t(photoErrorKey(err)) }),
   });
   const remove = useMutation({
     mutationFn: () => removeMarketImage(marketId),
-    onSuccess: () => changed(t("removed")),
+    onSuccess: () => { changed(t("removed")); refreshPublicPages(["markets"]); },
     onError: (err) => setMessage({ kind: "error", text: t(photoErrorKey(err)) }),
   });
   const busy = upload.isPending || remove.isPending;
@@ -344,7 +345,7 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
         return { saved, photo: { ok: false, errorKey: photoErrorKey(err) } };
       }
     },
-    onSuccess: (r) => onSaved(r.saved, r.photo),
+    onSuccess: (r) => { onSaved(r.saved, r.photo); refreshPublicPages(["markets"]); },
     onError: (err) => setErrors({ form: t(errorKey(err)) }),
   });
 
@@ -431,7 +432,7 @@ export function MarketsManager() {
     mutationFn: (id: string) => deleteMarket(id),
     onSuccess: () => {
       setConfirmId(null);
-      setMessage({ kind: "ok", text: t("deleted") });
+      setMessage({ kind: "ok", text: t("deleted") }); refreshPublicPages(["markets"]);
       void queryClient.invalidateQueries({ queryKey: marketKeys.all });
     },
     onError: (err) => {

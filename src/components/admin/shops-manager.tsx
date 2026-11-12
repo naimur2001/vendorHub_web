@@ -10,6 +10,9 @@ import { listAdminShops, setShopStatus, type AdminShop } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
 import { AdminShopPhotos } from "@/components/shop/shop-photos";
+import { refreshPublicPages } from "@/lib/refresh-public";
+
+
 function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void }) {
   const t = useTranslations("AdminShops");
   const c = useTranslations("AdminCommon");
@@ -22,6 +25,7 @@ function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void })
     mutationFn: () => setShopStatus(s.id, !s.isActive, reason.trim()),
     onSuccess: () => { setOpen(false); setReason(""); onDone(t("done")); },
     onError: (err) => setError(err instanceof ApiError ? err.message : c("loadError")),
+    
   });
 
   return (
@@ -80,7 +84,7 @@ export function ShopsManager() {
         <>
           <p className="type-body text-ink-secondary">{t("count", { count: shops.data?.meta?.pagination?.total ?? rows.length })}</p>
           <ul className="grid gap-3 lg:grid-cols-2">
-            {rows.map((s) => <ShopRow key={s.id} s={s} onDone={(m) => { setNotice(m); void queryClient.invalidateQueries({ queryKey: ["admin", "shops"] }); }} />)}
+            {rows.map((s) => <ShopRow key={s.id} s={s}   onDone={(m) => { setNotice(m); void queryClient.invalidateQueries({ queryKey: ["admin", "shops"] }); refreshPublicPages(["shops", "markets", "products"]); }} />)}
           </ul>
         </>
       )}

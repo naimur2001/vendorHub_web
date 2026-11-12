@@ -20,12 +20,17 @@ const COOKIE_MODE_HEADERS = { "X-Auth-Mode": "cookie" };
 
 let accessToken: string | null = null;
 let currentUser: SessionUser | null = null;
+
 const listeners = new Set<(user: SessionUser | null) => void>();
 
 function emit() {
   for (const listener of listeners) listener(currentUser);
 }
 
+/** The current access token, only for our own server (refresh check). Never store or log it. */
+export function getAccessToken(): string | null {
+  return accessToken;
+}
 export function getSessionUser(): SessionUser | null {
   return currentUser;
 }
