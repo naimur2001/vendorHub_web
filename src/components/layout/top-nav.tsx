@@ -1,5 +1,6 @@
 "use client";
 
+import { PhotoSearchButton } from "@/components/search/photo-search-button";
 import { LogIn, Search, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, useState, type FormEvent } from "react";
@@ -62,8 +63,9 @@ function SearchBar() {
         placeholder={t("searchPlaceholder")}
         aria-label={t("searchLabel")}
         autoComplete="off"
-        className="type-body h-11 w-full rounded-md border border-input bg-surface pr-3 pl-10 text-ink placeholder:text-ink-muted hover:border-line-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
+        className="type-body h-11 w-full rounded-md border border-input bg-surface pr-12 pl-10 text-ink placeholder:text-ink-muted hover:border-line-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
       />
+      <PhotoSearchButton />
     </form>
   );
 }
