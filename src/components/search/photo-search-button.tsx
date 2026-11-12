@@ -45,7 +45,7 @@ export function PhotoSearchButton() {
       <label
         htmlFor={id}
         title={t("button")}
-        className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-subtle hover:text-brand has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand"
+        className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-subtle hover:text-brand has-:focus-visible:ring-2 has-:focus-visible:ring-brand"
       >
         {search.isPending ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <Camera className="size-5" aria-hidden />}
         <span className="sr-only">{t("button")}</span>
