@@ -86,8 +86,8 @@ html {
 
 /* shadcn/ui color names + fonts (inline because they point at runtime variables) */
 @theme inline {
-  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-jost), var(--font-bn-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-playfair), var(--font-bn-serif), Georgia, "Times New Roman", serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -115,7 +115,7 @@ html {
   Named type-* (not text-*) so cn() does not confuse them with text colors.
 */
 @utility type-display {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-playfair), var(--font-bn-serif), Georgia, serif;
   font-weight: 500;
   font-size: clamp(2.25rem, 1.75rem + 2.5vw, 3.75rem);
   line-height: 1.08;
@@ -124,7 +124,7 @@ html {
 }
 
 @utility type-h2 {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-playfair), var(--font-bn-serif), Georgia, serif;
   font-weight: 500;
   font-size: 1.875rem;
   line-height: 2.25rem;
@@ -132,7 +132,7 @@ html {
 }
 
 @utility type-h3 {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-playfair), var(--font-bn-serif), Georgia, serif;
   font-weight: 600;
   font-size: 1.3125rem;
   line-height: 1.75rem;
@@ -159,7 +159,7 @@ html {
 
 /* Prices: lining, equal-width digits so ৳38,500 lines up in lists */
 @utility type-price {
-  font-family: var(--font-jost), ui-sans-serif, sans-serif;
+  font-family: var(--font-jost), var(--font-bn-sans), ui-sans-serif, sans-serif;
   font-weight: 500;
   font-variant-numeric: lining-nums tabular-nums;
 }

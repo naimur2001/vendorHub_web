@@ -25,6 +25,24 @@ const jost = localFont({
   display: "swap",
 });
 
+
+
+// Bangla letters: used only when the text contains them (the browser loads them on demand).
+const bnSans = localFont({
+  src: "../../../node_modules/@fontsource-variable/noto-sans-bengali/files/noto-sans-bengali-bengali-wght-normal.woff2",
+  variable: "--font-bn-sans",
+  weight: "100 900",
+  display: "swap",
+  preload: false,
+});
+const bnSerif = localFont({
+  src: "../../../node_modules/@fontsource-variable/noto-serif-bengali/files/noto-serif-bengali-bengali-wght-normal.woff2",
+  variable: "--font-bn-serif",
+  weight: "100 900",
+  display: "swap",
+  preload: false,
+});
+
 type Props = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -68,7 +86,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${jost.variable} ${playfair.variable}`}>
+    <html lang={locale} className={`${jost.variable} ${playfair.variable} ${bnSans.variable} ${bnSerif.variable}`}>
       <body>
         {/* Translations for client components, then TanStack Query + session. */}
         <NextIntlClientProvider>

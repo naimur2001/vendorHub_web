@@ -8,6 +8,15 @@ import { CartCountBadge, useCartCount } from "@/components/cart/cart-badge";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { LanguageSwitch } from "@/components/layout/language-switch";
+
+
+
+
+
+
+
+
 const SEARCH_MAX_LENGTH = 100;
 
 // Brand mark: an arch with a gold keystone (same drawing as the app icon) + wordmark.
@@ -132,6 +141,14 @@ export function TopNav() {
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <CartLink />
+        
+        
+        
+          <Suspense>
+            <LanguageSwitch />
+          </Suspense>
+          
+          
                       {/* The bell reads the current time ("2 min ago"), so it renders after the page shell */}
           <Suspense fallback={<span className="size-11" aria-hidden />}>
             <NotificationBell />

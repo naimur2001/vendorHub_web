@@ -3,7 +3,7 @@ import { createNavigation } from "next-intl/navigation";
 
 // Add "bn" here (plus messages/bn.json) when the Bangla translation is ready.
 export const routing = defineRouting({
-  locales: ["en"],
+  locales: ["en", "bn"],
   defaultLocale: "en",
   // English at plain URLs (/auth/login), other languages prefixed (/bn/auth/login).
   localePrefix: "as-needed",

@@ -15,6 +15,7 @@
     "bargains": "Bargains",
     "account": "Account",
     "login": "Log in",
+    "language": "Language",
     "yourAccount": "Your account ({name})"
   },
   "Home": {
@@ -1079,6 +1080,7 @@
         "disputes": "Disputes",
         "users": "Users",
         "shops": "Shops",
+        "reports": "Reports",
       "back": "Back to the marketplace"
     },
     "loading": "Loading…",
@@ -1991,5 +1993,30 @@
       "limit": "Too many uploads. Try again later.",
       "generic": "That didn't work. Try again in a moment."
     }
+  },
+  "AdminReports": {
+    "metaTitle": "Reports",
+    "title": "Reports",
+    "subtitle": "Sales over time and the best shops and products. Days follow Dhaka time.",
+    "from": "From",
+    "to": "Until",
+    "interval": "Group by",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "apply": "Show",
+    "orders": "Orders",
+    "revenue": "Revenue",
+    "average": "Average order",
+    "chart": "Revenue per {interval}",
+    "bar": "{period}: {revenue}, {orders, plural, one {# order} other {# orders}}",
+    "topShops": "Top shops by revenue",
+    "topProducts": "Top products by units sold",
+    "units": "{count, plural, one {# unit} other {# units}}",
+    "empty": "No sales in this period.",
+    "rangeError": "Choose a range of at most 366 days, with the start before the end.",
+    "loading": "Loading reports…",
+    "loadError": "Reports couldn't load. Try again.",
+    "retry": "Try again"
   }
 }
