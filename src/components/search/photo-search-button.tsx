@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Camera, LoaderCircle, Search } from "lucide-react";
+import { Camera, LoaderCircle, Search, ImageOff } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useState } from "react";
@@ -15,6 +15,7 @@ import { formatTaka } from "@/lib/format";
 /** 📷 in the search bar: photo → "Similar products" dialog (+ a link to all results when words were recognised). */
 export function PhotoSearchButton() {
   const t = useTranslations("PhotoSearch");
+    const tCatalog = useTranslations("Catalog");
   const locale = useLocale();
   const id = useId();
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +78,14 @@ export function PhotoSearchButton() {
                   <li key={p.slug}>
                     <Link href={`/products/${p.slug}`} onClick={() => setResult(null)} className="group flex h-full flex-col gap-1.5 rounded-md border border-line bg-card p-2 hover:border-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
                       <div className="relative aspect-square overflow-hidden rounded-t-full rounded-b-sm bg-subtle">
-                        {src && <Image src={src} alt="" fill unoptimized sizes="12rem" className="object-cover motion-safe:transition-transform group-hover:scale-105" />}
+                        {src ? (
+                          <Image src={src} alt="" fill unoptimized sizes="12rem" className="object-cover motion-safe:transition-transform group-hover:scale-105" />
+                        ) : (
+                          <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-highlight">
+                            <ImageOff className="size-8" strokeWidth={1.25} aria-hidden />
+                            <span className="type-caption text-ink-muted">{tCatalog("noPhoto")}</span>
+                          </span>
+                        )}
                         {p.matchPercent !== null && (
                           <span className="type-caption absolute bottom-1 left-1 rounded-full bg-ink/70 px-2 py-0.5 text-primary-foreground">{t("match", { percent: p.matchPercent })}</span>
                         )}
