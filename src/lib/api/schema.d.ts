@@ -356,8 +356,8 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Edit the shop profile (owner or admin)
-         * @description Here {shop} is the shop ID. Unknown fields are rejected; the verification level and the slug cannot be changed here.
+         * Edit the shop profile (owner or admin); logo and banner have their own upload endpoints
+         * @description Here {shop} is the shop ID. Unknown fields (also logoUrl and bannerUrl) are rejected with 400.
          */
         patch: operations["updateShop"];
         trace?: never;
@@ -2123,6 +2123,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shops/{shopId}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set or replace the shop logo (square, center-cropped to 512 x 512, min 200 x 200) */
+        put: operations["setShopLogo"];
+        post?: never;
+        /** Remove the shop logo (and its files) */
+        delete: operations["removeShopLogo"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/banner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set or replace the shop banner (stored 1600 wide, min 1200 x 300) */
+        put: operations["setShopBanner"];
+        post?: never;
+        /** Remove the shop banner (and its files) */
+        delete: operations["removeShopBanner"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/search/by-image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search by photo - similar products (free visual search), plus optional search words
+         * @description One JPG, PNG or WebP photo in the multipart field "photo" (max 5 MB; type read from the content). The photo stays in memory, is re-encoded without metadata and is never stored or logged; the answer has Cache-Control no-store. Visual search (CLIP on our own server) returns the most similar active products by photo and by title. Search words (query, label, category) come from the AI only when SEARCH_IMAGE_MODE is gemini (mock in tests, null when off). Login optional. Limits: 10 per hour per IP for guests, 30 per day per logged-in user.
+         */
+        post: operations["searchByImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2472,10 +2528,9 @@ export interface components {
         };
         CheckoutResult: {
             /** Format: uuid */
-            checkoutId?: string;
-            orders?: components["schemas"]["Order"][];
-        } & {
-            [key: string]: unknown;
+            checkoutId: string;
+            totalAmount: number;
+            orders: components["schemas"]["CustomerOrder"][];
         };
         /** @description A negotiation. secondsLeft and yourTurn drive the countdown and the buttons. */
         Bargain: {
@@ -2783,6 +2838,45 @@ export interface components {
             minOfferPercent: number;
             isActive: boolean;
         };
+        CustomerOrderItem: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Link to the product page with productSlug.
+             */
+            productId: string;
+            productSlug: string;
+            /** @description The title at the moment of ordering (snapshot). */
+            title: string;
+            unitPrice: number;
+            quantity: number;
+            lineTotal: number;
+            bargained: boolean;
+        };
+        CustomerOrder: {
+            /** Format: uuid */
+            id: string;
+            orderNumber: string;
+            /** Format: uuid */
+            checkoutId: string;
+            status: components["schemas"]["OrderStatus"];
+            /** @enum {string} */
+            paymentMethod: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
+            paymentStatus: components["schemas"]["PaymentStatus"];
+            /** @enum {string} */
+            deliveryMethod: "STORE_PICKUP" | "VENDOR_DELIVERY";
+            deliveryAddress?: string | null;
+            deliveryFee: number;
+            subtotal?: number;
+            total: number;
+            shop: {
+                [key: string]: unknown;
+            };
+            items: components["schemas"]["CustomerOrderItem"][];
+        } & {
+            [key: string]: unknown;
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -2897,6 +2991,26 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description The new logo or banner. */
+        ShopImageResult: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        /** Format: uuid */
+                        shopId: string;
+                        /** @description Also stored as the shop's logoUrl / bannerUrl (our own /media URL). */
+                        url: string;
+                        thumbUrl: string;
+                        width: number;
+                        height: number;
+                    };
+                };
             };
         };
     };
@@ -3572,8 +3686,6 @@ export interface operations {
                 "application/json": {
                     name?: string;
                     description?: string | null;
-                    logoUrl?: string | null;
-                    bannerUrl?: string | null;
                     /** Format: uuid */
                     marketId?: string | null;
                     levelFloor?: string | null;
@@ -3584,7 +3696,6 @@ export interface operations {
                     supportsDelivery?: boolean;
                     supportsPickup?: boolean;
                     returnPolicy?: string | null;
-                    /** @description 0 means the shop accepts no returns. */
                     returnWindowDays?: number;
                 };
             };
@@ -3597,7 +3708,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example true */
                         success?: boolean;
                         data?: components["schemas"]["Shop"];
                     };
@@ -4176,10 +4286,9 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example true */
-                        success?: boolean;
-                        data?: components["schemas"]["Order"][];
-                        meta?: {
+                        success: boolean;
+                        data: components["schemas"]["CustomerOrder"][];
+                        meta: {
                             pagination?: components["schemas"]["Pagination"];
                         };
                     };
@@ -4205,7 +4314,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderResponse"];
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["CustomerOrder"];
+                    };
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -7256,6 +7368,162 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    setShopLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["PhotoUpload"];
+        responses: {
+            200: components["responses"]["ShopImageResult"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            413: components["responses"]["PhotoTooLarge"];
+            422: components["responses"]["PhotoTooSmall"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    removeShopLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setShopBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["PhotoUpload"];
+        responses: {
+            200: components["responses"]["ShopImageResult"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            413: components["responses"]["PhotoTooLarge"];
+            422: components["responses"]["PhotoTooSmall"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    removeShopBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ShopIdPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    searchByImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    photo: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Similar products (free visual search), plus optional search words. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** @description Search words from the AI; null when SEARCH_IMAGE_MODE is off or nothing was recognised. */
+                            query: string | null;
+                            label: string | null;
+                            category: {
+                                slug: string;
+                                name: string;
+                            } | null;
+                            /** @description Most similar first (best of photo similarity and title match). */
+                            products: {
+                                /** Format: uuid */
+                                id: string;
+                                slug: string;
+                                title: string;
+                                image: string | null;
+                                thumbnail: string | null;
+                                lowestPrice: number;
+                                shopCount: number;
+                                /** @enum {string} */
+                                match: "photo" | "title";
+                                score: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            413: components["responses"]["PhotoTooLarge"];
+            429: components["responses"]["TooManyRequests"];
+            /** @description Visual search is not available (the model could not be loaded). */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
 }

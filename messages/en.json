@@ -2018,5 +2018,24 @@
     "loading": "Loading reports…",
     "loadError": "Reports couldn't load. Try again.",
     "retry": "Try again"
+  },
+  "PhotoSearch": {
+    "button": "Search by photo",
+    "looking": "Looking at your photo…",
+    "similarTitle": "Similar products",
+    "recognised": "We think this is: {label}",
+    "fromPrice": "from {price}",
+    "shops": "{count, plural, one {# shop} other {# shops}}",
+    "match": "{percent}% match",
+    "seeAll": "See all results for “{query}”",
+    "none": "No similar products in the shops yet.",
+    "close": "Close",
+    "errors": {
+      "type": "Use a JPG, PNG or WebP photo.",
+      "notFound": "We couldn't recognise a product in this photo. Try a clearer photo of just the item.",
+      "limit": "Too many photo searches. Try again later.",
+      "unavailable": "Photo search isn't available right now. Search with words instead.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }
