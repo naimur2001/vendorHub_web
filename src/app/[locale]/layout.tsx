@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Jost, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -10,15 +10,18 @@ import "../globals.css";
 
 // Text and UI: Jost. Headings: Playfair Display (Didone, neo-classical).
 // Bangla later: add Noto Sans Bengali (text) and Noto Serif Bengali (headings).
-const jost = Jost({
-  subsets: ["latin"],
-  variable: "--font-jost",
+// Self-hosted (no request to Google at build time or in the browser).
+const playfair = localFont({
+  src: "../../../node_modules/@fontsource-variable/playfair-display/files/playfair-display-latin-wght-normal.woff2",
+  variable: "--font-playfair",
+  weight: "400 900",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+const jost = localFont({
+  src: "../../../node_modules/@fontsource-variable/jost/files/jost-latin-wght-normal.woff2",
+  variable: "--font-jost",
+  weight: "100 900",
   display: "swap",
 });
 
