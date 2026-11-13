@@ -39,7 +39,7 @@ export function DeletionGate() {
   const when = date && !Number.isNaN(Date.parse(date)) ? format.dateTime(new Date(date), { day: "numeric", month: "long", year: "numeric" }) : "—";
 
   return (
-    <div role="alertdialog" aria-modal="true" aria-labelledby="deletion-title" className="fixed inset-0 z-[90] flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm">
+    <div role="alertdialog" aria-modal="true" aria-labelledby="deletion-title" className="fixed inset-0 z-90 flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm">
       <div className="flex w-full max-w-md flex-col items-center gap-4 rounded-md border border-line bg-card p-6 text-center shadow-card">
         <CalendarClock className="size-12 text-error" strokeWidth={1.5} aria-hidden />
         <h1 id="deletion-title" className="type-h2 text-ink">{t("pendingTitle")}</h1>
