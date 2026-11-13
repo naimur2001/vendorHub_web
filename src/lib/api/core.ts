@@ -1,5 +1,5 @@
 // Shared by browser and server code. No tokens, no user state here.
-
+import { reportDeletion } from "./deletion-signal";
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
 export const API_PREFIX = "/api/v1";
 
@@ -16,6 +16,7 @@ export type SessionUser = {
   role: Role;
   avatarUrl: string | null;
   emailVerified?: boolean;
+  deletionScheduledFor?: string | null;
 };
 
 // What login, register and refresh return in cookie mode (no refreshToken in the JSON).
@@ -118,5 +119,5 @@ export async function readResponse<T>(res: Response): Promise<ApiResult<T>> {
 
   const error = isObject(body) && isObject(body.error) ? body.error : null;
   const message = typeof error?.message === "string" ? error.message : fallbackMessage(res.status);
-  throw new ApiError(res.status, message, error?.details);
+  throw reportDeletion(new ApiError(res.status, message, error?.details));
 }

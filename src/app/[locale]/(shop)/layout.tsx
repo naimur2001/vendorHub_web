@@ -1,12 +1,14 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { TopNav } from "@/components/layout/top-nav";
 import { VerifyBanner } from "@/components/auth/email-verification";
+import { DeletionGate } from "@/components/account/deletion-gate";
 // Shared frame for all shopping pages: top bar, content, bottom bar on phones.
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <TopNav />
       <VerifyBanner />
+      <DeletionGate />
       {/* Bottom padding on phones = bottom bar (4rem) + iPhone home bar + breathing room */}
       <main
         id="main"

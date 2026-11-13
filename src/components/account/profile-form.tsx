@@ -11,7 +11,7 @@ import { changePassword, refreshSession, updateProfile } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
-
+import { DeleteAccount } from "@/components/account/delete-account";
 function Note({ kind, text }: { kind: "ok" | "error"; text: string }) {
   return (
     <p role={kind === "error" ? "alert" : "status"} className={cn("type-body flex items-start gap-2", kind === "error" ? "text-error" : "text-success-ink")}>
@@ -88,6 +88,9 @@ export function ProfileForm() {
         {password && <Note kind={password.kind} text={password.text} />}
         <button type="submit" disabled={change.isPending} className={primary}>{change.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}{t("changePassword")}</button>
       </form>
+
+<DeleteAccount />
+
     </div>
   );
 }

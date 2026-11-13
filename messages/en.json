@@ -2037,5 +2037,36 @@
       "unavailable": "Photo search isn't available right now. Search with words instead.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "Deletion": {
+    "sectionTitle": "Delete my account",
+    "sectionText": "Your account is disabled right away and deleted after {days} days. Until then you can log in and cancel. Orders stay in the shops' records, without your personal details.",
+    "reason": "Why are you leaving? (optional)",
+    "password": "Your password",
+    "confirm": "I understand my account will be disabled now and deleted later",
+    "button": "Delete my account",
+    "deleting": "Disabling…",
+    "blockersTitle": "Please finish these first:",
+    "blocker": {
+      "OPEN_ORDERS": "{count, plural, one {# open order} other {# open orders}} as a customer",
+      "OPEN_RETURNS": "{count, plural, one {# open return} other {# open returns}}",
+      "SHOP_OPEN_ORDERS": "{count, plural, one {# open order} other {# open orders}} in your shop",
+      "SHOP_OPEN_RETURNS": "{count, plural, one {# open return} other {# open returns}} in your shop"
+    },
+    "errors": {
+      "password": "Enter your password.",
+      "wrongPassword": "The password is wrong.",
+      "confirm": "Please tick the box to confirm.",
+      "reason": "Use 300 characters or fewer.",
+      "admin": "Admin accounts can't be deleted here.",
+      "generic": "That didn't work. Try again in a moment."
+    },
+    "pendingTitle": "Your account will be deleted",
+    "pendingText": "Your account is disabled and will be deleted for good on {date}. Changed your mind? Cancel now and everything stays as it was.",
+    "cancel": "Cancel deletion",
+    "cancelling": "Restoring…",
+    "restored": "Welcome back! Your account is active again.",
+    "logOut": "Log out",
+    "cancelError": "Couldn't cancel. Log in again and try once more."
   }
 }

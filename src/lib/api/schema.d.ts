@@ -2179,6 +2179,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users/me/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete my account (disabled now, anonymised after the grace period)
+         * @description Needs the current password (400 if wrong). Admins get 403. 409 with error.details.blockers while there are open orders or returns (as customer or in the user's shops). On success: logged out on all devices, owned shops hidden, staff memberships removed, cart emptied, live bargains closed, an email with the date. Until the date, every logged-in call except GET /auth/me and DELETE /users/me/deletion answers 403 with error.details.code ACCOUNT_DELETION_PENDING and error.details.deletionScheduledFor; login and refresh keep working so the user can cancel. After the date the account is anonymised (orders kept without personal data).
+         */
+        post: operations["requestAccountDeletion"];
+        /** Cancel the deletion (restore the account and the shops hidden by the request) */
+        delete: operations["cancelAccountDeletion"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2221,8 +2242,12 @@ export interface components {
             phone: string | null;
             role: components["schemas"]["Role"];
             avatarUrl: string | null;
-            /** @description False until the link from the verification email was opened. */
             emailVerified: boolean;
+            /**
+             * Format: date-time
+             * @description Set while the account waits for deletion (the user can cancel until then).
+             */
+            deletionScheduledFor: string | null;
         };
         Session: {
             user?: components["schemas"]["User"];
@@ -3011,6 +3036,15 @@ export interface components {
                         height: number;
                     };
                 };
+            };
+        };
+        /** @description The account is scheduled for deletion (error.details.code = "ACCOUNT_DELETION_PENDING", error.details.deletionScheduledFor). */
+        AccountDeletionPending: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
             };
         };
     };
@@ -7524,6 +7558,78 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+        };
+    };
+    requestAccountDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    password: string;
+                    reason?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Scheduled. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: date-time */
+                            deletionScheduledFor: string;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Open orders or returns first (error.details.blockers lists them with code, count, message). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancelAccountDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Restored. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            cancelled: boolean;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
         };
     };
 }
