@@ -290,7 +290,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Malls and markets */
+        /**
+         * Malls and markets, optionally filtered by district and name
+         * @description A plain array ordered by name (no pagination). Every market carries its district key (one of the 64 districts of Bangladesh); the API only sends the key, the frontend shows the English or Bangla name. Both filters are optional and can be combined. Without them all markets are returned.
+         */
         get: operations["listMarkets"];
         put?: never;
         post?: never;
@@ -1291,7 +1294,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a mall or market */
+        /**
+         * Create a mall or market
+         * @description Audited as catalog.market_created (name and district).
+         */
         post: operations["adminCreateMarket"];
         delete?: never;
         options?: never;
@@ -1313,7 +1319,10 @@ export interface paths {
         delete: operations["adminDeleteMarket"];
         options?: never;
         head?: never;
-        /** Edit a market (the slug never changes) */
+        /**
+         * Edit a market (the slug never changes)
+         * @description Audited as catalog.market_updated with the fields that were sent.
+         */
         patch: operations["adminUpdateMarket"];
         trace?: never;
     };
@@ -2363,6 +2372,7 @@ export interface components {
             name: string;
             slug: string;
             city: string;
+            district: components["schemas"]["District"];
             address: string | null;
             /** @description Detail answer only. */
             latitude?: number | null;
@@ -2977,6 +2987,29 @@ export interface components {
             items: components["schemas"]["CustomerOrderItem"][];
         } & {
             [key: string]: unknown;
+        };
+        /**
+         * @description One of the 64 districts of Bangladesh as a fixed key (lowercase, URL-safe). The list lives in src/lib/districts.js.
+         * @example dhaka
+         * @enum {string}
+         */
+        District: "barguna" | "barishal" | "bhola" | "jhalokathi" | "patuakhali" | "pirojpur" | "bandarban" | "brahmanbaria" | "chandpur" | "chattogram" | "cumilla" | "coxs-bazar" | "feni" | "khagrachhari" | "lakshmipur" | "noakhali" | "rangamati" | "dhaka" | "faridpur" | "gazipur" | "gopalganj" | "kishoreganj" | "madaripur" | "manikganj" | "munshiganj" | "narayanganj" | "narsingdi" | "rajbari" | "shariatpur" | "tangail" | "bagerhat" | "chuadanga" | "jashore" | "jhenaidah" | "khulna" | "kushtia" | "magura" | "meherpur" | "narail" | "satkhira" | "jamalpur" | "mymensingh" | "netrokona" | "sherpur" | "bogura" | "joypurhat" | "naogaon" | "natore" | "chapainawabganj" | "pabna" | "rajshahi" | "sirajganj" | "dinajpur" | "gaibandha" | "kurigram" | "lalmonirhat" | "nilphamari" | "panchagarh" | "rangpur" | "thakurgaon" | "habiganj" | "moulvibazar" | "sunamganj" | "sylhet";
+        /** @description The stored market, as answered by the admin create and edit calls. */
+        AdminMarket: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            city: string;
+            district: components["schemas"]["District"];
+            address: string | null;
+            latitude: number | null;
+            longitude: number | null;
+            /**
+             * Format: uuid
+             * @description Internal reference to the market photo (set with PUT /admin/markets/{marketId}/image).
+             */
+            imageId: string | null;
         };
     };
     responses: {
@@ -3617,14 +3650,25 @@ export interface operations {
     };
     listMarkets: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Only markets in this district. An unknown key (or an empty value) answers 400.
+                 * @example chattogram
+                 */
+                district?: components["schemas"]["District"];
+                /**
+                 * @description The market name contains this text (case-insensitive, trimmed; "%" and "_" are normal characters). An empty text means no filter. More than 100 characters answers 400.
+                 * @example city
+                 */
+                q?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description All markets. */
+            /** @description The markets (an empty array when nothing matches). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3632,11 +3676,12 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example true */
-                        success?: boolean;
-                        data?: components["schemas"]["Market"][];
+                        success: boolean;
+                        data: components["schemas"]["Market"][];
                     };
                 };
             };
+            400: components["responses"]["BadRequest"];
         };
     };
     getMarket: {
@@ -5719,6 +5764,8 @@ export interface operations {
                     name: string;
                     /** @default Dhaka */
                     city?: string;
+                    /** @default dhaka */
+                    district?: components["schemas"]["District"];
                     address?: string;
                     latitude?: number;
                     longitude?: number;
@@ -5732,7 +5779,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataObject"];
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        data: components["schemas"]["AdminMarket"];
+                    };
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -5780,6 +5831,7 @@ export interface operations {
                 "application/json": {
                     name?: string;
                     city?: string;
+                    district?: components["schemas"]["District"];
                     address?: string | null;
                     latitude?: number | null;
                     longitude?: number | null;
@@ -5793,7 +5845,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataObject"];
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        data: components["schemas"]["AdminMarket"];
+                    };
                 };
             };
             400: components["responses"]["BadRequest"];

@@ -1,6 +1,7 @@
 import "client-only";
 import { api } from "./client";
 import type { components } from "./schema";
+import type { District } from "@/lib/districts";
 
 type VerificationLevel = components["schemas"]["VerificationLevel"];
 
@@ -41,6 +42,7 @@ export type Market = {
   name: string;
   slug: string;
   city: string | null;
+  district: District; // one of the 64 keys; the name comes from messages ("Districts")
   address: string | null;
   shopCount: number;
   image: MarketImage | null;
