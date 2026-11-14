@@ -302,6 +302,17 @@
     "follow": "দোকান ফলো করুন",
     "following": "ফলো করছেন",
     "followError": "আপডেট করা গেল না। আবার চেষ্টা করুন।",
+    "contact": "দোকানের সাথে যোগাযোগ",
+    "call": "কল করুন {phone}",
+    "whatsappLabel": "WhatsApp-এ কথা বলুন (নতুন ট্যাবে খুলবে)",
+    "linkLabel": "{site} (নতুন ট্যাবে খুলবে)",
+    "links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube",
+      "website": "ওয়েবসাইট"
+    },
     "trustStats": "দোকানের বিশ্বাসযোগ্যতা",
     "rating": "{average} ★ বিশ্বাস রেটিং · {count, plural, other {#টি রিভিউ}}",
     "noReviews": "এখনও রিভিউ নেই",

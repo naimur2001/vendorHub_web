@@ -176,6 +176,18 @@ export function safeSocialUrl(key: SocialKey, value: string | null | undefined):
   return null;
 }
 
+const SHOP_PHONE = /^01\d{9}$/;
+
+/** "01712345678" -> "tel:+8801712345678"; null when there is no (valid) number, so the button is hidden. */
+export function callHref(phone: string | null | undefined): string | null {
+  return phone && SHOP_PHONE.test(phone) ? `tel:+88${phone}` : null;
+}
+
+/** "01712345678" -> "https://wa.me/8801712345678". */
+export function whatsappHref(phone: string | null | undefined): string | null {
+  return phone && SHOP_PHONE.test(phone) ? `https://wa.me/88${phone}` : null;
+}
+
 /** "Level 3 · Shop 42" (adds "Shop" to a bare number). */
 export function shopPlace(levelFloor: string | null, shopNumber: string | null): string {
   const number = shopNumber ? (/^shop\b/i.test(shopNumber) ? shopNumber : `Shop ${shopNumber}`) : null;

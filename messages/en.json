@@ -383,6 +383,17 @@
     "follow": "Follow shop",
     "following": "Following",
     "followError": "Couldn't update. Try again.",
+    "contact": "Contact the shop",
+    "call": "Call {phone}",
+    "whatsappLabel": "Chat on WhatsApp (opens in a new tab)",
+    "linkLabel": "{site} (opens in a new tab)",
+    "links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube",
+      "website": "Website"
+    },
     "trustStats": "Shop trust",
     "rating": "{average} ★ trust rating · {count, plural, one {# review} other {# reviews}}",
     "noReviews": "No reviews yet",

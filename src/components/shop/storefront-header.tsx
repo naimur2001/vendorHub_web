@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Clock, Handshake, LoaderCircle, MapPin, Star, Users } from "lucide-react";
+import { Check, Clock, ExternalLink, Handshake, LoaderCircle, MapPin, MessageCircle, Phone, Star, Users } from "lucide-react";
 import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState } from "react";
@@ -9,7 +9,7 @@ import { useSession } from "@/components/app-providers";
 import { VerificationSeal } from "@/components/brand/verification-seal";
 import { Link } from "@/i18n/routing";
 import { api } from "@/lib/api/client";
-import { safeMediaUrl, shopPlace, type Storefront } from "@/lib/api/storefront";
+import { callHref, safeMediaUrl, safeSocialUrl, shopPlace, SOCIAL_KEYS, whatsappHref, type Storefront } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
 
 function initials(name: string): string {
@@ -50,6 +50,57 @@ function ShopLogo({ shop }: { shop: Storefront }) {
         </span>
       )}
     </span>
+  );
+}
+
+/** Call, WhatsApp and the shop's own links. Nothing is shown for a shop without contact details. */
+function ShopContact({ shop }: { shop: Storefront }) {
+  const t = useTranslations("Shop");
+  const call = callHref(shop.phone);
+  const whatsapp = whatsappHref(shop.whatsapp);
+  // "?." because a page cached before the contact update has no socialLinks yet.
+  const links = SOCIAL_KEYS.flatMap((key) => {
+    const href = safeSocialUrl(key, shop.socialLinks?.[key]);
+    return href ? [{ key, href }] : [];
+  });
+  if (!call && !whatsapp && links.length === 0) return null;
+
+  const button =
+    "type-body-medium flex h-11 items-center justify-center gap-2 rounded-sm border border-brand bg-card px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none";
+
+  return (
+    <ul aria-label={t("contact")} className="flex flex-wrap items-center gap-x-2 gap-y-2">
+      {call && (
+        <li>
+          <a href={call} className={button}>
+            <Phone className="size-4 shrink-0" aria-hidden />
+            {t("call", { phone: shop.phone ?? "" })}
+          </a>
+        </li>
+      )}
+      {whatsapp && (
+        <li>
+          <a href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label={t("whatsappLabel")} className={button}>
+            <MessageCircle className="size-4 shrink-0" aria-hidden />
+            WhatsApp
+          </a>
+        </li>
+      )}
+      {links.map(({ key, href }) => (
+        <li key={key}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            aria-label={t("linkLabel", { site: t(`links.${key}`) })}
+            className="type-body-medium flex h-11 items-center gap-1 rounded-sm px-2 text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          >
+            {t(`links.${key}`)}
+            <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+          </a>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -213,6 +264,8 @@ export function StorefrontHeader({ shop }: { shop: Storefront }) {
         <div className="md:hidden">
           <FollowButton slug={shop.slug} onFollowers={setFollowers} />
         </div>
+
+        <ShopContact shop={shop} />
 
         <ul aria-label={t("trustStats")} className="flex flex-wrap gap-x-6 gap-y-2 border-y border-line py-3">
           {stats.map(({ icon: Icon, text }) => (
