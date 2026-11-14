@@ -17,9 +17,10 @@ type Props = { params: Promise<{ locale: string }> };
 
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 // pt-2: room for the doors to lift on hover/focus without being cut off by the scroll row.
-const DOORS = "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pt-2 pb-2md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0";
+const DOORS = "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pt-2 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0";
 
-// Up to 4 markets with the most shops, from the 10-minute market cache.
+// The markets with the most shops, from the 10-minute market cache: 8 (two full rows on desktop)
+// when there are at least 8, otherwise up to 4. "All markets" above leads to the rest.
 async function MarketDoors() {
   let markets: Market[];
   try {
@@ -27,7 +28,7 @@ async function MarketDoors() {
   } catch {
     return null; // the rest of the home page still works
   }
-  const top = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 4);
+  const top = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, markets.length >= 8 ? 8 : 4);
   if (top.length === 0) return null;
 
   return (

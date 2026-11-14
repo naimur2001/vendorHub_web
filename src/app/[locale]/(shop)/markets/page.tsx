@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
-import { MarketCard } from "@/components/shop/market-cards";
+import { MarketBrowser } from "@/components/shop/market-browser";
 import { getMarkets } from "@/lib/api/catalog-cache";
 import type { Market } from "@/lib/api/shops";
 
@@ -29,13 +29,7 @@ async function MarketList() {
   }
   if (markets.length === 0) return <p className="type-body text-ink-secondary">{t("empty")}</p>;
 
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {markets.map((market) => (
-        <MarketCard key={market.id} market={market} />
-      ))}
-    </div>
-  );
+  return <MarketBrowser markets={markets} />;
 }
 
 function MarketListSkeleton() {
