@@ -13,9 +13,18 @@ import { listAllMarkets } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { addStaff, listStaff, removeShopImage, removeStaff, updateShop, uploadShopImage, type ShopUpdate } from "@/lib/api/shop-settings";
 import { getMyShops, shopKeys } from "@/lib/api/shops";
-import { getStorefront, safeMediaUrl, type Storefront } from "@/lib/api/storefront";
+import { getStorefront, safeMediaUrl, safeSocialUrl, SOCIAL_KEYS, type SocialKey, type SocialLinks, type Storefront } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
+import { BD_MOBILE, normalizePhone } from "@/lib/validation";
 import { OwnerShopPhotos } from "@/components/shop/shop-photos";
+
+const LINK_PLACEHOLDER: Record<SocialKey, string> = {
+  facebook: "https://www.facebook.com/yourshop",
+  instagram: "https://www.instagram.com/yourshop",
+  tiktok: "https://www.tiktok.com/@yourshop",
+  youtube: "https://www.youtube.com/@yourshop",
+  website: "https://www.yourshop.com",
+};
 
 
 
@@ -133,6 +142,10 @@ function ProfileForm({ shop, onSaved }: { shop: Storefront; onSaved: () => void 
 
   const [name, setName] = useState(shop.name);
   const [description, setDescription] = useState(shop.description ?? "");
+  const [phone, setPhone] = useState(shop.phone ?? "");
+  const [whatsapp, setWhatsapp] = useState(shop.whatsapp ?? "");
+  // "?." because a storefront cached before the contact update has no socialLinks yet.
+  const [links, setLinks] = useState(() => Object.fromEntries(SOCIAL_KEYS.map((k) => [k, shop.socialLinks?.[k] ?? ""])) as Record<SocialKey, string>);
   const [marketId, setMarketId] = useState(shop.market?.id ?? "");
   const [levelFloor, setLevelFloor] = useState(shop.address.levelFloor ?? "");
   const [shopNumber, setShopNumber] = useState(shop.address.shopNumber ?? "");
@@ -148,7 +161,18 @@ function ProfileForm({ shop, onSaved }: { shop: Storefront; onSaved: () => void 
   const save = useMutation({
     mutationFn: (patch: ShopUpdate) => updateShop(shop.id, patch),
     onSuccess: () => { setNote({ kind: "ok", text: t("saved") }); onSaved(); },
-    onError: () => setNote({ kind: "error", text: t("errors.generic") }),
+    onError: (err) => {
+      // 400 names the fields the backend rejected: mark them with our own texts.
+      const details = err instanceof ApiError && err.status === 400 && typeof err.details === "object" ? err.details : null;
+      if (details) {
+        const next: Record<string, string> = {};
+        if ("phone" in details) next.phone = t("errors.phone");
+        if ("whatsapp" in details) next.whatsapp = t("errors.phone");
+        if ("socialLinks" in details) next.links = t("errors.links");
+        setErrors(next);
+      }
+      setNote({ kind: "error", text: t(details ? "errors.check" : "errors.generic") });
+    },
   });
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -156,6 +180,17 @@ function ProfileForm({ shop, onSaved }: { shop: Storefront; onSaved: () => void 
     setNote(null);
     const next: Record<string, string> = {};
     if (name.trim().length < 2 || name.trim().length > 100) next.name = t("errors.name");
+    // The phone can be changed but not removed; older shops may not have one yet.
+    const phoneValue = normalizePhone(phone);
+    if (phoneValue ? !BD_MOBILE.test(phoneValue) : shop.phone != null) next.phone = t(phoneValue ? "errors.phone" : "errors.phoneRequired");
+    const whatsappValue = normalizePhone(whatsapp);
+    if (whatsappValue && !BD_MOBILE.test(whatsappValue)) next.whatsapp = t("errors.phone");
+    const socialLinks = {} as SocialLinks;
+    for (const k of SOCIAL_KEYS) {
+      const v = links[k].trim();
+      socialLinks[k] = v || null;
+      if (v && !safeSocialUrl(k, v)) next[k] = k === "website" ? t("errors.website") : t("errors.link", { site: t(`profile.${k}`) });
+    }
     if (addressLine.trim().length < 5 || addressLine.trim().length > 200) next.address = t("errors.address");
     if (description.length > 1000) next.description = t("errors.description");
     if (policy.length > 2000) next.policy = t("errors.returnPolicy");
@@ -170,6 +205,9 @@ function ProfileForm({ shop, onSaved }: { shop: Storefront; onSaved: () => void 
     save.mutate({
       name: name.trim(),
       description: description.trim() || null,
+      ...(phoneValue && { phone: phoneValue }),
+      whatsapp: whatsappValue || null,
+      socialLinks,
       marketId: marketId || null,
       levelFloor: levelFloor.trim() || null,
       shopNumber: shopNumber.trim() || null,
@@ -191,6 +229,18 @@ function ProfileForm({ shop, onSaved }: { shop: Storefront; onSaved: () => void 
         <textarea id={ids.description} rows={3} maxLength={1000} value={description} onChange={(e) => setDescription(e.target.value)} className="type-body w-full rounded-md border border-input bg-card px-3 py-2 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none" />
         {errors.description && <p className="type-caption text-error">{errors.description}</p>}
       </div>
+      <div id="contact" className="grid scroll-mt-24 gap-4 sm:grid-cols-2">
+        <TextField label={t("profile.phone")} hint={t("profile.phoneHint")} type="tel" inputMode="tel" autoComplete="tel" placeholder="01712345678" maxLength={25} value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} />
+        <TextField label={t("profile.whatsapp")} hint={t("profile.whatsappHint")} type="tel" inputMode="tel" autoComplete="off" placeholder="01712345678" maxLength={25} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} error={errors.whatsapp} />
+      </div>
+      <fieldset className="flex flex-col gap-4">
+        <legend className="type-body-medium text-ink">{t("profile.links")}</legend>
+        <p className="type-caption text-ink-muted">{t("profile.linksHint")}</p>
+        {SOCIAL_KEYS.map((k) => (
+          <TextField key={k} label={t(`profile.${k}`)} type="url" inputMode="url" autoComplete="off" placeholder={LINK_PLACEHOLDER[k]} maxLength={200} value={links[k]} onChange={(e) => setLinks((l) => ({ ...l, [k]: e.target.value }))} error={errors[k]} />
+        ))}
+        {errors.links && <p role="alert" className="type-caption text-error">{errors.links}</p>}
+      </fieldset>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={ids.market} className="type-body-medium text-ink">{t("profile.market")}</label>
         <select id={ids.market} value={marketId} onChange={(e) => setMarketId(e.target.value)} className={inputClass}>

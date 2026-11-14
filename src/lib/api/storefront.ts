@@ -9,12 +9,20 @@ type ProductSort = "newest" | "price_asc" | "price_desc";
 
 export type CoverPhoto = { url: string; kind: string; verified: boolean };
 
+export const SOCIAL_KEYS = ["facebook", "instagram", "tiktok", "youtube", "website"] as const;
+export type SocialKey = (typeof SOCIAL_KEYS)[number];
+// Answers always carry all five keys; null = not set.
+export type SocialLinks = Record<SocialKey, string | null>;
+
 // GET /shops/:slug
 export type Storefront = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
+  phone: string | null; // "01712345678"; null for shops created before phones were required
+  whatsapp: string | null;
+  socialLinks: SocialLinks;
   logoUrl: string | null;
   bannerUrl: string | null;
   coverPhoto: CoverPhoto | null;
@@ -134,6 +142,34 @@ export function safeMediaUrl(value: string | null | undefined): string | null {
   try {
     const url = new URL(value);
     if ((url.protocol === "https:" || url.protocol === "http:") && url.origin === MEDIA_ORIGIN) return url.toString();
+  } catch {
+    // not a URL: ignore
+  }
+  return null;
+}
+
+const SOCIAL_HOSTS: Record<Exclude<SocialKey, "website">, string[]> = {
+  facebook: ["facebook.com", "fb.com"],
+  instagram: ["instagram.com"],
+  tiktok: ["tiktok.com"],
+  youtube: ["youtube.com", "youtu.be"],
+};
+
+/**
+ * A shop's social link, only when it follows the backend's rules: https, at most 200 characters,
+ * and on the site it is named after (any public site for "website"). Used to check the owner's
+ * form and again before a link is shown.
+ */
+export function safeSocialUrl(key: SocialKey, value: string | null | undefined): string | null {
+  if (!value || value.length > 200 || !/^https:\/\//i.test(value)) return null;
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    const ok =
+      key === "website"
+        ? host.includes(".")
+        : SOCIAL_HOSTS[key].some((site) => host === site || host.endsWith(`.${site}`));
+    if (url.protocol === "https:" && ok) return url.toString();
   } catch {
     // not a URL: ignore
   }

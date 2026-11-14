@@ -1,9 +1,14 @@
 import "client-only";
 import { api } from "./client";
+import type { SocialLinks } from "./storefront";
 
 export type ShopUpdate = {
   name?: string;
   description?: string | null;
+  phone?: string; // can be changed, never removed
+  whatsapp?: string | null;
+  // A key that is not sent stays as it is; null removes that link (or all links).
+  socialLinks?: Partial<SocialLinks> | null;
   marketId?: string | null;
   levelFloor?: string | null;
   shopNumber?: string | null;
