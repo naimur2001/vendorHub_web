@@ -852,3 +852,17 @@ html {
     transform: none;
   }
 }
+
+/* ---------- <Stagger>: children wait hidden until anime.js brings them in ---------- */
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .stagger > :not([data-in]) {
+    opacity: 0;
+    /* Safety net: if the script never runs, the content still shows after 3 seconds. */
+    animation: vh-show 1ms linear 3s forwards;
+  }
+}
+@keyframes vh-show {
+  to {
+    opacity: 1;
+  }
+}

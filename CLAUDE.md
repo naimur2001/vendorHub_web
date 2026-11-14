@@ -12,7 +12,7 @@ Multi-vendor marketplace for physical shops in Dhaka. Backend API: `../vendors-h
 - Never run `npm audit fix --force`. Install packages only after asking, with exact versions (`npm i -E`).
 
 ## Stack (locked)
-Next.js 16 (Turbopack, App Router, `cacheComponents: true`), TypeScript, Tailwind v4, shadcn/ui, TanStack Query, next-intl 4 (`en` default, `bn`), react-hook-form + Zod.
+Next.js 16 (Turbopack, App Router, `cacheComponents: true`), TypeScript, Tailwind v4, shadcn/ui, TanStack Query, next-intl 4 (`en` default, `bn`), react-hook-form + Zod, anime.js 4.
 
 ## Never break
 - Tailwind runs as a Turbopack loader in `next.config.ts` (`turbopack.rules["*.css"]`). Never remove it.
@@ -40,7 +40,8 @@ Next.js 16 (Turbopack, App Router, `cacheComponents: true`), TypeScript, Tailwin
 - Handle loading, empty and error states.
 
 ## Animation rules
-- CSS only (Tailwind `motion-safe:`). No animation library.
+- CSS (Tailwind `motion-safe:`) or anime.js (`animejs`, exact version). No other animation library.
+- anime.js only inside `src/components/motion/` (e.g. `<Stagger>`); pages and features use those components.
 - Respect reduced motion always.
 - Animate only `transform` and `opacity`, 150–300 ms, no layout shift.
 - No looping animation except loading indicators.
