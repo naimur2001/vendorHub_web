@@ -4,7 +4,7 @@ import { refreshPublicPages } from "@/lib/refresh-public";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, ExternalLink, ImagePlus, LoaderCircle, MapPin, Pencil, Plus, Store, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState, type DragEvent, type FormEvent } from "react";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -24,6 +24,7 @@ import {
 } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
+import { DEFAULT_DISTRICT, DIVISIONS, isDistrict, type District } from "@/lib/districts";
 import { cn } from "@/lib/utils";
 
 type Panel = { kind: "add" } | { kind: "edit"; market: AdminMarket; justCreated?: string } | null;
@@ -314,6 +315,10 @@ type FormProps = { market?: AdminMarket; onSaved: (saved: AdminMarket, photo?: P
 /** Add or edit one market's details. */
 function MarketForm({ market, onSaved, onCancel }: FormProps) {
   const t = useTranslations("AdminMarkets");
+  const tDistrict = useTranslations("Districts");
+  const tDivision = useTranslations("Divisions");
+  const locale = useLocale();
+  const districtId = useId();
 
   // When editing, load the saved location first (the list doesn't include it).
   const location = useQuery({
@@ -324,10 +329,11 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
 
   const [name, setName] = useState(market?.name ?? "");
   const [city, setCity] = useState(market?.city ?? "Dhaka");
+  const [district, setDistrict] = useState<District>(market && isDistrict(market.district) ? market.district : DEFAULT_DISTRICT);
   const [address, setAddress] = useState(market?.address ?? "");
   const [place, setPlace] = useState<string | null>(null); // null = not edited: show the saved location
   const [photo, setPhoto] = useState<Picked | null>(null);
-  const [errors, setErrors] = useState<Partial<Record<"name" | "city" | "address" | "location" | "form", string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<"name" | "city" | "district" | "address" | "location" | "form", string>>>({});
 
   const saved = location.data && location.data.latitude !== null && location.data.longitude !== null ? `${location.data.latitude}, ${location.data.longitude}` : "";
   const placeText = place ?? saved;
@@ -346,7 +352,11 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
       }
     },
     onSuccess: (r) => { onSaved(r.saved, r.photo); refreshPublicPages(["markets"]); },
-    onError: (err) => setErrors({ form: t(errorKey(err)) }),
+    onError: (err) => {
+      // 400 with details.district: the API did not accept the district. Mark the select.
+      const details = err instanceof ApiError && err.status === 400 && typeof err.details === "object" ? err.details : null;
+      setErrors({ form: t(errorKey(err)), ...(details && "district" in details && { district: t("errors.district") }) });
+    },
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -365,8 +375,8 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
 
     // Create: leave out empty optional fields. Edit: send null to clear them.
     const input: MarketInput = market
-      ? { name: n, city: c, address: a || null, latitude: loc?.latitude ?? null, longitude: loc?.longitude ?? null }
-      : { name: n, city: c, ...(a && { address: a }), ...(loc && { latitude: loc.latitude, longitude: loc.longitude }) };
+      ? { name: n, city: c, district, address: a || null, latitude: loc?.latitude ?? null, longitude: loc?.longitude ?? null }
+      : { name: n, city: c, district, ...(a && { address: a }), ...(loc && { latitude: loc.latitude, longitude: loc.longitude }) };
     save.mutate(input);
   }
 
@@ -374,6 +384,37 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
       <TextField label={t("form.name")} placeholder={t("form.namePlaceholder")} maxLength={100} value={name} onChange={(e) => setName(e.target.value)} error={errors.name} />
       <TextField label={t("form.city")} maxLength={60} value={city} onChange={(e) => setCity(e.target.value)} error={errors.city} />
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={districtId} className="type-body-medium text-ink">
+          {t("form.district")}
+        </label>
+        <select
+          id={districtId}
+          value={district}
+          onChange={(e) => isDistrict(e.target.value) && setDistrict(e.target.value)}
+          aria-invalid={errors.district ? true : undefined}
+          aria-describedby={errors.district ? `${districtId}-error` : undefined}
+          className="type-body h-12 w-full rounded-md border border-input bg-card px-3 text-ink hover:border-line-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none aria-invalid:border-error"
+        >
+          {DIVISIONS.map((division) => (
+            <optgroup key={division.key} label={t("form.division", { name: tDivision(division.key) })}>
+              {[...division.districts]
+                .sort((a, b) => tDistrict(a).localeCompare(tDistrict(b), locale))
+                .map((key) => (
+                  <option key={key} value={key}>
+                    {tDistrict(key)}
+                  </option>
+                ))}
+            </optgroup>
+          ))}
+        </select>
+        {errors.district && (
+          <p id={`${districtId}-error`} className="type-caption flex items-center gap-1 text-error">
+            <CircleAlert className="size-3.5 shrink-0" aria-hidden />
+            {errors.district}
+          </p>
+        )}
+      </div>
       <TextField label={t("form.address")} placeholder={t("form.addressPlaceholder")} maxLength={200} value={address} onChange={(e) => setAddress(e.target.value)} error={errors.address} />
       <TextField
         label={t("form.location")}
@@ -420,6 +461,7 @@ function MarketForm({ market, onSaved, onCancel }: FormProps) {
 export function MarketsManager() {
   const t = useTranslations("AdminMarkets");
   const tPhoto = useTranslations("AdminMarketPhoto");
+  const tDistrict = useTranslations("Districts");
   const queryClient = useQueryClient();
   const [panel, setPanel] = useState<Panel>(null);
   const [find, setFind] = useState("");
@@ -446,8 +488,9 @@ export function MarketsManager() {
   const visible = useMemo(() => {
     const term = find.trim().toLowerCase();
     if (!term) return all;
-    return all.filter((m) => m.name.toLowerCase().includes(term) || (m.city ?? "").toLowerCase().includes(term));
-  }, [all, find]);
+    const districtName = (m: AdminMarket) => (isDistrict(m.district) ? tDistrict(m.district).toLowerCase() : "");
+    return all.filter((m) => m.name.toLowerCase().includes(term) || (m.city ?? "").toLowerCase().includes(term) || districtName(m).includes(term));
+  }, [all, find, tDistrict]);
 
   function afterSave(saved: AdminMarket, wasNew: boolean, photo?: PhotoResult) {
     void queryClient.invalidateQueries({ queryKey: ["admin", "markets"] });
@@ -551,6 +594,7 @@ export function MarketsManager() {
                         <MapPin className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
                         {[m.address, m.city].filter(Boolean).join(", ") || t("noAddress")}
                       </p>
+                      {isDistrict(m.district) && <p className="type-caption text-ink-muted">{t("districtLine", { district: tDistrict(m.district) })}</p>}
                       <p className="type-caption flex items-center gap-1.5 text-ink-muted">
                         <Store className="size-3.5" aria-hidden />
                         {t("shops", { count: m.shopCount })}

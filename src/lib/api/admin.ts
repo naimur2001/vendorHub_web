@@ -3,6 +3,7 @@ import { api } from "./client";
 import type { ApiResult } from "./core";
 import type { components } from "./schema";
 import { publicGet } from "./public";
+import type { District } from "@/lib/districts";
 export type VerificationLevel = components["schemas"]["VerificationLevel"];
 export type VerificationStatus = "PENDING" | "AUTO_FLAGGED" | "CORRECTION_REQUESTED" | "APPROVED" | "REJECTED" | "REVOKED";
 export type DocumentType = "TRADE_LICENSE" | "NID" | "SHOP_PHOTO" | "OTHER";
@@ -143,6 +144,7 @@ export type AdminMarket = {
   name: string;
   slug: string;
   city: string | null;
+  district: District;
   address: string | null;
   shopCount: number;
   image: MarketImage | null;
@@ -150,6 +152,7 @@ export type AdminMarket = {
 export type MarketInput = {
   name: string;
   city: string;
+  district?: District; // the API uses "dhaka" when it is not sent; it can never be null
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
