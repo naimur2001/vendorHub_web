@@ -2,7 +2,8 @@
 import { API_URL, type ApiResult } from "./core";
 import { publicGet } from "./public";
 import type { components } from "./schema";
-import type { MarketImage } from "./shops";
+import type { Market, MarketImage } from "./shops";
+import type { District } from "@/lib/districts";
 type Availability = components["schemas"]["Availability"];
 type VerificationLevel = components["schemas"]["VerificationLevel"];
 type ProductSort = "newest" | "price_asc" | "price_desc";
@@ -92,6 +93,7 @@ export type MarketDetail = {
   name: string;
   slug: string;
   city: string | null;
+  district: District;
   address: string | null;
   image: MarketImage | null;
   latitude: number | null;
@@ -128,6 +130,14 @@ export function listShopReviews(
   query: { type?: "PRODUCT" | "SHOP_TRUST"; page?: number; limit?: number },
 ): Promise<ApiResult<ShopReview[]>> {
   return publicGet<ShopReview[]>(`${shopPath(slug)}/reviews`, query);
+}
+
+/**
+ * GET /markets filtered by the API: one district and/or a name that contains `q` (at most 100
+ * characters). Leave a filter out for "all": the API answers 400 to an empty or unknown district.
+ */
+export async function findMarkets(filter: { district?: District; q?: string }): Promise<Market[]> {
+  return (await publicGet<Market[]>("/markets", { district: filter.district, q: filter.q })).data;
 }
 
 export async function getMarketDetail(slug: string): Promise<MarketDetail> {
