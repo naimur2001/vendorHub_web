@@ -2,7 +2,7 @@
 import type { ApiResult } from "./core";
 import { publicGet } from "./public";
 import type { components } from "./schema";
-import type { CoverPhoto } from "./storefront";
+import type { CoverPhoto, SocialLinks } from "./storefront";
 
 type VerificationLevel = components["schemas"]["VerificationLevel"];
 
@@ -10,6 +10,9 @@ export type ShopSearchItem = {
   id: string;
   name: string;
   slug: string;
+  phone: string | null; // null for shops created before phones were required
+  whatsapp: string | null;
+  socialLinks: SocialLinks;
   logoUrl: string | null;
   levelFloor: string | null;
   shopNumber: string | null;

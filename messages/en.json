@@ -804,7 +804,8 @@
     "count": "{count, plural, one {# shop} other {# shops}}",
     "rating": "{average} ★ ({count})",
     "noReviews": "No reviews yet",
-    "products": "{count, plural, one {# product} other {# products}}"
+    "products": "{count, plural, one {# product} other {# products}}",
+    "call": "Call {name}"
   },
   "OwnerBargains": {
     "metaTitle": "Offers to answer",

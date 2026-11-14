@@ -1,11 +1,11 @@
-import { ChevronRight, Package, Star } from "lucide-react";
+import { ChevronRight, Package, Phone, Star } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { VerificationSeal } from "@/components/brand/verification-seal";
 import { Link } from "@/i18n/routing";
 import { searchShops, type ShopSearchItem } from "@/lib/api/shop-search";
-import { safeMediaUrl, shopPlace } from "@/lib/api/storefront";
+import { callHref, safeMediaUrl, shopPlace } from "@/lib/api/storefront";
 
 function initials(name: string): string {
   return (
@@ -22,44 +22,57 @@ function ShopResultCard({ shop }: { shop: ShopSearchItem }) {
   const t = useTranslations("ShopSearch");
   const photo = safeMediaUrl(shop.coverPhoto?.url) ?? safeMediaUrl(shop.logoUrl);
   const place = [shopPlace(shop.levelFloor, shop.shopNumber), shop.market?.name].filter(Boolean).join(" · ");
+  const call = callHref(shop.phone); // null for a shop without a phone: the arrow stays instead
 
   return (
-    <Link
-      href={`/shops/${shop.slug}`}
-      className="group flex h-full items-center gap-3 rounded-md border border-line bg-card p-3 shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
-    >
-      <span className="relative flex h-16 w-14 shrink-0 items-end justify-center overflow-hidden rounded-t-full rounded-b-sm bg-brand pb-2">
-        {photo ? (
-          <Image src={photo} alt="" fill unoptimized sizes="56px" className="object-cover" />
-        ) : (
-          <span className="font-heading text-[1rem] text-primary-foreground" aria-hidden>
-            {initials(shop.name)}
-          </span>
-        )}
-      </span>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="type-body-medium truncate text-ink group-hover:text-brand">{shop.name}</span>
-          {shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={shop.verificationLevel} size="sm" />}
-        </div>
-        {place && <span className="type-caption truncate text-ink-muted">{place}</span>}
-        <span className="type-caption flex items-center gap-3 text-ink-secondary">
-          <span className="flex items-center gap-1">
-            <Star className="size-3.5 text-highlight" aria-hidden />
-            {shop.ratingAverage !== null
-              ? t("rating", { average: shop.ratingAverage.toFixed(1), count: shop.reviewCount })
-              : t("noReviews")}
-          </span>
-          <span className="flex items-center gap-1">
-            <Package className="size-3.5 text-highlight" aria-hidden />
-            {t("products", { count: shop.productCount })}
-          </span>
+    // The call button sits beside the link, not inside it (a link cannot hold another link).
+    <div className="flex h-full items-center rounded-md border border-line bg-card shadow-card transition-colors hover:border-line-strong">
+      <Link
+        href={`/shops/${shop.slug}`}
+        className="group flex min-w-0 flex-1 items-center gap-3 self-stretch rounded-md p-3 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+      >
+        <span className="relative flex h-16 w-14 shrink-0 items-end justify-center overflow-hidden rounded-t-full rounded-b-sm bg-brand pb-2">
+          {photo ? (
+            <Image src={photo} alt="" fill unoptimized sizes="56px" className="object-cover" />
+          ) : (
+            <span className="font-heading text-[1rem] text-primary-foreground" aria-hidden>
+              {initials(shop.name)}
+            </span>
+          )}
         </span>
-      </div>
 
-      <ChevronRight className="size-5 shrink-0 text-ink-muted" aria-hidden />
-    </Link>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="type-body-medium truncate text-ink group-hover:text-brand">{shop.name}</span>
+            {shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={shop.verificationLevel} size="sm" />}
+          </div>
+          {place && <span className="type-caption truncate text-ink-muted">{place}</span>}
+          <span className="type-caption flex items-center gap-3 text-ink-secondary">
+            <span className="flex items-center gap-1">
+              <Star className="size-3.5 text-highlight" aria-hidden />
+              {shop.ratingAverage !== null
+                ? t("rating", { average: shop.ratingAverage.toFixed(1), count: shop.reviewCount })
+                : t("noReviews")}
+            </span>
+            <span className="flex items-center gap-1">
+              <Package className="size-3.5 text-highlight" aria-hidden />
+              {t("products", { count: shop.productCount })}
+            </span>
+          </span>
+        </div>
+
+        {!call && <ChevronRight className="size-5 shrink-0 text-ink-muted" aria-hidden />}
+      </Link>
+      {call && (
+        <a
+          href={call}
+          aria-label={t("call", { name: shop.name })}
+          className="mr-3 flex size-11 shrink-0 items-center justify-center rounded-sm border border-brand text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          <Phone className="size-5" aria-hidden />
+        </a>
+      )}
+    </div>
   );
 }
 

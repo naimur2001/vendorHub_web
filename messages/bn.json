@@ -386,7 +386,8 @@
     "count": "{count, plural, other {#টি দোকান}}",
     "rating": "{average} ★ ({count})",
     "noReviews": "এখনও রিভিউ নেই",
-    "products": "{count, plural, other {#টি পণ্য}}"
+    "products": "{count, plural, other {#টি পণ্য}}",
+    "call": "{name}-এ কল করুন"
   },
   "Cart": {
     "add": "কার্টে যোগ করুন",
