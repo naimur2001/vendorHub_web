@@ -326,7 +326,7 @@ export interface paths {
         };
         /**
          * Find shops by name (public); most trusted first
-         * @description Only active shops. With q, names that start with q come first, then names that only contain it; inside each group the highest verification level first, then name A-Z, then id (stable pages). Without q, the same order without the first rule. In q, % and _ are normal characters. Only public card fields are returned (never the owner, contact data, stock numbers, offer minimums or verification internals).
+         * @description Only active shops. With q, names that start with q come first, then names that only contain it; inside each group the highest verification level first, then name A-Z, then id (stable pages). Without q, the same order without the first rule. In q, % and _ are normal characters. Only public card fields are returned: the shop's own phone, WhatsApp and links are included, but never the owner (or the owner's phone or email), stock numbers, offer minimums or verification internals.
          */
         get: operations["searchShops"];
         put?: never;
@@ -357,7 +357,7 @@ export interface paths {
         head?: never;
         /**
          * Edit the shop profile (owner or admin); logo and banner have their own upload endpoints
-         * @description Here {shop} is the shop ID. Unknown fields (also logoUrl and bannerUrl) are rejected with 400.
+         * @description Here {shop} is the shop ID. Unknown fields (also logoUrl and bannerUrl) are rejected with 400. Only the owner or an admin; staff get 403. The phone can be changed but not removed (null is rejected); whatsapp null removes it; socialLinks null removes every link. A change of phone, whatsapp or socialLinks is written to the audit log (shop.contact_updated, field names only).
          */
         patch: operations["updateShop"];
         trace?: never;
@@ -850,7 +850,7 @@ export interface paths {
         put?: never;
         /**
          * Ask for the next verification level (owner)
-         * @description Only the next level, only one open request at a time, and the documents that level requires. All admins are notified.
+         * @description Only the next level, only one open request at a time, and the documents that level requires. All admins are notified. 409 "Add your shop phone first" when the shop has no phone (also 409: a request is already open, or the shop already has the highest level).
          */
         post: operations["submitVerification"];
         delete?: never;
@@ -868,7 +868,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Send corrected documents after a correction request (owner) */
+        /**
+         * Send corrected documents after a correction request (owner)
+         * @description 409 when the request is not waiting for corrected documents, or with "Add your shop phone first" when the shop has no phone.
+         */
         post: operations["resubmitVerification"];
         delete?: never;
         options?: never;
@@ -2391,11 +2394,57 @@ export interface components {
         MarketDetail: components["schemas"]["Market"] & {
             shops?: components["schemas"]["ShopCard"][];
         };
+        /** @description The shop's public links. Always these five keys; null when a link is not set. */
+        ShopSocialLinks: {
+            /**
+             * Format: uri
+             * @example https://www.facebook.com/techzone
+             */
+            facebook: string | null;
+            /** Format: uri */
+            instagram: string | null;
+            /** Format: uri */
+            tiktok: string | null;
+            /** Format: uri */
+            youtube: string | null;
+            /**
+             * Format: uri
+             * @example https://techzone.example.com/
+             */
+            website: string | null;
+        };
+        /** @description Every key is optional; an unknown key is rejected with 400. Each link: at most 200 characters, https only, no user name or password, and the host must belong to the platform (or be a subdomain): facebook = facebook.com or fb.com, instagram = instagram.com, tiktok = tiktok.com, youtube = youtube.com or youtu.be. website = any public host (not localhost, .local, .internal, a one-word host, or a private, loopback or link-local IP address). When editing a shop, a key that is not sent keeps its link and null removes it. */
+        ShopSocialLinksInput: {
+            /**
+             * Format: uri
+             * @example https://www.facebook.com/techzone
+             */
+            facebook?: string | null;
+            /** Format: uri */
+            instagram?: string | null;
+            /** Format: uri */
+            tiktok?: string | null;
+            /** Format: uri */
+            youtube?: string | null;
+            /**
+             * Format: uri
+             * @example https://techzone.example.com/
+             */
+            website?: string | null;
+        };
         Storefront: {
             /** Format: uuid */
             id?: string;
             name?: string;
             slug?: string;
+            /**
+             * @description The shop's public phone (never the owner's personal phone). Null only for shops created before phones existed.
+             * @example 01712345678
+             */
+            phone: string | null;
+            /** @example 01712345678 */
+            whatsapp: string | null;
+            socialLinks: components["schemas"]["ShopSocialLinks"];
             description?: string | null;
             logoUrl?: string | null;
             bannerUrl?: string | null;
@@ -2442,6 +2491,10 @@ export interface components {
             marketId?: string | null;
             name?: string;
             slug?: string;
+            /** @example 01712345678 */
+            phone?: string | null;
+            whatsapp?: string | null;
+            socialLinks?: components["schemas"]["ShopSocialLinks"];
             verificationLevel?: components["schemas"]["VerificationLevel"];
             isActive?: boolean;
             returnPolicy?: string | null;
@@ -2759,6 +2812,14 @@ export interface components {
             levelFloor: string | null;
             /** @example Shop 42 */
             shopNumber: string | null;
+            /**
+             * @description The shop's public phone. Null only for shops created before phones existed.
+             * @example 01712345678
+             */
+            phone: string | null;
+            /** @example 01712345678 */
+            whatsapp: string | null;
+            socialLinks: components["schemas"]["ShopSocialLinks"];
             verificationLevel: components["schemas"]["VerificationLevel"];
             market: {
                 /** Format: uuid */
@@ -2896,6 +2957,21 @@ export interface components {
             subtotal?: number;
             total: number;
             shop: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+                logoUrl: string | null;
+                levelFloor: string | null;
+                shopNumber: string | null;
+                addressLine: string;
+                /**
+                 * @description The shop's public phone, to call about the order. Null only for shops created before phones existed.
+                 * @example 01712345678
+                 */
+                phone: string | null;
+                verificationLevel: components["schemas"]["VerificationLevel"];
+            } & {
                 [key: string]: unknown;
             };
             items: components["schemas"]["CustomerOrderItem"][];
@@ -3638,6 +3714,14 @@ export interface operations {
             content: {
                 "application/json": {
                     name: string;
+                    /**
+                     * @description The shop's public phone (Bangladesh mobile). Required.
+                     * @example 01712345678
+                     */
+                    phone: string;
+                    /** @example 01712345678 */
+                    whatsapp?: string;
+                    socialLinks?: components["schemas"]["ShopSocialLinksInput"];
                     description?: string;
                     /** Format: uuid */
                     marketId?: string;
@@ -3719,6 +3803,14 @@ export interface operations {
             content: {
                 "application/json": {
                     name?: string;
+                    /**
+                     * @description Bangladesh mobile number. Not nullable.
+                     * @example 01712345678
+                     */
+                    phone?: string;
+                    /** @example 01712345678 */
+                    whatsapp?: string | null;
+                    socialLinks?: components["schemas"]["ShopSocialLinksInput"] | null;
                     description?: string | null;
                     /** Format: uuid */
                     marketId?: string | null;
