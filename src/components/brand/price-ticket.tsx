@@ -27,6 +27,8 @@ export function PriceTicket({ amount, msrp, size = "sm", on = "card", className 
         className,
       )}
     >
+      {/* Light streak that passes once when the card (a "group") is hovered */}
+      <span aria-hidden className="shine" />
       <span className="sr-only">{t("price")}</span>
       <span
         className={cn(

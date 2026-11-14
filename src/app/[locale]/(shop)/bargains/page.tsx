@@ -24,7 +24,7 @@ export default async function MyBargainsPage({ params }: Props) {
         <p className="type-body text-ink-secondary">{t("subtitle")}</p>
       </header>
       {/* The list reads ?status= and ?page= from the URL, which needs a Suspense boundary */}
-      <Suspense fallback={<div className="h-64 animate-pulse rounded-md bg-subtle" aria-hidden />}>
+      <Suspense fallback={<div className="h-64 skeleton rounded-md" aria-hidden />}>
         <MyBargains />
       </Suspense>
     </div>

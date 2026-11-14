@@ -142,7 +142,7 @@ async function ProductView({ params, searchParams }: Props) {
           <div className="border-t border-gold" />
 
           {selectedListing ? (
-            <SelectedListingCard listing={selectedListing} otherCount={otherListings.length} productSlug={product.slug} />
+            <SelectedListingCard listing={selectedListing} otherCount={otherListings.length} productSlug={product.slug} image={product.images[0] ?? null} />
             
           ) : (
             <p className="type-body rounded-md border border-line bg-card p-5 text-ink-secondary">{t("noListings")}</p>
@@ -185,7 +185,7 @@ async function ProductView({ params, searchParams }: Props) {
       </div>
 
 
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-md bg-subtle" aria-hidden />}>
+      <Suspense fallback={<div className="h-40 skeleton rounded-md" aria-hidden />}>
         <ProductReviews slug={product.slug} />
       </Suspense>
 
@@ -197,11 +197,11 @@ async function ProductView({ params, searchParams }: Props) {
 function ProductSkeleton() {
   return (
     <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)] lg:gap-12" aria-hidden>
-      <div className="aspect-[4/5] w-full animate-pulse rounded-t-full rounded-b-sm bg-subtle lg:max-w-[560px]" />
+      <div className="aspect-[4/5] w-full skeleton rounded-t-full rounded-b-sm lg:max-w-[560px]" />
       <div className="flex flex-col gap-4">
-        <div className="h-4 w-24 animate-pulse rounded-sm bg-subtle" />
-        <div className="h-10 w-3/4 animate-pulse rounded-sm bg-subtle" />
-        <div className="h-72 animate-pulse rounded-md bg-subtle" />
+        <div className="h-4 w-24 skeleton rounded-sm" />
+        <div className="h-10 w-3/4 skeleton rounded-sm" />
+        <div className="h-72 skeleton rounded-md" />
       </div>
     </div>
   );

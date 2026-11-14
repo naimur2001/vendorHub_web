@@ -55,10 +55,12 @@ export function SelectedListingCard({
   listing,
   otherCount,
   productSlug,
+  image = null,
 }: {
   listing: Listing;
   otherCount: number;
   productSlug: string;
+  image?: string | null; // first product photo, for the "fly to cart" animation
 }) {
   const t = useTranslations("Product");
   // const tCart = useTranslations("Cart");
@@ -121,7 +123,7 @@ export function SelectedListingCard({
         <div className="flex flex-col gap-2 border-t border-line pt-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="flex-1">
-            <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} />
+            <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} image={image} />
           </div>
           {listing.bargainEnabled && !outOfStock && (
             <div className="flex-1">

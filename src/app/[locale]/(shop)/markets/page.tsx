@@ -42,7 +42,7 @@ function MarketListSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
       {Array.from({ length: 3 }, (_, i) => (
-        <div key={i} className="h-48 animate-pulse rounded-md bg-subtle" />
+        <div key={i} className="h-48 skeleton rounded-md" />
       ))}
     </div>
   );

@@ -27,7 +27,20 @@
     "compareTitle": "Compare shop prices",
     "compareText": "See the same product from different shops side by side.",
     "bargainTitle": "Bargain like in the market",
-    "bargainText": "Make an offer and let the shop accept or counter."
+    "bargainText": "Make an offer and let the shop accept or counter.",
+    "statsMarkets": "Markets",
+    "statsShops": "Shops",
+    "howTitle": "How it works",
+    "howText": "Three steps from search to your hands.",
+    "step1Title": "Find it",
+    "step1Text": "Search a product and see every shop that sells it.",
+    "step2Title": "Agree on a price",
+    "step2Text": "Buy at the listed price or make an offer to the shop.",
+    "step3Title": "Pick up or get it delivered",
+    "step3Text": "Collect it from the shop or have it brought to you.",
+    "closingTitle": "Your market is open",
+    "closingText": "Walk through the doors and see what the shops have today.",
+    "closingMarkets": "Browse markets"
   },
   "Verification": {
     "UNVERIFIED": "Not verified yet",

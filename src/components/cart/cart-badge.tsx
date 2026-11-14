@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useSession } from "@/components/app-providers";
 import { cartKeys, getCart } from "@/lib/api/cart";
 import { cn } from "@/lib/utils";
@@ -21,18 +22,34 @@ export function useCartCount(): number {
   return status === "authenticated" ? (data ?? 0) : 0;
 }
 
-/** Small bordeaux circle with the count; hidden when the cart is empty. */
+/** Sent on window when something was just added to the cart (after the little photo lands). */
+export const CART_LANDED_EVENT = "vh:cart-landed";
+
+/**
+ * Small bordeaux circle with the count; hidden when the cart is empty.
+ * When an item lands in the cart it bounces once and the number flips up like a counter.
+ */
 export function CartCountBadge({ count, className }: { count: number; className?: string }) {
+  const [bumps, setBumps] = useState(0);
+
+  useEffect(() => {
+    const onLanded = () => setBumps((n) => n + 1);
+    window.addEventListener(CART_LANDED_EVENT, onLanded);
+    return () => window.removeEventListener(CART_LANDED_EVENT, onLanded);
+  }, []);
+
   if (count <= 0) return null;
   return (
     <span
+      key={bumps} // a new key restarts the one-shot animations
       aria-hidden
       className={cn(
-        "type-caption absolute flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 leading-none text-primary-foreground ring-2 ring-card",
+        "type-caption absolute flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-full bg-brand px-1 leading-none text-primary-foreground ring-2 ring-card",
+        bumps > 0 && "badge-bounce",
         className,
       )}
     >
-      {count > 99 ? "99+" : count}
+      <span className={cn("block", bumps > 0 && "badge-flip")}>{count > 99 ? "99+" : count}</span>
     </span>
   );
 }

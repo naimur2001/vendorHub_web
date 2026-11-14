@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
+import { ArchBars, CountUp, RankBar } from "@/components/charts/arch-bars";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { Link } from "@/i18n/routing";
 import { formatTaka } from "@/lib/format";
@@ -28,7 +29,6 @@ export function ReportsView() {
   const [draft, setDraft] = useState({ from: iso(new Date(today.getTime() - 29 * 86_400_000)), to: iso(today), interval: "day" as Interval });
   const [range, setRange] = useState(draft);
   const [error, setError] = useState<string | null>(null);
-  const [hover, setHover] = useState<number | null>(null);
 
   const sales = useQuery({ queryKey: ["admin", "reports", "sales", range], queryFn: () => getSales(range.from, range.to, range.interval), placeholderData: keepPreviousData });
   const top = useQuery({ queryKey: ["admin", "reports", "top", range.from, range.to], queryFn: () => getTop(range.from, range.to), placeholderData: keepPreviousData });
@@ -48,8 +48,14 @@ export function ReportsView() {
   };
 
   const points = sales.data?.points ?? [];
-  const max = Math.max(1, ...points.map((p) => p.revenue));
-  const shown = hover !== null ? points[hover] : null;
+  const bars = points.map((p, i) => ({
+    key: p.period || String(i),
+    label: periodLabel(p.period),
+    value: p.revenue,
+    detail: t("bar", { period: periodLabel(p.period), revenue: money(p.revenue), orders: p.orders }),
+  }));
+  const topShopRevenue = Math.max(0, ...(top.data?.shops ?? []).map((s) => s.revenue));
+  const topProductUnits = Math.max(0, ...(top.data?.products ?? []).map((p) => p.units));
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,49 +78,19 @@ export function ReportsView() {
         <button type="button" onClick={() => sales.refetch()} className="type-body-medium self-start text-brand">{t("retry")}</button>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[{ k: "orders", v: String(sales.data.orders) }, { k: "revenue", v: money(sales.data.revenue) }, { k: "average", v: money(sales.data.average) }].map((c) => (
+          {/* Totals rise in one by one and count up */}
+          <div className="rise-stagger grid gap-3 sm:grid-cols-3">
+            {[{ k: "orders", v: sales.data.orders, f: String }, { k: "revenue", v: sales.data.revenue, f: money }, { k: "average", v: sales.data.average, f: money }].map((c) => (
               <div key={c.k} className="flex flex-col gap-1 rounded-md border border-line bg-card p-4 shadow-card">
                 <span className="type-caption text-ink-muted">{t(c.k)}</span>
-                <span className="font-heading text-[1.75rem] leading-none text-ink">{c.v}</span>
+                <CountUp value={c.v} format={c.f} className="font-heading text-[1.75rem] leading-none text-ink" />
               </div>
             ))}
           </div>
 
-          <section className={cn("flex flex-col gap-3 rounded-md border border-line bg-card p-4 shadow-card", sales.isPlaceholderData && "opacity-60")}>
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="type-h3 text-ink">{t("chart", { interval: t(range.interval).toLowerCase() })}</h2>
-              <p className="type-caption min-h-5 text-ink-secondary" aria-live="polite">
-                {shown && t("bar", { period: periodLabel(shown.period), revenue: money(shown.revenue), orders: shown.orders })}
-              </p>
-            </div>
-            {points.length === 0 ? (
-              <p className="type-body text-ink-muted">{t("empty")}</p>
-            ) : (
-              <div className="scroll-row">
-                <ul className="flex h-56 min-w-full items-end gap-1 border-b border-line pb-px" onMouseLeave={() => setHover(null)}>
-                  {points.map((p, i) => (
-                    <li key={p.period || i} className="flex h-full min-w-3 flex-1 flex-col justify-end">
-                      <button
-                        type="button"
-                        aria-label={t("bar", { period: periodLabel(p.period), revenue: money(p.revenue), orders: p.orders })}
-                        onMouseEnter={() => setHover(i)}
-                        onFocus={() => setHover(i)}
-                        onBlur={() => setHover(null)}
-                        className={cn("w-full rounded-t-sm motion-safe:transition-colors", hover === i ? "bg-brand" : "bg-brand/70 hover:bg-brand")}
-                        style={{ height: `${Math.max(2, (p.revenue / max) * 100)}%` }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {points.length > 0 && (
-              <div className="type-caption flex justify-between text-ink-muted">
-                <span>{periodLabel(points[0].period)}</span>
-                <span>{periodLabel(points[points.length - 1].period)}</span>
-              </div>
-            )}
+          {/* Bars are arches that build themselves; a new range builds a new row */}
+          <section className={cn("rounded-md border border-line bg-card p-4 shadow-card motion-safe:transition-opacity", sales.isPlaceholderData && "opacity-60")}>
+            <ArchBars title={t("chart", { interval: t(range.interval).toLowerCase() })} points={bars} emptyText={t("empty")} formatValue={money} />
           </section>
         </>
       )}
@@ -123,11 +99,14 @@ export function ReportsView() {
         <section className="flex flex-col gap-2 rounded-md border border-line bg-card p-4 shadow-card">
           <h2 className="type-h3 text-ink">{t("topShops")}</h2>
           {(top.data?.shops ?? []).length === 0 ? <p className="type-body text-ink-muted">{t("empty")}</p> : (
-            <ol className="flex flex-col gap-1.5">
+            <ol className="rank-stagger flex flex-col gap-2.5">
               {top.data?.shops.map((s, i) => (
-                <li key={s.id || i} className="type-body flex justify-between gap-2 text-ink">
-                  <span>{i + 1}. {s.slug ? <Link href={`/shops/${s.slug}`} className="hover:text-brand">{s.name}</Link> : s.name}</span>
-                  <span className="type-caption text-ink-secondary">{money(s.revenue)}</span>
+                <li key={s.id || i} className="flex flex-col gap-1">
+                  <div className="type-body flex justify-between gap-2 text-ink">
+                    <span>{i + 1}. {s.slug ? <Link href={`/shops/${s.slug}`} className="hover:text-brand">{s.name}</Link> : s.name}</span>
+                    <span className="type-caption text-ink-secondary">{money(s.revenue)}</span>
+                  </div>
+                  <RankBar value={s.revenue} max={topShopRevenue} />
                 </li>
               ))}
             </ol>
@@ -136,11 +115,14 @@ export function ReportsView() {
         <section className="flex flex-col gap-2 rounded-md border border-line bg-card p-4 shadow-card">
           <h2 className="type-h3 text-ink">{t("topProducts")}</h2>
           {(top.data?.products ?? []).length === 0 ? <p className="type-body text-ink-muted">{t("empty")}</p> : (
-            <ol className="flex flex-col gap-1.5">
+            <ol className="rank-stagger flex flex-col gap-2.5">
               {top.data?.products.map((p, i) => (
-                <li key={p.id || i} className="type-body flex justify-between gap-2 text-ink">
-                  <span>{i + 1}. {p.slug ? <Link href={`/products/${p.slug}`} className="hover:text-brand">{p.title}</Link> : p.title}</span>
-                  <span className="type-caption text-ink-secondary">{t("units", { count: p.units })}</span>
+                <li key={p.id || i} className="flex flex-col gap-1">
+                  <div className="type-body flex justify-between gap-2 text-ink">
+                    <span>{i + 1}. {p.slug ? <Link href={`/products/${p.slug}`} className="hover:text-brand">{p.title}</Link> : p.title}</span>
+                    <span className="type-caption text-ink-secondary">{t("units", { count: p.units })}</span>
+                  </div>
+                  <RankBar value={p.units} max={topProductUnits} />
                 </li>
               ))}
             </ol>

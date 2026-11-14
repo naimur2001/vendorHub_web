@@ -71,7 +71,7 @@ function SearchBar() {
 }
 
 // Same size as the avatar: shown while the session or the address is not known yet (no layout jump).
-const accountPlaceholder = <span className="size-9 animate-pulse rounded-full bg-subtle" aria-hidden />;
+const accountPlaceholder = <span className="size-9 skeleton rounded-full" aria-hidden />;
 
 function AccountArea() {
   const t = useTranslations("Nav");
@@ -106,6 +106,7 @@ function CartLink() {
   return (
     <Link
       href="/cart"
+      data-cart-target
       aria-label={count > 0 ? tCart("badgeLabel", { count }) : t("cart")}
       className="relative hidden size-11 items-center justify-center rounded-full text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none md:flex"
     >

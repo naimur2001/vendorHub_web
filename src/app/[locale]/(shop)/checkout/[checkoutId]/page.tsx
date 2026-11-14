@@ -26,7 +26,7 @@ async function ConfirmationView({ params }: Props) {
 export default function CheckoutConfirmationPage({ params }: Props) {
   // The checkout id is only known at request time, so the page waits inside Suspense.
   return (
-    <Suspense fallback={<div className="h-64 animate-pulse rounded-md bg-subtle" aria-hidden />}>
+    <Suspense fallback={<div className="h-64 skeleton rounded-md" aria-hidden />}>
       <ConfirmationView params={params} />
     </Suspense>
   );

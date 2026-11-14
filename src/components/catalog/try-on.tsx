@@ -42,7 +42,6 @@ function TurnViewer({ views, frames, start }: { views: TryOnView[]; frames: Part
   // Continuous spin (paused by the user or by "reduce motion").
   useEffect(() => {
     if (!auto || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setSnap(false);
     let raf = 0;
     let prev = performance.now();
     const tick = (now: number) => {
@@ -112,7 +111,7 @@ function TurnViewer({ views, frames, start }: { views: TryOnView[]; frames: Part
       </div>
       <div className="flex items-center gap-3">
         <span className="type-caption text-ink-muted">{t("rotate")}</span>
-        <button type="button" onClick={() => (auto ? (setAuto(false), settle(angle)) : setAuto(true))} disabled={!ready} className="type-body-medium h-9 rounded-sm border border-brand px-3 text-brand hover:bg-subtle disabled:opacity-40">
+        <button type="button" onClick={() => (auto ? (setAuto(false), settle(angle)) : (setSnap(false), setAuto(true)))} disabled={!ready} className="type-body-medium h-9 rounded-sm border border-brand px-3 text-brand hover:bg-subtle disabled:opacity-40">
           {auto ? t("stop") : t("autoRotate")}
         </button>
       </div>

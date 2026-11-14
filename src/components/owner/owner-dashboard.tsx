@@ -25,6 +25,8 @@ import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
+import { CountUp, RankBar } from "@/components/charts/arch-bars";
+import { Reveal } from "@/components/motion/reveal";
 const panel = "flex flex-col items-center gap-3 rounded-md border border-line bg-card px-6 py-12 text-center";
 const primaryLink =
   "type-body-medium flex h-12 items-center rounded-sm bg-action px-6 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none";
@@ -43,8 +45,11 @@ function TodoCard({ icon: Icon, count, label, href }: { icon: LucideIcon; count:
   const urgent = count > 0;
   const body = (
     <>
-      <Icon className={cn("size-6", urgent ? "text-highlight" : "text-ink-muted")} aria-hidden />
-      <span className="font-heading text-[2rem] leading-none text-ink">{count}</span>
+      {/* Something to do: the icon pops in with one gold ring */}
+      <span className={cn("flex self-start", urgent && "ring-burst")}>
+        <Icon className={cn("size-6", urgent ? "pop-in text-highlight" : "text-ink-muted")} aria-hidden />
+      </span>
+      <CountUp value={count} className="font-heading text-[2rem] leading-none text-ink" />
       <span className="type-body text-ink-secondary">{label}</span>
     </>
   );
@@ -54,7 +59,7 @@ function TodoCard({ icon: Icon, count, label, href }: { icon: LucideIcon; count:
   );
   if (href && urgent) {
     return (
-      <Link href={href} className={cn(box, "hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none")}>
+      <Link href={href} className={cn(box, "lift hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none")}>
         {body}
       </Link>
     );
@@ -62,11 +67,11 @@ function TodoCard({ icon: Icon, count, label, href }: { icon: LucideIcon; count:
   return <div className={box}>{body}</div>;
 }
 
-function SalesCard({ label, revenue, orders }: { label: string; revenue: string; orders: string }) {
+function SalesCard({ label, revenue, format, orders }: { label: string; revenue: number; format: (n: number) => string; orders: string }) {
   return (
     <div className="flex flex-col gap-1 rounded-md border border-line bg-surface p-4">
       <span className="type-caption text-ink-muted">{label}</span>
-      <span className="type-price text-[1.375rem] text-ink">{revenue}</span>
+      <CountUp value={revenue} format={format} className="type-price text-[1.375rem] text-ink" />
       <span className="type-caption text-ink-secondary">{orders}</span>
     </div>
   );
@@ -207,6 +212,7 @@ export function OwnerDashboard() {
 
   const d = dashboard.data;
   const money = (n: number) => formatTaka(n, locale);
+  const topUnits = Math.max(0, ...d.topProducts30d.map((p) => p.unitsSold));
   const shopQuery = shopList.length > 1 ? `?shop=${shop.id}` : "";
 
   return (
@@ -256,7 +262,7 @@ export function OwnerDashboard() {
         <h2 id="todo-heading" className="type-h3 text-ink">
           {t("todoTitle")}
         </h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="rise-stagger grid grid-cols-2 gap-3 lg:grid-cols-4">
           <TodoCard icon={Inbox} count={d.actions.bargainsWaiting} label={t("offersWaiting")} href={`/owner/bargains${shopQuery}`} />
                    <TodoCard
             icon={PackageCheck}
@@ -269,16 +275,17 @@ export function OwnerDashboard() {
            </div>
       </section>
 
-      <Section title={t("salesTitle")}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <SalesCard label={t("last24h")} revenue={money(d.sales.last24h.revenue)} orders={t("ordersCount", { count: d.sales.last24h.orders })} />
-          <SalesCard label={t("last7d")} revenue={money(d.sales.last7d.revenue)} orders={t("ordersCount", { count: d.sales.last7d.orders })} />
-          <SalesCard label={t("last30d")} revenue={money(d.sales.last30d.revenue)} orders={t("ordersCount", { count: d.sales.last30d.orders })} />
+      <Section title={t("salesTitle")} className="hero-after">
+        <div className="rise-stagger grid gap-3 sm:grid-cols-3">
+          <SalesCard label={t("last24h")} revenue={d.sales.last24h.revenue} format={money} orders={t("ordersCount", { count: d.sales.last24h.orders })} />
+          <SalesCard label={t("last7d")} revenue={d.sales.last7d.revenue} format={money} orders={t("ordersCount", { count: d.sales.last7d.orders })} />
+          <SalesCard label={t("last30d")} revenue={d.sales.last30d.revenue} format={money} orders={t("ordersCount", { count: d.sales.last30d.orders })} />
         </div>
         <p className="type-body text-ink">{t("completed30d", { amount: money(d.sales.completedRevenueLast30d) })}</p>
         <p className="type-caption text-ink-muted">{t("salesNote")}</p>
       </Section>
 
+      <Reveal>
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title={t("recentTitle")}>
           {d.orders.recent.length === 0 ? (
@@ -337,20 +344,26 @@ export function OwnerDashboard() {
           )}
         </Section>
       </div>
+      </Reveal>
 
+      <Reveal>
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title={t("topTitle")}>
           {d.topProducts30d.length === 0 ? (
             <p className="type-body text-ink-muted">{t("noTop")}</p>
           ) : (
-            <ol className="flex flex-col gap-2">
+            <ol className="rank-stagger flex flex-col gap-3">
               {d.topProducts30d.map((p, i) => (
-                <li key={p.title} className="type-body flex items-center justify-between gap-3 text-ink">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="type-caption flex size-6 shrink-0 items-center justify-center rounded-full bg-highlight-soft text-highlight">{i + 1}</span>
-                    <span className="truncate">{p.title}</span>
-                  </span>
-                  <span className="type-caption shrink-0 text-ink-muted">{t("unitsSold", { count: p.unitsSold })}</span>
+                <li key={p.title} className="flex flex-col gap-1.5">
+                  <div className="type-body flex items-center justify-between gap-3 text-ink">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="type-caption flex size-6 shrink-0 items-center justify-center rounded-full bg-highlight-soft text-highlight">{i + 1}</span>
+                      <span className="truncate">{p.title}</span>
+                    </span>
+                    <span className="type-caption shrink-0 text-ink-muted">{t("unitsSold", { count: p.unitsSold })}</span>
+                  </div>
+                  {/* Bar as long as this product's share of the best seller */}
+                  <RankBar value={p.unitsSold} max={topUnits} />
                 </li>
               ))}
             </ol>
@@ -360,7 +373,7 @@ export function OwnerDashboard() {
         <Section title={t("reputationTitle")}>
           <ul className="type-body flex flex-col gap-2 text-ink">
             <li className="flex items-center gap-2">
-              <Star className="size-4 text-highlight" aria-hidden />
+              <Star className="pop-in size-4 text-highlight" aria-hidden />
               {d.reputation.ratingAverage !== null
                 ? t("rating", { average: d.reputation.ratingAverage.toFixed(1), count: d.reputation.reviewCount })
                 : t("noRating")}
@@ -371,6 +384,7 @@ export function OwnerDashboard() {
           </ul>
         </Section>
       </div>
+      </Reveal>
     </div>
   );
 }

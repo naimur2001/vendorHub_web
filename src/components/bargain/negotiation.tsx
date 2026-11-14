@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, Clock, LoaderCircle, ShoppingCart } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useState, type FormEvent } from "react";
+import { CART_LANDED_EVENT } from "@/components/cart/cart-badge";
 import { Link } from "@/i18n/routing";
 import {
   acceptBargain,
@@ -44,8 +45,24 @@ function clock(totalSeconds: number): string {
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
-/** Counts down from the server's secondsLeft; red in the last minute; reloads the real state at zero. */
-function TimerBar({ seconds, label, onDone }: { seconds: number; label: (time: string) => string; onDone: () => void }) {
+const AMBER_BELOW = 300; // seconds: the bar turns amber in the last 5 minutes, red in the last minute
+
+/**
+ * Counts down from the server's secondsLeft; reloads the real state at zero.
+ * The thin bar empties smoothly (scaleX), gold, then amber, then red with a gentle pulse in the last minute.
+ * `total` is the whole reply window, so the bar keeps its place when fresh data arrives.
+ */
+function TimerBar({
+  seconds,
+  total,
+  label,
+  onDone,
+}: {
+  seconds: number;
+  total: number;
+  label: (time: string) => string;
+  onDone: () => void;
+}) {
   const [elapsed, setElapsed] = useState(0);
   const left = Math.max(0, seconds - elapsed);
 
@@ -60,16 +77,28 @@ function TimerBar({ seconds, label, onDone }: { seconds: number; label: (time: s
   }, [left, seconds, onDone]);
 
   const urgent = left < 60;
+  const amber = !urgent && left < AMBER_BELOW;
+  const share = Math.min(1, left / Math.max(total, seconds, 1));
   return (
-    <p
+    <div
       className={cn(
-        "type-body-medium flex items-center gap-2 rounded-sm px-3 py-2",
+        "relative overflow-hidden rounded-sm",
         urgent ? "bg-error-soft text-error" : "bg-highlight-soft text-highlight",
       )}
     >
-      <Clock className={cn("size-4 shrink-0", urgent && "motion-safe:animate-pulse")} aria-hidden />
-      <span aria-live={urgent ? "polite" : "off"}>{label(clock(left))}</span>
-    </p>
+      <p className="type-body-medium flex items-center gap-2 px-3 py-2">
+        <Clock className={cn("size-4 shrink-0", urgent && "motion-safe:animate-pulse")} aria-hidden />
+        <span aria-live={urgent ? "polite" : "off"}>{label(clock(left))}</span>
+      </p>
+      {/* Decorative: the text above already says the time. Three stacked colours cross-fade (opacity only). */}
+      <div aria-hidden className={cn("h-1 w-full", urgent && "timer-urgent")}>
+        <div className="timer-fill relative h-full" style={{ transform: `scaleX(${share})` }}>
+          <span className={cn("absolute inset-0 bg-gold", (amber || urgent) && "opacity-0")} />
+          <span className={cn("absolute inset-0 bg-warning", !amber && "opacity-0")} />
+          <span className={cn("absolute inset-0 bg-error", !urgent && "opacity-0")} />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -114,6 +143,8 @@ export function Negotiation({
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [countering, setCountering] = useState(false);
   const [counterText, setCounterText] = useState("");
+  // How many messages were there when the feed first showed: only later ones slide in.
+  const [seenCount, setSeenCount] = useState<number | null>(null);
 
   const query = useQuery({
     queryKey: bargainKeys.bargain(bargainId),
@@ -151,6 +182,7 @@ export function Negotiation({
     mutationFn: () => bargainToCart(bargainId),
     onSuccess: (cart) => {
       queryClient.setQueryData(cartKeys.cart, cart); // the cart badge updates at once
+      window.dispatchEvent(new Event(CART_LANDED_EVENT)); // ...and bounces
       setMessage({ kind: "ok", text: t("addedToCart") });
     },
     onError: failed,
@@ -182,6 +214,13 @@ export function Negotiation({
 
   const b = query.data as ShopBargain;
   const events = b.events ?? [];
+  if (seenCount === null) setSeenCount(events.length);
+  const firstNew = seenCount ?? events.length;
+
+  // Whole reply window = from the last message to the deadline (for the timer bar).
+  const lastEventAt = events.length > 0 ? new Date(events[events.length - 1].createdAt).getTime() : NaN;
+  const windowSeconds = Math.round((new Date(b.expiresAt).getTime() - lastEventAt) / 1000);
+  const timerTotal = Number.isFinite(windowSeconds) && windowSeconds > 0 ? windowSeconds : b.secondsLeft;
   const offersMade = events.filter((e) => e.amount !== null).length;
   const money = (n: number) => formatTaka(n, locale);
 
@@ -257,8 +296,9 @@ export function Negotiation({
         </span>
       </div>
 
-      <ol aria-label={t("feedLabel")} className="flex max-h-56 flex-col gap-3 overflow-y-auto rounded-md border border-line bg-surface p-3">
-        {events.map((e) => {
+      <ol aria-label={t("feedLabel")} className="flex max-h-56 flex-col gap-3 overflow-x-hidden overflow-y-auto rounded-md border border-line bg-surface p-3">
+        {events.map((e, index) => {
+          const isNew = index >= firstNew;
           const time = format.dateTime(new Date(e.createdAt), { hour: "numeric", minute: "2-digit" });
           if (e.actor === "SYSTEM") {
             return (
@@ -275,6 +315,8 @@ export function Negotiation({
                 className={cn(
                   "flex max-w-[80%] flex-col gap-0.5 rounded-md px-3 py-2",
                   mine ? "bg-success-soft text-ink" : "border border-line bg-card text-ink",
+                  // A new offer slides in from its own side with a soft gold flash (once).
+                  isNew && (mine ? "offer-in-right" : "offer-in-left"),
                 )}
               >
                 <span className="type-body-medium">{eventText(e)}</span>
@@ -287,7 +329,13 @@ export function Negotiation({
 
       {(ACTIVE.includes(b.status) || b.status === "ACCEPTED") && b.secondsLeft > 0 && (
         // key: a fresh server value restarts the countdown
-        <TimerBar key={query.dataUpdatedAt} seconds={b.secondsLeft} label={timerLabel} onDone={() => void query.refetch()} />
+        <TimerBar
+          key={query.dataUpdatedAt}
+          seconds={b.secondsLeft}
+          total={timerTotal}
+          label={timerLabel}
+          onDone={() => void query.refetch()}
+        />
       )}
 
       {message && (

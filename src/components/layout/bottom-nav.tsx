@@ -45,7 +45,7 @@ function NavItems({ pathname }: { pathname: string | null }) {
                 active ? "text-brand-alt" : "text-ink-muted",
               )}
             >
-              <span className="relative">
+              <span className="relative" data-cart-target={isCart ? "" : undefined}>
                 <Icon className="size-6" strokeWidth={active ? 2.25 : 1.75} aria-hidden />
                 {isCart && <CartCountBadge count={cartCount} className="-top-1.5 -right-3" />}
               </span>

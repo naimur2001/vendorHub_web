@@ -179,11 +179,11 @@ async function MarketView({ params }: Props) {
 function MarketSkeleton() {
   return (
     <div className="flex flex-col gap-6" aria-hidden>
-      <div className="h-12 w-2/3 animate-pulse rounded-sm bg-subtle" />
-      <div className="h-6 w-1/2 animate-pulse rounded-sm bg-subtle" />
+      <div className="h-12 w-2/3 skeleton rounded-sm" />
+      <div className="h-6 w-1/2 skeleton rounded-sm" />
       <div className="grid gap-3 md:grid-cols-2">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="h-20 animate-pulse rounded-md bg-subtle" />
+          <div key={i} className="h-20 skeleton rounded-md" />
         ))}
       </div>
     </div>

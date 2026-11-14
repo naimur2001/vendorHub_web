@@ -57,7 +57,7 @@ function ListSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" aria-hidden>
       {Array.from({ length: 8 }, (_, i) => (
-        <div key={i} className="aspect-[4/5] animate-pulse rounded-t-full rounded-b-sm bg-subtle" />
+        <div key={i} className="aspect-[4/5] skeleton rounded-t-full rounded-b-sm" />
       ))}
     </div>
   );
@@ -134,9 +134,9 @@ async function StorefrontView({ params, searchParams }: Props) {
 function StorefrontSkeleton() {
   return (
     <div className="flex flex-col gap-6" aria-hidden>
-      <div className="-mx-4 -mt-6 h-40 animate-pulse bg-subtle md:mx-0 md:mt-0 md:h-60 md:rounded-lg" />
-      <div className="h-10 w-2/3 animate-pulse rounded-sm bg-subtle" />
-      <div className="h-24 animate-pulse rounded-md bg-subtle" />
+      <div className="-mx-4 -mt-6 h-40 skeleton md:mx-0 md:mt-0 md:h-60 md:rounded-lg" />
+      <div className="h-10 w-2/3 skeleton rounded-sm" />
+      <div className="h-24 skeleton rounded-md" />
     </div>
   );
 }

@@ -239,8 +239,8 @@ async function SearchContent({ locale, searchParams }: { locale: string; searchP
 function SearchSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-hidden>
-      <div className="h-12 animate-pulse rounded-md bg-subtle" />
-      <div className="h-9 w-1/2 animate-pulse rounded-sm bg-subtle" />
+      <div className="h-12 skeleton rounded-md" />
+      <div className="h-9 w-1/2 skeleton rounded-sm" />
       <ResultsSkeleton />
     </div>
   );

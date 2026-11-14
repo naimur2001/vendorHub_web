@@ -113,7 +113,10 @@ export function OrderConfirmation({ checkoutId }: { checkoutId: string }) {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col items-center gap-3 rounded-md border border-line bg-card px-6 py-8 text-center">
-        <PackageCheck className="size-12 text-success-ink" strokeWidth={1.5} aria-hidden />
+        {/* Quiet celebration: a gold ring expands and fades behind the checkmark (once) */}
+        <span className="ring-burst flex">
+          <PackageCheck className="pop-in size-12 text-success-ink" strokeWidth={1.5} aria-hidden />
+        </span>
         <h1 className="type-h2 text-ink">{t("placedTitle", { count: result.orders.length })}</h1>
         <p className="type-body max-w-lg text-ink-secondary">{t("placedText")}</p>
         <p className="type-body-medium text-ink">
@@ -121,7 +124,8 @@ export function OrderConfirmation({ checkoutId }: { checkoutId: string }) {
         </p>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      {/* Order cards rise in one by one */}
+      <div className="rise-stagger grid gap-5 lg:grid-cols-2">
         {result.orders.map((order) => (
           <OrderCard key={order.id} order={order} checkoutId={checkoutId} />
         ))}
