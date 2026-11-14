@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
-import { MarketBrowser } from "@/components/shop/market-browser";
+import { MarketBrowser, type DistrictChoice } from "@/components/shop/market-browser";
 import { getMarkets } from "@/lib/api/catalog-cache";
 import type { Market } from "@/lib/api/shops";
 import { findMarkets } from "@/lib/api/storefront";
-import { isDistrict, type District } from "@/lib/districts";
+import { DEFAULT_DISTRICT, isDistrict, type District } from "@/lib/districts";
 
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = { params: Promise<{ locale: string }>; searchParams: Promise<RawParams> };
@@ -18,15 +18,18 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   return { title: t("metaTitle"), description: t("subtitle") };
 }
 
-// /markets?district=sylhet&q=city. The full list comes from the 10-minute cache (shared with the
-// search filters) and gives the district chips; a filtered list is asked from the API.
+// /markets shows Dhaka; /markets?district=sylhet&q=city another district and a name search;
+// /markets?district=all every market. The full list comes from the 10-minute cache (shared with
+// the search filters): it fills the district dropdown and answers a district on its own. A name
+// search is asked from the API.
 async function MarketList({ searchParams }: { searchParams: Promise<RawParams> }) {
   const t = await getTranslations("Market");
   const raw = await searchParams;
 
-  // Only a known district key and a short text ever reach the API.
+  // Only a known district key and a short text ever reach the API. Anything else means Dhaka.
   const districtParam = first(raw.district);
-  const district = isDistrict(districtParam) ? districtParam : undefined;
+  const district: DistrictChoice = districtParam === "all" ? "all" : isDistrict(districtParam) ? districtParam : DEFAULT_DISTRICT;
+  const key = district === "all" ? undefined : district;
   const q = (first(raw.q) ?? "").trim().slice(0, 100);
 
   let all: Market[];
@@ -35,7 +38,7 @@ async function MarketList({ searchParams }: { searchParams: Promise<RawParams> }
     all = await getMarkets();
     // A list cached before markets had districts: ask the API directly until the cache renews.
     if (all.some((market) => !isDistrict(market.district))) all = await findMarkets({});
-    found = district || q ? await findMarkets({ district, q }) : all;
+    found = q ? await findMarkets({ district: key, q }) : key ? all.filter((market) => market.district === key) : all;
   } catch {
     return (
       <p role="alert" className="type-body text-ink-secondary">

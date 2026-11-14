@@ -19,8 +19,7 @@ function initials(name: string): string {
   );
 }
 
-/** One market on /markets. */
-/** One market on /markets: photo on top (or the small arcade). */
+/** One market on /markets, under its district heading: photo on top (or the small arcade). */
 export function MarketCard({ market }: { market: Market }) {
   const t = useTranslations("Market");
   const photo = safeMediaUrl(market.image?.thumbUrl ?? null);
@@ -40,7 +39,7 @@ export function MarketCard({ market }: { market: Market }) {
       )}
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex flex-col gap-1">
-          <h2 className="type-h3 text-ink group-hover:text-brand">{market.name}</h2>
+          <h3 className="type-h3 text-ink group-hover:text-brand">{market.name}</h3>
           {(market.address || market.city) && (
             <p className="type-body text-ink-secondary">{[market.address, market.city].filter(Boolean).join(", ")}</p>
           )}
