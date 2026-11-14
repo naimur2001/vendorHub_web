@@ -41,6 +41,7 @@ export type Order = {
     id: string;
     name: string;
     slug: string;
+    phone: string | null; // null for shops created before phones were required
     logoUrl: string | null;
     levelFloor: string | null;
     shopNumber: string | null;

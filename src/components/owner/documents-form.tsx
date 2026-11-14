@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, FileText, LoaderCircle, LockKeyhole } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
+import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import {
   requestVerification,
@@ -119,6 +120,7 @@ export function DocumentsForm({ shop }: { shop: MyShop }) {
   const [files, setFiles] = useState<Record<DocType, File | null>>({ TRADE_LICENSE: null, NID: null });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<DocType, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [needsPhone, setNeedsPhone] = useState(false);
   const [phase, setPhase] = useState<"idle" | "uploading" | "submitting">("idle");
   const [current, setCurrent] = useState(0);
 
@@ -133,6 +135,7 @@ export function DocumentsForm({ shop }: { shop: MyShop }) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
+    setNeedsPhone(false);
 
     // Every document chosen and valid?
     const errors: Partial<Record<DocType, string>> = {};
@@ -161,7 +164,11 @@ export function DocumentsForm({ shop }: { shop: MyShop }) {
       // The wizard re-reads "my shops" and shows "Submitted for review".
       await queryClient.invalidateQueries({ queryKey: shopKeys.mine });
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && err.status === 409 && /phone/i.test(err.message)) {
+        // "Add your shop phone first": a shop created before phones were required.
+        setNeedsPhone(true);
+        setFormError(t("docErrors.phoneFirst"));
+      } else if (err instanceof ApiError && err.status === 409) {
         // A request is already in progress (e.g. sent from another tab): just show it.
         await queryClient.invalidateQueries({ queryKey: shopKeys.mine });
       } else if (err instanceof ApiError && err.status === 400 && stage === "upload") {
@@ -193,7 +200,17 @@ export function DocumentsForm({ shop }: { shop: MyShop }) {
       {formError && (
         <div role="alert" className="type-body flex gap-2 rounded-md border border-error/30 bg-error-soft p-3 text-error">
           <CircleAlert className="mt-0.5 size-5 shrink-0" aria-hidden />
-          <p>{formError}</p>
+          <div className="flex flex-col items-start">
+            <p>{formError}</p>
+            {needsPhone && (
+              <Link
+                href={`/owner/settings?shop=${encodeURIComponent(shop.id)}#contact`}
+                className="type-body-medium flex h-11 items-center rounded-sm text-brand underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+              >
+                {t("docErrors.phoneFirstLink")}
+              </Link>
+            )}
+          </div>
         </div>
       )}
 

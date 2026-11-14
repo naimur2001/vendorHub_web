@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, CircleCheck, LoaderCircle, MapPin, PackageCheck, SearchX, Store, Truck } from "lucide-react";
+import { CircleAlert, CircleCheck, LoaderCircle, MapPin, PackageCheck, Phone, SearchX, Store, Truck } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
@@ -18,7 +18,7 @@ import {
   type PaymentStatus,
 } from "@/lib/api/checkout";
 import { ApiError } from "@/lib/api/core";
-import { shopPlace } from "@/lib/api/storefront";
+import { callHref, shopPlace } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ReviewForm } from "@/components/reviews/review-form";
@@ -160,6 +160,7 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
   const canPay = order.paymentMethod === "ONLINE" && order.paymentStatus === "PENDING" && order.status !== "CANCELLED";
   const canCancel = order.status === "PLACED";
   const pickupPlace = [shopPlace(order.shop.levelFloor, order.shop.shopNumber), order.shop.addressLine].filter(Boolean).join(", ");
+  const shopCall = callHref(order.shop.phone); // null for a shop without a phone: no call button
 
   // Put the server's updated order into this checkout's cached data.
   function replaceOrder(updated: Order) {
@@ -237,6 +238,15 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
           </Link>
           {order.shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={order.shop.verificationLevel} size="sm" />}
         </div>
+        {shopCall && (
+          <a
+            href={shopCall}
+            className="type-body-medium flex h-11 items-center gap-2 self-start rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            <Phone className="size-4 shrink-0" aria-hidden />
+            {t("callShop", { phone: order.shop.phone ?? "" })}
+          </a>
+        )}
         <OrderBadges order={order} />
       </header>
 

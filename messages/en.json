@@ -226,7 +226,9 @@
       "empty": "This file is empty.",
       "rejectedType": "One of the files isn't a real PDF, JPG or PNG. Choose it again.",
       "tooLarge": "One of the files is too large. Use files up to 5 MB.",
-      "uploadLimit": "You've uploaded too many files today. Try again tomorrow."
+      "uploadLimit": "You've uploaded too many files today. Try again tomorrow.",
+      "phoneFirst": "Add your shop phone number first. Then send your documents again.",
+      "phoneFirstLink": "Open the shop profile"
     },
     "status": {
       "reviewTitle": "Submitted for review",
@@ -614,6 +616,7 @@
     "checkoutTotal": "Total for all orders",
     "orderNumber": "Order {number}",
     "placedOn": "Placed {date}",
+    "callShop": "Call the shop: {phone}",
     "status": {
       "PLACED": "Placed",
       "CONFIRMED": "Confirmed by the shop",
