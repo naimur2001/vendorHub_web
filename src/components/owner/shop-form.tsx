@@ -7,10 +7,12 @@ import { useTranslations } from "next-intl";
 import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useSession } from "@/components/app-providers";
 import { TextField } from "@/components/ui/text-field";
 import { ApiError } from "@/lib/api/core";
 import { createShop, getMarkets, shopKeys, type CreateShopInput } from "@/lib/api/shops";
 import { cn } from "@/lib/utils";
+import { normalizePhone, phoneField } from "@/lib/validation";
 
 type Translate = (key: string) => string;
 
@@ -25,6 +27,7 @@ function createShopSchema(t: Translate) {
         .trim()
         .min(2, { error: t("errors.nameShort") })
         .max(100, { error: t("errors.nameLong") }),
+      phone: phoneField({ required: t("errors.phoneRequired"), invalid: t("errors.phoneInvalid") }),
       marketId: z.string().refine((v) => v === "" || UUID.test(v)),
       levelFloor: z.string().trim().max(30, { error: t("errors.fieldLong") }),
       shopNumber: z.string().trim().max(30, { error: t("errors.fieldLong") }),
@@ -62,6 +65,7 @@ export function ShopForm() {
   const t = useTranslations("OwnerSetup");
   const tAuth = useTranslations("Auth");
   const queryClient = useQueryClient();
+  const { user } = useSession();
   const [formError, setFormError] = useState<string | null>(null);
   const ids = { market: useId(), description: useId(), services: useId() };
 
@@ -73,11 +77,14 @@ export function ShopForm() {
     handleSubmit,
     getValues,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<ShopValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
+      // Starts with the owner's own number; they can type the shop's number instead.
+      phone: user?.phone ?? "",
       marketId: "",
       levelFloor: "",
       shopNumber: "",
@@ -105,6 +112,7 @@ export function ShopForm() {
     // Leave out empty optional fields: the backend rejects an empty marketId.
     const input: CreateShopInput = {
       name: values.name,
+      phone: normalizePhone(values.phone),
       addressLine: values.addressLine,
       supportsDelivery: values.supportsDelivery,
       supportsPickup: values.supportsPickup,
@@ -118,6 +126,11 @@ export function ShopForm() {
       // The wizard re-reads "my shops" and moves on to the documents step.
       await queryClient.invalidateQueries({ queryKey: shopKeys.mine });
     } catch (err) {
+      // The backend names the field it rejected: show our own text under the phone field.
+      const details = err instanceof ApiError && err.status === 400 ? err.details : null;
+      if (typeof details === "object" && details !== null && "phone" in details) {
+        setError("phone", { message: t("errors.phoneInvalid") }, { shouldFocus: true });
+      }
       setFormError(errorMessage(err, t, tAuth));
     }
   }
@@ -142,6 +155,18 @@ export function ShopForm() {
         maxLength={100}
         error={errors.name?.message}
         {...register("name")}
+      />
+
+      <TextField
+        label={t("phone")}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder={t("phonePlaceholder")}
+        hint={t("phoneHint")}
+        maxLength={25}
+        error={errors.phone?.message}
+        {...register("phone")}
       />
 
       <div className="flex flex-col gap-1.5">

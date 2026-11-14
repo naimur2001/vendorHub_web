@@ -171,6 +171,9 @@
     "shopText": "Shoppers see this on your storefront. You can change it later.",
     "name": "Shop name",
     "namePlaceholder": "TechZone Electronics",
+    "phone": "Shop phone number",
+    "phonePlaceholder": "01712345678",
+    "phoneHint": "Customers call this number about their orders.",
     "market": "Market or mall",
     "marketNone": "Not in a market (standalone shop)",
     "marketHint": "Choose the market where your shop is.",
@@ -193,6 +196,8 @@
     "errors": {
       "nameShort": "Enter at least 2 characters.",
       "nameLong": "Use 100 characters or fewer.",
+      "phoneRequired": "Enter the shop's mobile number.",
+      "phoneInvalid": "Use a Bangladesh mobile number like 01712345678.",
       "addressShort": "Enter the full address (at least 5 characters).",
       "addressLong": "Use 200 characters or fewer.",
       "fieldLong": "Use 30 characters or fewer.",

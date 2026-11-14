@@ -49,6 +49,7 @@ export type Market = {
 // POST /shops (only send optional fields that have a value)
 export type CreateShopInput = {
   name: string;
+  phone: string; // BD mobile, "01712345678"
   addressLine: string;
   description?: string;
   marketId?: string;
