@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, SearchX, Search as SearchIcon } from "lucide
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
+import { Stagger } from "@/components/motion/stagger";
 import { ActiveFilters, DesktopFilters, MobileFilters } from "@/components/search/search-filters";
 import { ShopResults } from "@/components/search/shop-results";
 import { getPathname, Link } from "@/i18n/routing";
@@ -166,11 +167,11 @@ async function Results({ state }: { state: SearchState }) {
         {t("resultsHeading")}
       </h2>
       <p className="type-body text-ink-secondary">{t("count", { count: total })}</p>
-      <div className={GRID}>
+      <Stagger className={GRID}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
-      </div>
+      </Stagger>
       {totalPages > 1 && <Pagination state={state} totalPages={totalPages} />}
     </section>
   );

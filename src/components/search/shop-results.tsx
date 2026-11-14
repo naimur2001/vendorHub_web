@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { VerificationSeal } from "@/components/brand/verification-seal";
+import { Stagger } from "@/components/motion/stagger";
 import { Link } from "@/i18n/routing";
 import { searchShops, type ShopSearchItem } from "@/lib/api/shop-search";
 import { callHref, safeMediaUrl, shopPlace } from "@/lib/api/storefront";
@@ -102,13 +103,13 @@ export async function ShopResults({ q, marketId }: { q: string; marketId?: strin
         </h2>
         <span className="type-caption shrink-0 text-ink-muted">{t("count", { count: total })}</span>
       </div>
-      <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+      <Stagger as="ul" className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
         {shops.map((shop) => (
           <li key={shop.id} className="w-72 shrink-0 snap-start md:w-auto">
             <ShopResultCard shop={shop} />
           </li>
         ))}
-      </ul>
+      </Stagger>
     </section>
   );
 }

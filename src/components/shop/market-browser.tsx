@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
+import { Stagger } from "@/components/motion/stagger";
 import { MarketCard } from "@/components/shop/market-cards";
 import type { Market } from "@/lib/api/shops";
 
@@ -64,11 +65,11 @@ export function MarketBrowser({ markets }: { markets: Market[] }) {
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((market) => (
             <MarketCard key={market.id} market={market} />
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );

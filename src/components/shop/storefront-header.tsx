@@ -7,6 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { useSession } from "@/components/app-providers";
 import { VerificationSeal } from "@/components/brand/verification-seal";
+import { Stagger } from "@/components/motion/stagger";
 import { Link } from "@/i18n/routing";
 import { api } from "@/lib/api/client";
 import { callHref, safeMediaUrl, safeSocialUrl, shopPlace, SOCIAL_KEYS, whatsappHref, type Storefront } from "@/lib/api/storefront";
@@ -69,7 +70,7 @@ function ShopContact({ shop }: { shop: Storefront }) {
     "type-body-medium flex h-11 items-center justify-center gap-2 rounded-sm border border-brand bg-card px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none";
 
   return (
-    <ul aria-label={t("contact")} className="flex flex-wrap items-center gap-x-2 gap-y-2">
+    <Stagger as="ul" aria-label={t("contact")} className="flex flex-wrap items-center gap-x-2 gap-y-2">
       {call && (
         <li>
           <a href={call} className={button}>
@@ -100,7 +101,7 @@ function ShopContact({ shop }: { shop: Storefront }) {
           </a>
         </li>
       ))}
-    </ul>
+    </Stagger>
   );
 }
 
