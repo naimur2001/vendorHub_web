@@ -202,7 +202,8 @@ export function removeMarketImage(id: string): Promise<unknown> {
 
 // ---------- Products (G4b) ----------
 
-export type CatalogCategory = { id: string; name: string; slug: string; parentId?: string | null; children?: CatalogCategory[] };
+// virtualTryOn: only present when the category list sends it (older API answers leave it out).
+export type CatalogCategory = { id: string; name: string; slug: string; parentId?: string | null; children?: CatalogCategory[]; virtualTryOn?: boolean };
 export type CatalogBrand = { id: string; name: string };
 
 // GET /admin/products row (admin catalog module)
@@ -320,6 +321,10 @@ export function renameCategory(id: string, name: string): Promise<unknown> {
 }
 export function deleteCategory(id: string): Promise<unknown> {
   return api.delete<unknown>(`/admin/categories/${encodeURIComponent(id)}`);
+}
+// Virtual try-on for every product of one category (admin only, written to the audit log).
+export function setCategoryTryOn(id: string, enabled: boolean): Promise<{ id: string; name: string; virtualTryOn: boolean }> {
+  return api.patch<{ id: string; name: string; virtualTryOn: boolean }>(`/admin/categories/${encodeURIComponent(id)}/try-on`, { enabled });
 }
 
 

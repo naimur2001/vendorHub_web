@@ -15,6 +15,7 @@ import {
   productKeys,
   renameBrand,
   renameCategory,
+  setCategoryTryOn,
 } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
@@ -39,8 +40,11 @@ function run(op: Op): Promise<unknown> {
   return deleteCategory(op.id ?? "");
 }
 
-/** One name with Rename (inline) and Delete (two clicks). */
-function EditableRow({ name, busy, onRename, onDelete, indent }: { name: string; busy: boolean; onRename: (name: string) => void; onDelete: () => void; indent?: boolean }) {
+// Try-on for one category. `on` is undefined while the state is not known yet (neither button is marked).
+type TryOnControl = { on: boolean | undefined; set: (enabled: boolean) => void };
+
+/** One name with Rename (inline) and Delete (two clicks); categories also get the try-on switch. */
+function EditableRow({ name, busy, onRename, onDelete, indent, tryOn }: { name: string; busy: boolean; onRename: (name: string) => void; onDelete: () => void; indent?: boolean; tryOn?: TryOnControl }) {
   const t = useTranslations("AdminTaxonomy");
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(name);
@@ -66,6 +70,26 @@ function EditableRow({ name, busy, onRename, onDelete, indent }: { name: string;
       ) : (
         <>
           <span className={cn("type-body flex-1 text-ink", indent && "text-ink-secondary")}>{indent && "↳ "}{name}</span>
+          {tryOn && (
+            <span role="group" aria-label={t("tryOnFor", { name })} className="flex items-center gap-1">
+              <span className="type-caption text-ink-muted">{t("tryOn")}</span>
+              {([true, false] as const).map((value) => (
+                <button
+                  key={String(value)}
+                  type="button"
+                  aria-pressed={tryOn.on === value}
+                  disabled={busy || tryOn.on === value}
+                  onClick={() => tryOn.set(value)}
+                  className={cn(
+                    "type-body-medium h-9 min-w-11 rounded-sm border px-2 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none",
+                    tryOn.on === value ? "border-brand bg-brand text-primary-foreground" : "border-line-strong text-ink hover:border-brand",
+                  )}
+                >
+                  {t(value ? "on" : "off")}
+                </button>
+              ))}
+            </span>
+          )}
           <button type="button" onClick={() => setEditing(true)} disabled={busy} className="type-body-medium flex h-9 items-center gap-1 rounded-sm px-2 text-brand hover:bg-subtle">
             <Pencil className="size-4" aria-hidden />
             {t("rename")}
@@ -94,6 +118,8 @@ export function CatalogLists() {
   const [parentId, setParentId] = useState("");
   const [brandName, setBrandName] = useState("");
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  // Try-on states learned from the API's answers in this visit (the list may not carry them).
+  const [tryOnKnown, setTryOnKnown] = useState<Record<string, boolean>>({});
 
   const categories = useQuery({ queryKey: productKeys.categories, queryFn: listCategories });
   const brands = useQuery({ queryKey: productKeys.brands, queryFn: listBrands });
@@ -112,6 +138,23 @@ export function CatalogLists() {
       else if (err instanceof ApiError && err.status === 400) key = "errors.name";
       else if (err instanceof ApiError && err.status === 0) key = "errors.network";
       setMessage({ kind: "error", text: t(key) });
+    },
+  });
+
+  const tryOnOp = useMutation({
+    mutationFn: (v: { id: string; enabled: boolean }) => setCategoryTryOn(v.id, v.enabled),
+    onSuccess: (r) => {
+      setTryOnKnown((known) => ({ ...known, [r.id]: r.virtualTryOn }));
+      setMessage({ kind: "ok", text: t(r.virtualTryOn ? "tryOnNowOn" : "tryOnNowOff", { name: r.name }) });
+      void queryClient.invalidateQueries({ queryKey: productKeys.categories });
+    },
+    onError: (err) => setMessage({ kind: "error", text: t(err instanceof ApiError && err.status === 0 ? "errors.network" : "errors.generic") }),
+  });
+  const tryOnFor = (c: { id: string; virtualTryOn?: boolean }): TryOnControl => ({
+    on: tryOnKnown[c.id] ?? c.virtualTryOn,
+    set: (enabled) => {
+      setMessage(null);
+      tryOnOp.mutate({ id: c.id, enabled });
     },
   });
 
@@ -135,7 +178,7 @@ export function CatalogLists() {
 
   const roots = categories.data;
   const brandList = [...brands.data].sort((a, b) => a.name.localeCompare(b.name));
-  const busy = op.isPending;
+  const busy = op.isPending || tryOnOp.isPending;
 
   return (
     <div className="flex flex-col gap-6">
@@ -153,6 +196,7 @@ export function CatalogLists() {
         {/* Categories */}
         <section className="flex flex-col gap-3 rounded-md border border-line bg-card p-4 shadow-card">
           <h2 className="type-h3 text-ink">{t("categories")}</h2>
+          <p className="type-caption text-ink-muted">{t("tryOnHint")}</p>
           <form onSubmit={(e) => add(e, "category")} className="grid gap-2 sm:grid-cols-[1fr_11rem_auto] sm:items-end">
             <div className="flex flex-col gap-1">
               <label htmlFor={ids.cat} className="type-caption text-ink-secondary">{t("name")}</label>
@@ -177,9 +221,9 @@ export function CatalogLists() {
               {roots.map((r) => (
                 <li key={r.id}>
                   <ul>
-                    <EditableRow name={r.name} busy={busy} onRename={(name) => op.mutate({ kind: "rename", target: "category", id: r.id, name })} onDelete={() => op.mutate({ kind: "delete", target: "category", id: r.id })} />
+                    <EditableRow name={r.name} busy={busy} tryOn={tryOnFor(r)} onRename={(name) => op.mutate({ kind: "rename", target: "category", id: r.id, name })} onDelete={() => op.mutate({ kind: "delete", target: "category", id: r.id })} />
                     {(r.children ?? []).map((c) => (
-                      <EditableRow key={c.id} indent name={c.name} busy={busy} onRename={(name) => op.mutate({ kind: "rename", target: "category", id: c.id, name })} onDelete={() => op.mutate({ kind: "delete", target: "category", id: c.id })} />
+                      <EditableRow key={c.id} indent name={c.name} busy={busy} tryOn={tryOnFor(c)} onRename={(name) => op.mutate({ kind: "rename", target: "category", id: c.id, name })} onDelete={() => op.mutate({ kind: "delete", target: "category", id: c.id })} />
                     ))}
                   </ul>
                 </li>

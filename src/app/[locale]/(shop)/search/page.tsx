@@ -211,7 +211,7 @@ async function SearchContent({ locale, searchParams }: { locale: string; searchP
   return (
     <div className="flex flex-col gap-5">
       <SearchForm locale={locale} state={state} label={t("searchPlaceholder")} button={t("searchButton")} />
-      <h1 className="type-h2 break-words text-ink">{heading}</h1>
+      <h1 className="type-h2 wrap-break-word text-ink">{heading}</h1>
             {/* Matching shops above the products: text searches, first page only */}
       {state.q && state.page === 1 && (
         <Suspense key={`shops-${state.q}-${state.marketId ?? ""}`} fallback={null}>
