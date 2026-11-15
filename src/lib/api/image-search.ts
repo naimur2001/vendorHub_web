@@ -7,7 +7,7 @@ export type SimilarProduct = {
   image: string | null;
   lowestPrice: number | null;
   shopCount: number;
-  matchPercent: number; // 70–100, from the backend's score
+  matchPercent: number; // 78–100, from the backend's score
 };
 
 export type PhotoSearchResult = {
@@ -18,9 +18,9 @@ export type PhotoSearchResult = {
 };
 
 // The API always answers with its 12 closest products, however far away they are. Its `score`
-// (0 to 1; the same photo scores 1) is about 0.64 for products that have nothing to do with the
-// photo, so only clearly closer ones are shown.
-const MIN_SCORE = 0.7;
+// (0 to 1) measured on the seed photos: the same product 0.97, the same kind of product 0.80 to
+// 0.92, other kinds of product 0.69 to 0.75, a photo of something else entirely about 0.5.
+const MIN_SCORE = 0.78;
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const clean = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\p{Cc}/gu, "").trim().slice(0, max) : "");
