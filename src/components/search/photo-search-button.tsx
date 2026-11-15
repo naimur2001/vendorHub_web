@@ -13,6 +13,10 @@ import { ApiError } from "@/lib/api/core";
 import { searchByPhoto, type PhotoSearchResult } from "@/lib/api/image-search";
 import { safeMediaUrl } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+// Rises 14px and fades in (keyframes in globals.css); nothing moves with "reduce motion".
+const RISE = "motion-safe:animate-[vh-rise-in_250ms_cubic-bezier(0.22,1,0.36,1)_backwards]";
 
 /**
  * 📷 in the search bar: photo → "Similar products" dialog (+ a link to all results when words were
@@ -26,6 +30,7 @@ export function PhotoSearchButton() {
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [presses, setPresses] = useState(0); // each press replays the icon's pop
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PhotoSearchResult | null>(null);
 
@@ -58,6 +63,7 @@ export function PhotoSearchButton() {
         modal={false}
         open={menuOpen}
         onOpenChange={(open) => {
+          if (open) setPresses((n) => n + 1);
           // A mouse or trackpad has no camera to offer: go straight to the file chooser.
           if (open && !window.matchMedia("(pointer: coarse)").matches) return galleryInput.current?.click();
           setMenuOpen(open);
@@ -67,16 +73,22 @@ export function PhotoSearchButton() {
           title={t("button")}
           aria-label={t("button")}
           disabled={search.isPending}
-          className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-subtle hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-subtle hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-90"
         >
-          {search.isPending ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <Camera className="size-5" aria-hidden />}
+          {search.isPending ? (
+            <LoaderCircle className="size-5 animate-spin" aria-hidden />
+          ) : (
+            // A new key on every press, so the pop plays again (never on page load).
+            <Camera key={presses} className={cn("size-5", presses > 0 && "motion-safe:animate-[vh-pop_300ms_cubic-bezier(0.22,1,0.36,1)]")} aria-hidden />
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={8} className="z-70 w-56">
-          <DropdownMenuItem onSelect={() => cameraInput.current?.click()} className="type-body min-h-11 cursor-pointer gap-3">
+          {/* The two choices rise in one after the other */}
+          <DropdownMenuItem onSelect={() => cameraInput.current?.click()} className={cn("type-body min-h-11 cursor-pointer gap-3", RISE)}>
             <Camera className="size-4 text-ink-muted" aria-hidden />
             {t("takePhoto")}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => galleryInput.current?.click()} className="type-body min-h-11 cursor-pointer gap-3">
+          <DropdownMenuItem onSelect={() => galleryInput.current?.click()} className={cn("type-body min-h-11 cursor-pointer gap-3", RISE, "[animation-delay:70ms]")}>
             <Images className="size-4 text-ink-muted" aria-hidden />
             {t("choosePhoto")}
           </DropdownMenuItem>
@@ -87,7 +99,7 @@ export function PhotoSearchButton() {
       <input ref={galleryInput} type="file" accept="image/*" tabIndex={-1} aria-hidden className="sr-only" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
 
       {(search.isPending || error) && (
-        <p role={error ? "alert" : "status"} className="type-caption absolute top-full right-0 left-0 z-10 mt-1 rounded-md border border-line bg-card px-3 py-2 text-ink-secondary shadow-card">
+        <p role={error ? "alert" : "status"} className={cn("type-caption absolute top-full right-0 left-0 z-10 mt-1 rounded-md border border-line bg-card px-3 py-2 text-ink-secondary shadow-card", RISE)}>
           {error ?? t("looking")}
         </p>
       )}
