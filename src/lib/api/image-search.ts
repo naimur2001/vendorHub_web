@@ -7,7 +7,7 @@ export type SimilarProduct = {
   image: string | null;
   lowestPrice: number | null;
   shopCount: number;
-  matchPercent: number | null; // 0–100, when the backend sends a score
+  matchPercent: number; // 70–100, from the backend's score
 };
 
 export type PhotoSearchResult = {
@@ -16,6 +16,11 @@ export type PhotoSearchResult = {
   categorySlug: string | null;
   products: SimilarProduct[];
 };
+
+// The API always answers with its 12 closest products, however far away they are. Its `score`
+// (0 to 1; the same photo scores 1) is about 0.64 for products that have nothing to do with the
+// photo, so only clearly closer ones are shown.
+const MIN_SCORE = 0.7;
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const clean = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\p{Cc}/gu, "").trim().slice(0, max) : "");
@@ -33,13 +38,6 @@ async function shrink(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode"))), "image/jpeg", 0.85));
 }
 
-/** `match` may be a 0–1 score or a 0–100 percentage; anything else is ignored. */
-function toPercent(v: unknown): number | null {
-  const n = num(v);
-  if (n === null || n < 0) return null;
-  return Math.round(n <= 1 ? n * 100 : Math.min(n, 100));
-}
-
 /** POST /search/by-image. Everything from the answer is treated as untrusted and cleaned. */
 export async function searchByPhoto(file: File): Promise<PhotoSearchResult> {
   const body = new FormData();
@@ -50,6 +48,8 @@ export async function searchByPhoto(file: File): Promise<PhotoSearchResult> {
   const cat = r.category as { slug?: unknown } | null | undefined;
   const products = (Array.isArray(r.products) ? (r.products as Record<string, unknown>[]) : [])
     .filter((p) => typeof p.slug === "string" && SLUG.test(p.slug) && typeof p.title === "string")
+    .filter((p) => (num(p.score) ?? 0) >= MIN_SCORE)
+    .sort((a, b) => (num(b.score) ?? 0) - (num(a.score) ?? 0))
     .slice(0, 12)
     .map((p) => ({
       slug: p.slug as string,
@@ -57,7 +57,7 @@ export async function searchByPhoto(file: File): Promise<PhotoSearchResult> {
       image: typeof p.thumbnail === "string" ? p.thumbnail : typeof p.image === "string" ? p.image : null,
       lowestPrice: num(p.lowestPrice),
       shopCount: num(p.shopCount) ?? 0,
-      matchPercent: toPercent(p.match),
+      matchPercent: Math.round(Math.min(num(p.score) ?? 0, 1) * 100),
     }));
 
   return {

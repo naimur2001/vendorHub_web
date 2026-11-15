@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
 import { Stagger } from "@/components/motion/stagger";
+import { PhotoSearchButton } from "@/components/search/photo-search-button";
 import { ActiveFilters, DesktopFilters, MobileFilters } from "@/components/search/search-filters";
 import { ShopResults } from "@/components/search/shop-results";
 import { getPathname, Link } from "@/i18n/routing";
@@ -58,8 +59,12 @@ function SearchForm({ locale, state, label, button }: { locale: string; state: S
           placeholder={label}
           aria-label={label}
           autoComplete="off"
-          className="type-body h-12 w-full rounded-md border border-input bg-card pr-3 pl-10 text-ink placeholder:text-ink-muted hover:border-line-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
+          className="type-body h-12 w-full rounded-md border border-input bg-card pr-3 pl-10 text-ink placeholder:text-ink-muted hover:border-line-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none max-md:pr-12"
         />
+        {/* Phones have no search bar in the top bar, so search by photo lives here */}
+        <span className="md:hidden">
+          <PhotoSearchButton />
+        </span>
       </div>
       {keep.map(([name, value]) => (value ? <input key={name} type="hidden" name={name} value={value} /> : null))}
       <button

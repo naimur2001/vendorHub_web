@@ -1,23 +1,31 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Camera, LoaderCircle, Search, ImageOff } from "lucide-react";
+import { Camera, Images, LoaderCircle, Search, ImageOff } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useRef, useState } from "react";
+import { Stagger } from "@/components/motion/stagger";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import { searchByPhoto, type PhotoSearchResult } from "@/lib/api/image-search";
 import { safeMediaUrl } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 
-/** 📷 in the search bar: photo → "Similar products" dialog (+ a link to all results when words were recognised). */
+/**
+ * 📷 in the search bar: photo → "Similar products" dialog (+ a link to all results when words were
+ * recognised). On a phone the button offers the camera or the gallery; with a mouse it opens the
+ * file chooser directly.
+ */
 export function PhotoSearchButton() {
   const t = useTranslations("PhotoSearch");
     const tCatalog = useTranslations("Catalog");
   const locale = useLocale();
-  const id = useId();
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const galleryInput = useRef<HTMLInputElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PhotoSearchResult | null>(null);
 
@@ -25,7 +33,9 @@ export function PhotoSearchButton() {
     mutationFn: searchByPhoto,
     onSuccess: (r) => setResult(r),
     onError: (err) => {
-      const s = err instanceof ApiError ? err.status : -1;
+      // Not an API error: the browser could not read the file as a picture.
+      if (!(err instanceof ApiError)) return setError(t("errors.type"));
+      const s = err.status;
       setError(t(s === 422 ? "errors.notFound" : s === 429 ? "errors.limit" : s >= 502 ? "errors.unavailable" : s === 400 || s === 413 ? "errors.type" : "errors.generic"));
     },
   });
@@ -33,7 +43,8 @@ export function PhotoSearchButton() {
   function pick(f: File | undefined) {
     setError(null);
     if (!f) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) return setError(t("errors.type"));
+    // Any picture the browser can open: it is re-drawn as a small JPEG before it is sent.
+    if (!f.type.startsWith("image/")) return setError(t("errors.type"));
     search.mutate(f);
   }
 
@@ -43,15 +54,37 @@ export function PhotoSearchButton() {
 
   return (
     <>
-      <label
-        htmlFor={id}
-        title={t("button")}
-        className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-subtle hover:text-brand has-:focus-visible:ring-2 has-:focus-visible:ring-brand"
+      <DropdownMenu
+        modal={false}
+        open={menuOpen}
+        onOpenChange={(open) => {
+          // A mouse or trackpad has no camera to offer: go straight to the file chooser.
+          if (open && !window.matchMedia("(pointer: coarse)").matches) return galleryInput.current?.click();
+          setMenuOpen(open);
+        }}
       >
-        {search.isPending ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <Camera className="size-5" aria-hidden />}
-        <span className="sr-only">{t("button")}</span>
-        <input id={id} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={search.isPending} className="sr-only" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
-      </label>
+        <DropdownMenuTrigger
+          title={t("button")}
+          aria-label={t("button")}
+          disabled={search.isPending}
+          className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-subtle hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        >
+          {search.isPending ? <LoaderCircle className="size-5 animate-spin" aria-hidden /> : <Camera className="size-5" aria-hidden />}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={8} className="z-70 w-56">
+          <DropdownMenuItem onSelect={() => cameraInput.current?.click()} className="type-body min-h-11 cursor-pointer gap-3">
+            <Camera className="size-4 text-ink-muted" aria-hidden />
+            {t("takePhoto")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => galleryInput.current?.click()} className="type-body min-h-11 cursor-pointer gap-3">
+            <Images className="size-4 text-ink-muted" aria-hidden />
+            {t("choosePhoto")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {/* Two hidden choosers: "capture" opens the camera, the other one the gallery or files. */}
+      <input ref={cameraInput} type="file" accept="image/*" capture="environment" tabIndex={-1} aria-hidden className="sr-only" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
+      <input ref={galleryInput} type="file" accept="image/*" tabIndex={-1} aria-hidden className="sr-only" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
 
       {(search.isPending || error) && (
         <p role={error ? "alert" : "status"} className="type-caption absolute top-full right-0 left-0 z-10 mt-1 rounded-md border border-line bg-card px-3 py-2 text-ink-secondary shadow-card">
@@ -71,7 +104,7 @@ export function PhotoSearchButton() {
           {result && result.products.length === 0 ? (
             <p className="type-body text-ink-secondary">{t("none")}</p>
           ) : (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            <Stagger as="ul" className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {result?.products.map((p) => {
                 const src = safeMediaUrl(p.image);
                 return (
@@ -86,9 +119,7 @@ export function PhotoSearchButton() {
                             <span className="type-caption text-ink-muted">{tCatalog("noPhoto")}</span>
                           </span>
                         )}
-                        {p.matchPercent !== null && (
-                          <span className="type-caption absolute bottom-1 left-1 rounded-full bg-ink/70 px-2 py-0.5 text-primary-foreground">{t("match", { percent: p.matchPercent })}</span>
-                        )}
+                        <span className="type-caption absolute bottom-1 left-1 rounded-full bg-ink/70 px-2 py-0.5 text-primary-foreground">{t("match", { percent: p.matchPercent })}</span>
                       </div>
                       <span className="type-body-medium line-clamp-2 text-ink">{p.title}</span>
                       <span className="type-caption mt-auto text-ink-secondary">
@@ -99,7 +130,7 @@ export function PhotoSearchButton() {
                   </li>
                 );
               })}
-            </ul>
+            </Stagger>
           )}
 
           {allResults && (
