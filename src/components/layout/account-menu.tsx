@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+  ChevronLeft,
   ChevronRight,
   Eye,
   Handshake,
@@ -152,6 +153,20 @@ export function AccountMenu({ user }: { user: SessionUser }) {
   );
 }
 
+/** On the pages under /account (orders, returns, profile, addresses): the way back to "My account". */
+export function AccountBack() {
+  const t = useTranslations("Account");
+  return (
+    <Link
+      href="/account"
+      className="type-body-medium -ml-1 flex h-11 items-center gap-1 self-start rounded-sm pr-2 text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+    >
+      <ChevronLeft className="size-5" aria-hidden />
+      {t("account")}
+    </Link>
+  );
+}
+
 /** Phones (Account tab) and anyone opening /account: the same entries as a page. */
 export function AccountPanel() {
   const t = useTranslations("Account");
@@ -200,7 +215,10 @@ export function AccountPanel() {
 
       <nav aria-label={t("menuLabel")}>
         <ul className="flex flex-col border-t border-line">
-          {linksFor(user, storefrontSlug).map(({ href, key, icon: Icon }) => (
+          {/* This list is the "My account" page itself, so it does not link to itself */}
+          {linksFor(user, storefrontSlug)
+            .filter((link) => link.key !== "account")
+            .map(({ href, key, icon: Icon }) => (
             <li key={key} className="border-b border-line">
               <Link href={href} className="type-body-medium flex min-h-14 items-center gap-3 px-1 text-ink hover:bg-subtle focus-visible:bg-subtle focus-visible:outline-none">
                 <Icon className="size-5 text-ink-muted" aria-hidden />

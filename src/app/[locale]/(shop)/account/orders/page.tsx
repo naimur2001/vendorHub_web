@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { AccountBack } from "@/components/layout/account-menu";
 import { Suspense } from "react";
 import { MyOrders } from "@/components/account/my-orders";
 
@@ -19,6 +20,7 @@ export default async function MyOrdersPage({ params }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <AccountBack />
       <h1 className="type-display text-ink">{t("title")}</h1>
       {/* The list reads ?status= and ?page= from the URL, which needs a Suspense boundary */}
       <Suspense fallback={<div className="h-64 skeleton rounded-md" aria-hidden />}>

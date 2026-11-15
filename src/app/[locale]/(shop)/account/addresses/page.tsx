@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { AccountBack } from "@/components/layout/account-menu";
 import { AddressBook } from "@/components/account/address-book";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -16,6 +17,7 @@ export default async function AddressesPage({ params }: Props) {
   const t = await getTranslations("Addresses");
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <AccountBack />
       <header className="flex flex-col gap-1">
         <h1 className="type-display text-ink">{t("title")}</h1>
         <p className="type-body text-ink-secondary">{t("subtitle")}</p>
