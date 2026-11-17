@@ -44,7 +44,7 @@ function MarketDoorsSkeleton() {
   return (
     <div className={DOORS} aria-hidden>
       {Array.from({ length: 4 }, (_, i) => (
-        <div key={i} className="aspect-[3/4] skeleton w-44 shrink-0 rounded-t-full rounded-b-sm md:w-auto" />
+        <div key={i} className="aspect-3/4 skeleton w-44 shrink-0 rounded-t-full rounded-b-sm md:w-auto" />
       ))}
     </div>
   );
@@ -177,7 +177,7 @@ export default async function HomePage({ params }: Props) {
         </Link>
         <Arcade animated className="max-w-3xl" />
         {/* Fixed height, so the numbers arriving never push the page down */}
-        <div className="flex min-h-[4.5rem] items-center md:min-h-[5rem]">
+        <div className="flex min-h-18 items-center md:min-h-20">
           <Suspense>
             <MarketStats locale={locale} />
           </Suspense>
