@@ -47,6 +47,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
 
+  // Set by the Next.js security upgrade (next upgrade --agent=security).
+  experimental: {
+    agentUpgrade: "security",
+  },
+
   // Do not advertise the framework in the X-Powered-By header.
   poweredByHeader: false,
 
