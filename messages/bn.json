@@ -605,7 +605,14 @@
       "error": "অর্ডার বাতিল করা গেল না। একটু পরে আবার চেষ্টা করুন।"
     },
     "myOrders": "আমার অর্ডার",
-    "continueShopping": "কেনাকাটা চালিয়ে যান"
+    "continueShopping": "কেনাকাটা চালিয়ে যান",
+    "map": {
+      "open": "ম্যাপে দেখুন",
+      "deliveryTitle": "ডেলিভারির ঠিকানা",
+      "pickupTitle": "দোকানের অবস্থান",
+      "note": "ম্যাপটি Google Maps-এর। এটি খুললেই কেবল আপনার ঠিকানা Google-এ পাঠানো হয়।",
+      "openInMaps": "Google Maps-এ খুলুন"
+    }
   },
   "MyOrders": {
     "metaTitle": "আমার অর্ডার",

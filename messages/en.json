@@ -149,7 +149,7 @@
     "invalidText": "Reset links work only once and expire after 60 minutes. Ask for a new one and use it soon.",
     "newLink": "Get a new link"
   },
-    "OwnerSetup": {
+  "OwnerSetup": {
     "metaTitle": "Set up your shop",
     "title": "Set up your shop",
     "subtitle": "A few steps and your physical shop is on Vendors Hub.",
@@ -239,7 +239,7 @@
       "rejectedText": "Our team could not approve your documents. The reason is in your notifications.",
       "revokedTitle": "Verification removed",
       "revokedText": "Your shop's verification was removed. The reason is in your notifications.",
-           "approvedTitle": "Your shop is verified",
+      "approvedTitle": "Your shop is verified",
       "approvedText": "Customers now see your verification seal."
     }
   },
@@ -269,7 +269,7 @@
     "addresses": "Saved addresses",
     "logOut": "Log out",
     "loggingOut": "Logging out…"
-    },
+  },
   "Catalog": {
     "availability": {
       "IN_STOCK": "In stock",
@@ -283,7 +283,8 @@
     "bargainAvailable": "Bargaining available",
     "noPhoto": "No photo yet",
     "latestTitle": "New in Dhaka's shops",
-    "latestText": "The newest products in Dhaka's shops. Each card shows the lowest price among all shops selling it.",    "seeAll": "See all",
+    "latestText": "The newest products in Dhaka's shops. Each card shows the lowest price among all shops selling it.",
+    "seeAll": "See all",
     "loadError": "Products couldn't load right now. Try again in a moment."
   },
   "Search": {
@@ -341,7 +342,7 @@
       "priceTooHigh": "Use an amount up to ৳1,00,00,000.",
       "priceOrder": "The minimum is higher than the maximum."
     }
-   },
+  },
   "Product": {
     "breadcrumb": "Breadcrumb",
     "home": "Home",
@@ -665,7 +666,7 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "The payment didn't go through. Nothing was charged. Try again."
     },
-        "cancel": {
+    "cancel": {
       "button": "Cancel this order",
       "title": "Cancel this order?",
       "text": "The shop hasn't confirmed it yet, so you can still cancel. If you paid online, the payment is refunded.",
@@ -680,7 +681,14 @@
       "error": "The order couldn't be cancelled. Try again in a moment."
     },
     "myOrders": "My orders",
-    "continueShopping": "Continue shopping"
+    "continueShopping": "Continue shopping",
+    "map": {
+      "open": "See on map",
+      "deliveryTitle": "Delivery address",
+      "pickupTitle": "Shop location",
+      "note": "Map by Google Maps. Your address is sent to Google only when you open this.",
+      "openInMaps": "Open in Google Maps"
+    }
   },
   "MyOrders": {
     "metaTitle": "My orders",
@@ -1110,7 +1118,7 @@
     "listings": "Listings",
     "verification": "Verification",
     "settings": "Settings",
-          "returns": "Returns",
+    "returns": "Returns",
     "waiting": "{label}, {count} waiting"
   },
   "Admin": {
@@ -1119,15 +1127,15 @@
     "navLabel": "Admin sections",
     "nav": {
       "queue": "Verification queue",
-            "overview": "Dashboard",
+      "overview": "Dashboard",
       "markets": "Markets",
       "products": "Products",
       "catalog": "Brands & categories",
       "audit": "Audit log",
-        "disputes": "Disputes",
-        "users": "Users",
-        "shops": "Shops",
-        "reports": "Reports",
+      "disputes": "Disputes",
+      "users": "Users",
+      "shops": "Shops",
+      "reports": "Reports",
       "back": "Back to the marketplace"
     },
     "loading": "Loading…",
@@ -1417,7 +1425,11 @@
     "searchPlaceholder": "Title or brand",
     "search": "Search",
     "allCategories": "All categories",
-    "filters": { "ACTIVE": "On sale", "INACTIVE": "Switched off", "ALL": "All" },
+    "filters": {
+      "ACTIVE": "On sale",
+      "INACTIVE": "Switched off",
+      "ALL": "All"
+    },
     "count": "{count, plural, one {# product} other {# products}}",
     "shopsSelling": "{count, plural, =0 {No shop sells it yet} one {# shop sells it} other {# shops sell it}}",
     "noBrand": "No brand",
@@ -1798,9 +1810,28 @@
     "shopSubtitle": "Customers' return requests. Answer them here.",
     "disputesTitle": "Disputes",
     "disputesSubtitle": "Rejected returns the customer escalated. Your decision is final.",
-    "status": { "REQUESTED": "Requested", "REJECTED": "Rejected by the shop", "ESCALATED": "With Vendors Hub", "REFUNDED": "Refunded", "CLOSED": "Closed" },
-    "filters": { "ALL": "All", "REQUESTED": "Requested", "REJECTED": "Rejected", "ESCALATED": "Escalated", "REFUNDED": "Refunded", "CLOSED": "Closed" },
-    "reason": { "DEFECTIVE": "Defective or damaged", "WRONG_ITEM": "Wrong item", "NOT_AS_DESCRIBED": "Not as described", "CHANGED_MIND": "Changed my mind", "OTHER": "Other" },
+    "status": {
+      "REQUESTED": "Requested",
+      "REJECTED": "Rejected by the shop",
+      "ESCALATED": "With Vendors Hub",
+      "REFUNDED": "Refunded",
+      "CLOSED": "Closed"
+    },
+    "filters": {
+      "ALL": "All",
+      "REQUESTED": "Requested",
+      "REJECTED": "Rejected",
+      "ESCALATED": "Escalated",
+      "REFUNDED": "Refunded",
+      "CLOSED": "Closed"
+    },
+    "reason": {
+      "DEFECTIVE": "Defective or damaged",
+      "WRONG_ITEM": "Wrong item",
+      "NOT_AS_DESCRIBED": "Not as described",
+      "CHANGED_MIND": "Changed my mind",
+      "OTHER": "Other"
+    },
     "order": "Order {number}",
     "from": "{customer} · {shop}",
     "needsAction": "Action needed",
@@ -1816,7 +1847,11 @@
     "decision": "Decision note",
     "thread": "Messages",
     "noMessages": "No messages yet.",
-    "role": { "CUSTOMER": "Customer", "SHOP": "Shop", "ADMIN": "Vendors Hub" },
+    "role": {
+      "CUSTOMER": "Customer",
+      "SHOP": "Shop",
+      "ADMIN": "Vendors Hub"
+    },
     "message": "Write a message",
     "send": "Send",
     "approve": "Approve and refund",
@@ -1885,7 +1920,12 @@
     "subtitle": "Search accounts, block misuse, change roles. Every change is in the audit log.",
     "search": "Name or email",
     "allRoles": "All roles",
-    "roles": { "CUSTOMER": "Customer", "SHOP_OWNER": "Shop owner", "SHOP_STAFF": "Shop staff", "ADMIN": "Admin" },
+    "roles": {
+      "CUSTOMER": "Customer",
+      "SHOP_OWNER": "Shop owner",
+      "SHOP_STAFF": "Shop staff",
+      "ADMIN": "Admin"
+    },
     "blocked": "Blocked",
     "block": "Block",
     "unblock": "Unblock",
@@ -1967,7 +2007,14 @@
   "ShopPhotos": {
     "title": "Shop photos",
     "text": "Real photos of your shop help customers trust it. The signboard is the strongest proof. Up to 12 photos.",
-    "kind": { "EXTERIOR": "Shop front", "SIGNBOARD": "Signboard", "INTERIOR": "Inside", "DISPLAY": "Display", "PANORAMA_360": "360° panorama", "OTHER": "Other" },
+    "kind": {
+      "EXTERIOR": "Shop front",
+      "SIGNBOARD": "Signboard",
+      "INTERIOR": "Inside",
+      "DISPLAY": "Display",
+      "PANORAMA_360": "360° panorama",
+      "OTHER": "Other"
+    },
     "kindLabel": "What it shows",
     "caption": "Caption (optional)",
     "choose": "Choose a photo",
@@ -2025,7 +2072,13 @@
     "choose": "Choose your photo",
     "start": "Create my pictures",
     "rules": "JPG, PNG or WebP, up to 5 MB. Your photo and the pictures are not stored; they disappear when you close this panel.",
-    "view": { "LEFT": "Left", "LEFT_45": "Left 45°", "FRONT": "Front", "RIGHT_45": "Right 45°", "RIGHT": "Right" },
+    "view": {
+      "LEFT": "Left",
+      "LEFT_45": "Left 45°",
+      "FRONT": "Front",
+      "RIGHT_45": "Right 45°",
+      "RIGHT": "Right"
+    },
     "creating": "Creating {view}… (10–30 seconds)",
     "waiting": "Waiting",
     "rotate": "Drag or swipe to turn",

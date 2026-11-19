@@ -18,6 +18,7 @@ const csp = [
   "font-src 'self' data:", // next/font serves Google fonts from our own origin
   `connect-src 'self' ${apiOrigin}${isDev ? " ws: wss:" : ""}`, // API only (+ hot reload in dev)
   "media-src 'self' blob:",
+  "frame-src https://www.google.com", // order confirmation: address map popup (loaded only when opened)
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",
