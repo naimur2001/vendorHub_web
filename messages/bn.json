@@ -607,10 +607,9 @@
     "myOrders": "আমার অর্ডার",
     "continueShopping": "কেনাকাটা চালিয়ে যান",
     "map": {
-      "open": "ম্যাপে দেখুন",
       "deliveryTitle": "ডেলিভারির ঠিকানা",
       "pickupTitle": "দোকানের অবস্থান",
-      "note": "ম্যাপটি Google Maps-এর। এটি খুললেই কেবল আপনার ঠিকানা Google-এ পাঠানো হয়।",
+      "note": "ম্যাপ: Google Maps",
       "openInMaps": "Google Maps-এ খুলুন"
     }
   },

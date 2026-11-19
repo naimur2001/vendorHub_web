@@ -1,8 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, CircleCheck, ExternalLink, LoaderCircle, Map as MapIcon, MapPin, Phone, SearchX, Store, Truck } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CircleAlert, CircleCheck, ExternalLink, LoaderCircle, MapPin, Phone, SearchX, Store, Truck } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
@@ -110,11 +109,14 @@ export function OrderConfirmation({ checkoutId }: { checkoutId: string }) {
   }
 
   const result = checkout.data as CheckoutResult;
+  const target = mapTarget(result.orders[0]);
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Confirmation on one side, the address map on the other (stacked on phones) */}
+      <div className={cn("grid gap-5", target && "lg:grid-cols-2")}>
       {/* Celebration (once): the circle and tick draw in, a gold ring bursts behind them, then the lines rise one by one */}
-      <header className="rise-stagger flex flex-col items-center gap-3 rounded-md border border-line bg-card px-6 py-8 text-center">
+      <header className="rise-stagger flex flex-col items-center justify-center gap-3 rounded-md border border-line bg-card px-6 py-8 text-center">
         <span className="ring-burst flex rounded-full">
           <svg viewBox="0 0 52 52" className="check-draw size-14 text-success-ink" fill="none" stroke="currentColor" aria-hidden>
             <circle cx="26" cy="26" r="24" strokeWidth="2" pathLength={1} />
@@ -127,6 +129,8 @@ export function OrderConfirmation({ checkoutId }: { checkoutId: string }) {
           {t("checkoutTotal")}: <span className="type-price">{formatTaka(result.totalAmount, locale)}</span>
         </p>
       </header>
+      {target && <AddressMap address={target.address} pickup={target.pickup} />}
+      </div>
 
       {/* Order cards rise in one by one */}
       <div className="rise-stagger grid gap-5 lg:grid-cols-2">
@@ -147,58 +151,58 @@ export function OrderConfirmation({ checkoutId }: { checkoutId: string }) {
   );
 }
 
+/** Where the first order goes: the delivery address, or the shop for a store pickup. */
+function mapTarget(order: Order | undefined): { address: string; pickup: boolean } | null {
+  if (!order) return null;
+  if (order.deliveryMethod === "STORE_PICKUP") {
+    const place = [shopPlace(order.shop.levelFloor, order.shop.shopNumber), order.shop.addressLine].filter(Boolean).join(", ");
+    return place ? { address: place, pickup: true } : null;
+  }
+  return order.deliveryAddress ? { address: order.deliveryAddress, pickup: false } : null;
+}
+
 /**
- * "See on map" button: opens a popup with a Google Maps view of the address. The map (and so the
- * address) is only loaded from Google once the customer opens it. CSP: frame-src https://www.google.com.
+ * Google Maps view of the address, shown beside the confirmation and loaded straight away.
+ * No coordinates exist, so Google places the pin from the address text. CSP: frame-src https://www.google.com.
  */
-function MapPopup({ address, title }: { address: string; title: string }) {
+function AddressMap({ address, pickup, className }: { address: string; pickup: boolean; className?: string }) {
   const t = useTranslations("Order");
-  const [open, setOpen] = useState(false);
+  const title = pickup ? t("map.pickupTitle") : t("map.deliveryTitle");
   const query = encodeURIComponent(`${address}, Bangladesh`);
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="type-body-medium flex h-11 items-center gap-2 self-start rounded-sm border border-gold px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none"
-      >
-        <MapIcon className="size-4 shrink-0" aria-hidden />
-        {t("map.open")}
-      </button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[calc(100%-2rem)] bg-card sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="type-h3 text-ink">{title}</DialogTitle>
-            <DialogDescription className="type-body text-ink-secondary">{address}</DialogDescription>
-          </DialogHeader>
-          {open && (
-            <div className="relative aspect-4/3 overflow-hidden rounded-md border border-line bg-subtle sm:aspect-video">
-              <LoaderCircle className="absolute top-1/2 left-1/2 size-6 -translate-1/2 animate-spin text-ink-muted" aria-hidden />
-              <iframe
-                title={title}
-                src={`https://www.google.com/maps?q=${query}&output=embed`}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="relative size-full border-0"
-              />
-            </div>
-          )}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="type-caption text-ink-muted">{t("map.note")}</p>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${query}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="type-body-medium flex h-11 items-center justify-center gap-2 rounded-sm px-2 text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
-            >
-              {t("map.openInMaps")}
-              <ExternalLink className="size-4" aria-hidden />
-            </a>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+    <section aria-label={title} className={cn("map-in flex flex-col overflow-hidden rounded-md border border-line bg-card shadow-card", className)}>
+      <div className="relative min-h-60 flex-1 bg-subtle">
+        <LoaderCircle className="absolute top-1/2 left-1/2 size-6 -translate-1/2 animate-spin text-ink-muted" aria-hidden />
+        <iframe
+          title={title}
+          src={`https://www.google.com/maps?q=${query}&output=embed`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 size-full border-0"
+        />
+        {/* Label over the map, like a shipping tag */}
+        <div className="pop-in pointer-events-none absolute top-3 left-1/2 max-w-[85%] -translate-x-1/2 rounded-sm border border-gold bg-card px-3 py-1.5 text-center shadow-card">
+          <p className="type-caption text-ink-muted">{title}</p>
+          <p className="type-body-medium truncate text-ink">{address}</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2">
+        <p className="type-caption flex items-center gap-1.5 text-ink-muted">
+          <MapPin className="size-4 shrink-0 text-highlight" aria-hidden />
+          {t("map.note")}
+        </p>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${query}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="type-body-medium flex h-11 items-center gap-2 rounded-sm px-2 text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        >
+          {t("map.openInMaps")}
+          <ExternalLink className="size-4" aria-hidden />
+        </a>
+      </div>
+    </section>
   );
 }
 
@@ -320,9 +324,6 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
             ? t("pickupAt", { place: pickupPlace })
             : t("deliverTo", { address: order.deliveryAddress ?? "" })}
         </p>
-        {order.deliveryMethod === "STORE_PICKUP"
-          ? pickupPlace && <MapPopup address={pickupPlace} title={t("map.pickupTitle")} />
-          : order.deliveryAddress && <MapPopup address={order.deliveryAddress} title={t("map.deliveryTitle")} />}
         <p className="flex items-start gap-2">
           <MapPin className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
           {t(`payment.${order.paymentMethod}`)}

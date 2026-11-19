@@ -625,6 +625,13 @@ html {
     animation-duration: 250ms;
     animation-delay: 280ms;
   }
+  /* The address map slides in from the side after the tick, then its gold pin badge pops. */
+  .map-in {
+    animation: vh-slide-right 300ms cubic-bezier(0.22, 1, 0.36, 1) 250ms backwards;
+  }
+  .map-in .pop-in {
+    animation-delay: 500ms;
+  }
 
   /* ---------- 1. Home hero ---------- */
   .hero-word {
