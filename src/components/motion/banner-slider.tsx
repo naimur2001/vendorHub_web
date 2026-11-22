@@ -169,7 +169,8 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
       onKeyDown={onKeyDown}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
+      // Only keyboard focus pauses; a mouse click on a control must not stop the slideshow.
+      onFocus={(e) => setFocused(e.target.matches(":focus-visible"))}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setFocused(false)}
       className="group/slider relative rounded-3xl shadow-card"
     >
