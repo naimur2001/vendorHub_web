@@ -2393,5 +2393,19 @@
       "link": "Use a path starting with / or an https:// address.",
       "dates": "\"Show until\" must be after \"Show from\"."
     }
+  },
+  "BannerSides": {
+    "yourCorner": "Your corner",
+    "hello": "Hi, {name}",
+    "latestOrder": "Latest order",
+    "track": "Track order",
+    "noOrders": "No orders yet. Find something you like in Dhaka's shops.",
+    "startShopping": "Start shopping",
+    "categories": "Shop by category",
+    "allProducts": "All products",
+    "markets": "Top markets",
+    "allMarkets": "All markets",
+    "cart": "{count, plural, one {# item in your cart} other {# items in your cart}}",
+    "shops": "{count, plural, one {# shop} other {# shops}}"
   }
 }

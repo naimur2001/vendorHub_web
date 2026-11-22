@@ -1847,5 +1847,19 @@
     "nav": {
       "banners": "ব্যানার"
     }
+  },
+  "BannerSides": {
+    "yourCorner": "আপনার কোণ",
+    "hello": "হ্যালো, {name}",
+    "latestOrder": "সর্বশেষ অর্ডার",
+    "track": "অর্ডার ট্র্যাক করুন",
+    "noOrders": "এখনো কোনো অর্ডার নেই। ঢাকার দোকানে পছন্দের কিছু খুঁজুন।",
+    "startShopping": "কেনাকাটা শুরু করুন",
+    "categories": "ক্যাটাগরি অনুযায়ী কিনুন",
+    "allProducts": "সব পণ্য",
+    "markets": "জনপ্রিয় মার্কেট",
+    "allMarkets": "সব মার্কেট",
+    "cart": "{count, plural, other {কার্টে #টি পণ্য}}",
+    "shops": "{count, plural, other {#টি দোকান}}"
   }
 }

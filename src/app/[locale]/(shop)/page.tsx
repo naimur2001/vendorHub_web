@@ -9,8 +9,9 @@ import { MarketDoor } from "@/components/shop/market-cards";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
-import { getBanners, getLatestProducts, getMarkets, type HomeBanner } from "@/lib/api/catalog-cache";
+import { getBanners, getCategories, getLatestProducts, getMarkets, type HomeBanner } from "@/lib/api/catalog-cache";
 import { BannerSlider } from "@/components/motion/banner-slider";
+import { BannerLeft, BannerRight } from "@/components/home/banner-sides";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
 
@@ -27,7 +28,23 @@ async function HomeBanners() {
   } catch {
     return null; // the rest of the home page still works
   }
-  return banners.length > 0 ? <BannerSlider banners={banners} /> : null;
+  if (banners.length === 0) return null;
+  // Side panels need lists too; if those fail, the banner still shows alone.
+  const [categories, markets] = await Promise.all([getCategories().catch(() => []), getMarkets().catch(() => [])]);
+  const topCategories = [...categories].filter((c) => !c.parentId).sort((a, b) => b.productCount - a.productCount).slice(0, 4);
+  const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 4);
+  return (
+    // Wide screens: [your corner | banner | markets]. Smaller screens: the banner alone.
+    <div className="xl:grid xl:grid-cols-[13rem_minmax(0,1fr)_13rem] xl:gap-4">
+      <div className="hidden xl:block">
+        <BannerLeft categories={topCategories} />
+      </div>
+      <BannerSlider banners={banners} />
+      <div className="hidden xl:block">
+        <BannerRight markets={topMarkets} />
+      </div>
+    </div>
+  );
 }
 
 // The markets with the most shops, from the 10-minute market cache: 8 (two full rows on desktop)
@@ -167,7 +184,7 @@ export default async function HomePage({ params }: Props) {
             {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
       <OwnerStrip />
       {/* Admin banners (1-minute cache); nothing shows when there are none or the API is down */}
-      <Suspense fallback={<div className="aspect-5/2 skeleton rounded-3xl sm:aspect-4/1" aria-hidden />}>
+      <Suspense fallback={<div className="aspect-5/2 skeleton rounded-3xl sm:aspect-4/1 xl:aspect-auto xl:h-72" aria-hidden />}>
         <HomeBanners />
       </Suspense>
       <section className="flex flex-col items-center gap-6 pt-4 text-center md:gap-8 md:pt-10">
