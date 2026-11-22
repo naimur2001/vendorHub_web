@@ -5,6 +5,7 @@ import type { components } from "./schema";
 export type AdminBanner = components["schemas"]["AdminBanner"];
 export type BannerListMeta = components["schemas"]["BannerListMeta"];
 export type BannerFit = components["schemas"]["BannerFit"];
+export type BannerPlacement = components["schemas"]["BannerPlacement"];
 
 // Text fields as the form holds them: "" clears an optional field on the server.
 export type BannerInput = {
@@ -17,6 +18,7 @@ export type BannerInput = {
   ctaLabelBn: string;
   isActive: boolean;
   fit: BannerFit; // COVER fills the frame (may crop), CONTAIN shows the whole image
+  placement: BannerPlacement; // HERO = the slider, SIDE_AD = the tall advert beside it
   startsAt: string; // ISO or ""
   endsAt: string; // ISO or ""
 };
@@ -24,7 +26,10 @@ export type BannerInput = {
 export const BANNER_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 export const BANNER_MAX_BYTES = 5 * 1024 * 1024;
 
-export const bannerKeys = { all: ["admin", "banners"] as const };
+export const bannerKeys = {
+  all: ["admin", "banners"] as const,
+  list: (placement: BannerPlacement) => ["admin", "banners", placement] as const,
+};
 
 function toForm(input: BannerInput, files: { media?: File | null; mobileMedia?: File | null; removeMobileMedia?: boolean }): FormData {
   const body = new FormData();
@@ -36,8 +41,8 @@ function toForm(input: BannerInput, files: { media?: File | null; mobileMedia?: 
 }
 
 // All banners (also hidden, scheduled and expired) with meta { total, max }.
-export async function listAdminBanners(): Promise<{ banners: AdminBanner[]; meta: BannerListMeta }> {
-  const { data, meta } = await api.list<AdminBanner>("/admin/banners");
+export async function listAdminBanners(placement: BannerPlacement): Promise<{ banners: AdminBanner[]; meta: BannerListMeta }> {
+  const { data, meta } = await api.list<AdminBanner>("/admin/banners", { query: { placement } });
   const m = meta as Partial<BannerListMeta> | undefined;
   return { banners: data, meta: { total: m?.total ?? data.length, max: m?.max ?? 12 } };
 }

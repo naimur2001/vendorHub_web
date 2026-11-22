@@ -2405,7 +2405,14 @@
         "label": "Show whole image",
         "hint": "Nothing is cut off. Empty sides get a soft blur."
       }
-    }
+    },
+    "placementLabel": "Where it shows",
+    "placements": {
+      "HERO": "Main slider",
+      "SIDE_AD": "Side advert"
+    },
+    "sizeHintSide": "JPG, PNG, WebP or animated GIF, up to 5 MB. Best size 600 × 900 (2:3, tall).",
+    "mediaHintSide": "At least 300 × 400. A tall image works best; it shows beside the banner on wide screens only."
   },
   "BannerSides": {
     "yourCorner": "Your corner",

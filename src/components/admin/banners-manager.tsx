@@ -18,6 +18,7 @@ import {
   updateBanner,
   type AdminBanner,
   type BannerInput,
+  type BannerPlacement,
 } from "@/lib/api/banners";
 import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
@@ -26,7 +27,13 @@ import { cn } from "@/lib/utils";
 
 type Panel = { kind: "add" } | { kind: "edit"; banner: AdminBanner } | null;
 
-const MIN = { media: { width: 900, height: 300 }, mobile: { width: 400, height: 300 } };
+// Smallest accepted image per placement (the server checks too).
+const MIN = {
+  HERO: { width: 900, height: 300 },
+  SIDE_AD: { width: 300, height: 400 },
+  mobile: { width: 400, height: 300 },
+};
+const PLACEMENTS = ["HERO", "SIDE_AD"] as const;
 
 const outline =
   "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm border border-brand px-3 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50";
@@ -106,7 +113,8 @@ export function BannersManager() {
   const [panel, setPanel] = useState<Panel>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const list = useQuery({ queryKey: bannerKeys.all, queryFn: listAdminBanners });
+  const [placement, setPlacement] = useState<BannerPlacement>("HERO");
+  const list = useQuery({ queryKey: bannerKeys.list(placement), queryFn: () => listAdminBanners(placement) });
 
   const changed = () => {
     void queryClient.invalidateQueries({ queryKey: bannerKeys.all });
@@ -156,12 +164,28 @@ export function BannersManager() {
     if (target < 0 || target >= ids.length) return;
     [ids[index], ids[target]] = [ids[target], ids[index]];
     // Show the new order at once; the server confirms.
-    queryClient.setQueryData(bannerKeys.all, { meta, banners: ids.map((id) => banners.find((b) => b.id === id)!) });
+    queryClient.setQueryData(bannerKeys.list(placement), { meta, banners: ids.map((id) => banners.find((b) => b.id === id)!) });
     reorder.mutate(ids);
   }
 
   return (
     <div className="flex flex-col gap-5">
+      <div role="group" aria-label={t("placementLabel")} className="flex gap-2">
+        {PLACEMENTS.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setPlacement(p)}
+            aria-pressed={placement === p}
+            className={cn(
+              "type-body-medium h-11 rounded-full border px-4 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none",
+              placement === p ? "border-brand bg-brand text-primary-foreground" : "border-line bg-card text-ink-secondary hover:border-brand",
+            )}
+          >
+            {t(`placements.${p}`)}
+          </button>
+        ))}
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="type-body text-ink-secondary">
           <span className={cn("type-body-medium", full ? "text-error" : "text-ink")}>{t("count", { total: meta.total, max: meta.max })}</span>
@@ -209,12 +233,13 @@ export function BannersManager() {
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-lg">
           <SheetHeader>
             <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : t("addTitle")}</SheetTitle>
-            <SheetDescription className="type-caption text-ink-muted">{t("sizeHint")}</SheetDescription>
+            <SheetDescription className="type-caption text-ink-muted">{t(placement === "SIDE_AD" ? "sizeHintSide" : "sizeHint")}</SheetDescription>
           </SheetHeader>
           {panel && (
             <BannerForm
               key={panel.kind === "edit" ? panel.banner.id : "new"}
               banner={panel.kind === "edit" ? panel.banner : null}
+              placement={placement}
               onDone={() => {
                 setPanel(null);
                 changed();
@@ -322,8 +347,8 @@ function BannerRow(props: {
   );
 }
 
-function emptyInput(): BannerInput {
-  return { titleEn: "", titleBn: "", subtitleEn: "", subtitleBn: "", linkUrl: "", ctaLabelEn: "", ctaLabelBn: "", isActive: true, fit: "COVER", startsAt: "", endsAt: "" };
+function emptyInput(placement: BannerPlacement): BannerInput {
+  return { titleEn: "", titleBn: "", subtitleEn: "", subtitleBn: "", linkUrl: "", ctaLabelEn: "", ctaLabelBn: "", isActive: true, fit: "COVER", placement, startsAt: "", endsAt: "" };
 }
 
 function FilePicker(props: {
@@ -358,7 +383,7 @@ function FilePicker(props: {
   );
 }
 
-function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: () => void }) {
+function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null; placement: BannerPlacement; onDone: () => void }) {
   const t = useTranslations("AdminBanners");
   const [input, setInput] = useState<BannerInput>(() =>
     banner
@@ -372,10 +397,11 @@ function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: ()
           ctaLabelBn: banner.ctaLabelBn ?? "",
           isActive: banner.isActive,
           fit: banner.fit ?? "COVER",
+          placement: banner.placement ?? placement,
           startsAt: toLocalInput(banner.startsAt),
           endsAt: toLocalInput(banner.endsAt),
         }
-      : emptyInput(),
+      : emptyInput(placement),
   );
   const [media, setMedia] = useState<{ file: File; preview: string } | null>(null);
   const [mobile, setMobile] = useState<{ file: File; preview: string } | null>(null);
@@ -402,7 +428,7 @@ function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: ()
 
   async function pick(kind: "media" | "mobile", file: File | undefined) {
     if (!file) return;
-    const result = await prepareFile(file, kind === "media" ? MIN.media : MIN.mobile);
+    const result = await prepareFile(file, kind === "media" ? MIN[input.placement] : MIN.mobile);
     if ("error" in result) {
       setError(t(result.error));
       return;
@@ -432,10 +458,10 @@ function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: ()
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4 px-4 pb-4">
       <FilePicker
         label={t("media")}
-        hint={t("mediaHint")}
+        hint={t(input.placement === "SIDE_AD" ? "mediaHintSide" : "mediaHint")}
         current={banner ? safeMediaUrl(banner.media.thumbUrl) : null}
         preview={media?.preview ?? null}
-        aspect="aspect-4/1"
+        aspect={input.placement === "SIDE_AD" ? "aspect-2/3 max-w-48" : "aspect-4/1"}
         fit={input.fit}
         onPick={(f) => void pick("media", f)}
       />
