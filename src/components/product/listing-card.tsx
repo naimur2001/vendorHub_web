@@ -8,6 +8,7 @@ import { MakeOfferButton } from "@/components/bargain/offer-sheet";
 import { Link } from "@/i18n/routing";
 import type { Listing, ListingShop } from "@/lib/api/catalog";
 import { cn } from "@/lib/utils";
+import { HeartButton } from "@/components/wishlist/heart-button";
 
 /** "Level 3 · Shop 42 · Jamuna Future Park" (adds "Shop" to a bare number). */
 export function shopLocation(shop: ListingShop): string {
@@ -94,7 +95,10 @@ export function SelectedListingCard({
             {shopLocation(shop)}
           </p>
         </div>
-        {shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={shop.verificationLevel} size="lg" />}
+        <div className="flex shrink-0 items-start gap-2">
+          {shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={shop.verificationLevel} size="lg" />}
+          <HeartButton listingId={listing.id} title={shop.name} />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">

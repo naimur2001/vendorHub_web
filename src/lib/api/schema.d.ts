@@ -2305,6 +2305,87 @@ export interface paths {
         patch: operations["adminUpdateBanner"];
         trace?: never;
     };
+    "/api/v1/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My saved listings, newest first
+         * @description Listings that are hidden or removed (or whose shop or product is) are left out.
+         */
+        get: operations["listWishlist"];
+        put?: never;
+        /**
+         * Save a listing (idempotent)
+         * @description 201 when saved now, 200 when it was already saved. The price is read on the server.
+         */
+        post: operations["addToWishlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wishlist/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Only the ids of my saved listings (to fill the hearts) */
+        get: operations["listWishlistIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wishlist/{listingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a saved listing (idempotent) */
+        delete: operations["removeFromWishlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set the shop's opening hours and weekly holiday (owner or staff)
+         * @description Replaces both values. `hours: null` removes the hours (openNow becomes null).
+         *     `weeklyHoliday: null` (or left out) means the market's weekly holiday applies.
+         *     A closing time at or before the opening time closes after midnight on the next day (e.g. 10:00-01:00); "24:00" means midnight at the end of the day.
+         *     Only the shop owner or its staff (admins get 403). Audited as shop.hours_updated.
+         */
+        put: operations["setShopHours"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2473,6 +2554,8 @@ export interface components {
             longitude?: number | null;
             /** @description List answer only (active shops). */
             shopCount?: number;
+            /** @description Detail answer only. Shops without their own weekly holiday use this one. */
+            weeklyHoliday?: components["schemas"]["WeeklyHoliday"];
             image: components["schemas"]["ImageObject"] | null;
         };
         CoverPhoto: {
@@ -2483,6 +2566,9 @@ export interface components {
             verified?: boolean;
         } | null;
         ShopCard: {
+            hours: components["schemas"]["OpeningHours"];
+            weeklyHoliday: components["schemas"]["WeeklyHoliday"];
+            openNow: components["schemas"]["OpenNow"];
             /** Format: uuid */
             id?: string;
             name?: string;
@@ -2536,6 +2622,9 @@ export interface components {
             website?: string | null;
         };
         Storefront: {
+            hours: components["schemas"]["OpeningHours"];
+            weeklyHoliday: components["schemas"]["WeeklyHoliday"];
+            openNow: components["schemas"]["OpenNow"];
             /** Format: uuid */
             id?: string;
             name?: string;
@@ -2904,6 +2993,9 @@ export interface components {
             createdAt?: string;
         };
         ShopSearchItem: {
+            hours: components["schemas"]["OpeningHours"];
+            weeklyHoliday: components["schemas"]["WeeklyHoliday"];
+            openNow: components["schemas"]["OpenNow"];
             /** Format: uuid */
             id: string;
             /** @example TechZone Electronics */
@@ -3089,6 +3181,7 @@ export interface components {
         District: "barguna" | "barishal" | "bhola" | "jhalokathi" | "patuakhali" | "pirojpur" | "bandarban" | "brahmanbaria" | "chandpur" | "chattogram" | "cumilla" | "coxs-bazar" | "feni" | "khagrachhari" | "lakshmipur" | "noakhali" | "rangamati" | "dhaka" | "faridpur" | "gazipur" | "gopalganj" | "kishoreganj" | "madaripur" | "manikganj" | "munshiganj" | "narayanganj" | "narsingdi" | "rajbari" | "shariatpur" | "tangail" | "bagerhat" | "chuadanga" | "jashore" | "jhenaidah" | "khulna" | "kushtia" | "magura" | "meherpur" | "narail" | "satkhira" | "jamalpur" | "mymensingh" | "netrokona" | "sherpur" | "bogura" | "joypurhat" | "naogaon" | "natore" | "chapainawabganj" | "pabna" | "rajshahi" | "sirajganj" | "dinajpur" | "gaibandha" | "kurigram" | "lalmonirhat" | "nilphamari" | "panchagarh" | "rangpur" | "thakurgaon" | "habiganj" | "moulvibazar" | "sunamganj" | "sylhet";
         /** @description The stored market, as answered by the admin create and edit calls. */
         AdminMarket: {
+            weeklyHoliday: components["schemas"]["WeeklyHoliday"];
             /** Format: uuid */
             id: string;
             name: string;
@@ -3230,6 +3323,77 @@ export interface components {
             /** @description true removes the phone version. */
             removeMobileMedia?: boolean;
         };
+        WishlistItem: {
+            /** Format: uuid */
+            listingId: string;
+            /** Format: date-time */
+            savedAt: string;
+            /** @description The price (taka) when the customer saved it. */
+            priceAtSave: number;
+            /** @description The current price (taka). */
+            price: number;
+            /** @description price < priceAtSave */
+            priceDropped: boolean;
+            availability: components["schemas"]["Availability"];
+            product: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                msrp: number | null;
+                image: string | null;
+                thumbUrl: string | null;
+            };
+            shop: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+                logoUrl: string | null;
+                verificationLevel: components["schemas"]["VerificationLevel"];
+                market: {
+                    name: string;
+                    slug: string;
+                } | null;
+            };
+        };
+        WishlistItemResponse: {
+            success: boolean;
+            data: components["schemas"]["WishlistItem"];
+        };
+        WishlistLimitError: {
+            /** @example false */
+            success: boolean;
+            error: {
+                /** @example You can save at most 200 items. Remove one first. */
+                message: string;
+                details: {
+                    /** @enum {string} */
+                    code: "WISHLIST_LIMIT";
+                };
+            };
+        };
+        OpeningDay: {
+            /** @description 0 = Sunday ... 6 = Saturday */
+            day: number;
+            /**
+             * @description Null on a closed day.
+             * @example 10:00
+             */
+            open: string | null;
+            /**
+             * @description Not equal to open. Earlier than open = closes after midnight (next day). "24:00" = midnight at the end of the day. Null on a closed day.
+             * @example 20:00
+             */
+            close: string | null;
+            closed: boolean;
+        };
+        /** @description Exactly 7 days (each 0-6 once), sorted by day. Null when the shop has not set its hours. */
+        OpeningHours: components["schemas"]["OpeningDay"][] | null;
+        /** @description 0 = Sunday ... 6 = Saturday; null = none. */
+        WeeklyHoliday: number | null;
+        /** @description Open at this moment in Asia/Dhaka time (false on the weekly holiday). Null when no hours are set. */
+        OpenNow: boolean | null;
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -5991,6 +6155,7 @@ export interface operations {
                     address?: string;
                     latitude?: number;
                     longitude?: number;
+                    weeklyHoliday?: components["schemas"]["WeeklyHoliday"];
                 };
             };
         };
@@ -6051,6 +6216,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    weeklyHoliday?: components["schemas"]["WeeklyHoliday"];
                     name?: string;
                     city?: string;
                     district?: components["schemas"]["District"];
@@ -8229,6 +8395,227 @@ export interface operations {
                 };
             };
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    listWishlist: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of saved listings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            items: components["schemas"]["WishlistItem"][];
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    addToWishlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    listingId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Already saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WishlistItemResponse"];
+                };
+            };
+            /** @description Saved. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WishlistItemResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description At most 200 saved items. error.details.code is WISHLIST_LIMIT. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WishlistLimitError"];
+                };
+            };
+        };
+    };
+    listWishlistIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The listing ids. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            listingIds: string[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    removeFromWishlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                listingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed (also when it was not saved). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setShopHours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "hours": [
+                 *         {
+                 *           "day": 0,
+                 *           "open": "10:00",
+                 *           "close": "20:00",
+                 *           "closed": false
+                 *         },
+                 *         {
+                 *           "day": 1,
+                 *           "open": "10:00",
+                 *           "close": "20:00",
+                 *           "closed": false
+                 *         },
+                 *         {
+                 *           "day": 2,
+                 *           "closed": true
+                 *         },
+                 *         {
+                 *           "day": 3,
+                 *           "open": "10:00",
+                 *           "close": "20:00",
+                 *           "closed": false
+                 *         },
+                 *         {
+                 *           "day": 4,
+                 *           "open": "10:00",
+                 *           "close": "20:00",
+                 *           "closed": false
+                 *         },
+                 *         {
+                 *           "day": 5,
+                 *           "open": "15:00",
+                 *           "close": "21:00",
+                 *           "closed": false
+                 *         },
+                 *         {
+                 *           "day": 6,
+                 *           "open": "10:00",
+                 *           "close": "20:00",
+                 *           "closed": false
+                 *         }
+                 *       ],
+                 *       "weeklyHoliday": 2
+                 *     }
+                 */
+                "application/json": {
+                    hours: components["schemas"]["OpeningHours"];
+                    weeklyHoliday?: components["schemas"]["WeeklyHoliday"];
+                };
+            };
+        };
+        responses: {
+            /** @description The saved hours, as the public answers show them. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            hours: components["schemas"]["OpeningHours"];
+                            /** @description The holiday that applies (the shop's own, else the market's). */
+                            weeklyHoliday: components["schemas"]["WeeklyHoliday"];
+                            openNow: components["schemas"]["OpenNow"];
+                            /** @description The shop's own setting (null = uses the market's). */
+                            ownWeeklyHoliday: components["schemas"]["WeeklyHoliday"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

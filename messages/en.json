@@ -2422,5 +2422,12 @@
   },
   "RecentlyViewed": {
     "title": "Recently viewed"
+  },
+  "Wishlist": {
+    "save": "Save {title} offer",
+    "remove": "Remove {title} offer from saved",
+    "loginToSave": "Log in to save the {title} offer",
+    "limit": "You can save up to 200 items.",
+    "error": "Couldn't update. Try again."
   }
 }
