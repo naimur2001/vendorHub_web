@@ -2221,8 +2221,9 @@ export interface paths {
         };
         /**
          * Live home page banners (no login)
-         * @description Active banners whose schedule includes now (startsAt null or <= now, endsAt null or > now),
-         *     ordered by sortOrder then createdAt, at most 12 (the total limit). Sent with `Cache-Control: public, max-age=60`.
+         * @description Active banners of one placement whose schedule includes now (startsAt null or <= now, endsAt null or > now),
+         *     ordered by sortOrder then createdAt. HERO (the slider, the default): at most 12. SIDE_AD (the side
+         *     advertisement): at most 3; the web shows the first. Sent with `Cache-Control: public, max-age=60`.
          */
         get: operations["listBanners"];
         put?: never;
@@ -2240,14 +2241,21 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** All banners, including inactive, scheduled and expired ones (admin) */
+        /**
+         * All banners, including inactive, scheduled and expired ones (admin)
+         * @description Optionally only one placement. meta.total always counts every placement (the limit of 12 is shared).
+         */
         get: operations["adminListBanners"];
         put?: never;
         /**
          * Create a banner (admin, multipart)
          * @description Send the image in `media` (required) and an optional phone version in `mobileMedia`.
-         *     Recommended size 3:1, e.g. 1800 x 600 (at least 900 x 300; phone version at least 400 x 300).
-         *     A new banner goes to the end unless sortOrder is given. At most 12 banners in total (active or not):
+         *     Size rules per placement:
+         *     - HERO (default): recommended 3:1, e.g. 1800 x 600; at least 900 x 300.
+         *     - SIDE_AD: recommended 2:3, e.g. 600 x 900; at least 300 x 400.
+         *     - Phone version (either placement): at least 400 x 300.
+         *     A smaller image returns 422. A new banner goes to the end of its placement unless sortOrder is given.
+         *     At most 12 banners in total, both placements together (active or not):
          *     the 13th returns 409 with error.details.code BANNER_LIMIT and no file is kept. Writes an audit log entry.
          */
         post: operations["adminCreateBanner"];
@@ -2272,7 +2280,8 @@ export interface paths {
         head?: never;
         /**
          * Set the order of banners (admin)
-         * @description Sets sortOrder 0, 1, 2 ... in the given order; banners not listed keep theirs. Writes an audit log entry.
+         * @description Sets sortOrder 0, 1, 2 ... in the given order; banners not listed keep theirs. All ids must belong to
+         *     ONE placement (mixing HERO and SIDE_AD is a 400). Returns that placement's banners. Writes an audit log entry.
          */
         patch: operations["adminReorderBanners"];
         trace?: never;
@@ -2298,7 +2307,9 @@ export interface paths {
         head?: never;
         /**
          * Update a banner's fields and/or replace its media (admin)
-         * @description JSON or multipart. In multipart, a new `media` or `mobileMedia` replaces the old file (the old
+         * @description Changing `placement` without a new `media` keeps the current image only when it meets the new
+         *     placement's minimum size (else 422), and moves the banner to the end of that placement.
+         *     JSON or multipart. In multipart, a new `media` or `mobileMedia` replaces the old file (the old
          *     file is deleted). An empty string clears an optional field. `removeMobileMedia: true` removes
          *     the phone version. Writes an audit log entry.
          */
@@ -3269,6 +3280,7 @@ export interface components {
              */
             mediaType: "IMAGE" | "GIF" | "SVG" | "VIDEO";
             fit: components["schemas"]["BannerFit"];
+            placement: components["schemas"]["BannerPlacement"];
             media: components["schemas"]["BannerMedia"];
             /** @description Optional phone version; use media when null. */
             mobileMedia: components["schemas"]["BannerMedia"] | null;
@@ -3306,6 +3318,7 @@ export interface components {
             ctaLabelBn?: string | null;
             sortOrder?: number;
             fit?: components["schemas"]["BannerFit"];
+            placement?: components["schemas"]["BannerPlacement"];
             isActive?: boolean;
             /** Format: date-time */
             startsAt?: string | null;
@@ -3315,6 +3328,14 @@ export interface components {
              */
             endsAt?: string | null;
         };
+        /**
+         * @description HERO = the home page slider (landscape; recommended 1800 x 600, at least 900 x 300).
+         *     SIDE_AD = the home page side advertisement (tall; recommended 600 x 900, at least 300 x 400).
+         *     Both placements share the limit of 12 banners.
+         * @default HERO
+         * @enum {string}
+         */
+        BannerPlacement: "HERO" | "SIDE_AD";
         /**
          * @description COVER fills the slide and crops the edges (CSS object-fit cover); CONTAIN shows the whole image.
          * @default COVER
@@ -8201,7 +8222,9 @@ export interface operations {
     };
     listBanners: {
         parameters: {
-            query?: never;
+            query?: {
+                placement?: components["schemas"]["BannerPlacement"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8224,7 +8247,9 @@ export interface operations {
     };
     adminListBanners: {
         parameters: {
-            query?: never;
+            query?: {
+                placement?: components["schemas"]["BannerPlacement"];
+            };
             header?: never;
             path?: never;
             cookie?: never;

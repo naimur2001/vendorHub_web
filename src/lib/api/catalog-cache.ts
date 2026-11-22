@@ -55,3 +55,11 @@ export async function getBanners(): Promise<HomeBanner[]> {
   cacheTag("banners");
   return (await publicGet<HomeBanner[]>("/banners", undefined, { fresh: false })).data;
 }
+
+/** Home page side advertisement(s): live SIDE_AD banners (the page shows the first). Same cache rules as the slider. */
+export async function getSideAds(): Promise<HomeBanner[]> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 600 });
+  cacheTag("banners");
+  return (await publicGet<HomeBanner[]>("/banners", { placement: "SIDE_AD" }, { fresh: false })).data;
+}

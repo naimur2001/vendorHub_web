@@ -2482,5 +2482,9 @@
     "sameTime": "{day}: opening and closing time can't be the same.",
     "invalid": "Some times are not valid. Check them and try again.",
     "error": "Couldn't save. Try again."
+  },
+  "SideAd": {
+    "label": "Ad",
+    "open": "Learn more"
   }
 }
