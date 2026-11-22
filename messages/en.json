@@ -2446,5 +2446,22 @@
     "next": "Next",
     "pageOf": "Page {page} of {total}",
     "dropped": "Price dropped (was {from})"
+  },
+  "ShopHours": {
+    "title": "Opening hours",
+    "open": "Open now",
+    "closed": "Closed",
+    "openUntil": "Open now · until {time}",
+    "closedOpensAt": "Closed · opens at {time}",
+    "holiday": "Weekly holiday",
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
   }
 }

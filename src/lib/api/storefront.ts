@@ -16,7 +16,11 @@ export type SocialKey = (typeof SOCIAL_KEYS)[number];
 export type SocialLinks = Record<SocialKey, string | null>;
 
 // GET /shops/:slug
+type OpeningDay = components["schemas"]["OpeningDay"];
+
 export type Storefront = {
+  hours?: OpeningDay[] | null;
+  weeklyHoliday?: number | null;
   id: string;
   name: string;
   slug: string;
@@ -77,6 +81,8 @@ export type ShopReview = {
 
 // GET /markets/:slug
 export type MarketShop = {
+  hours?: OpeningDay[] | null;
+  weeklyHoliday?: number | null;
   id: string;
   name: string;
   slug: string;

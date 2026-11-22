@@ -7,6 +7,7 @@ import { CenterStage } from "@/components/motion/reveal";
 import { Link } from "@/i18n/routing";
 import type { Market } from "@/lib/api/shops";
 import { safeMediaUrl, shopPlace, type MarketShop } from "@/lib/api/storefront";
+import { OpenBadge } from "@/components/shop/open-badge";
 
 function initials(name: string): string {
   return (
@@ -78,7 +79,10 @@ export function MarketShopCard({ shop }: { shop: MarketShop }) {
           <p className="type-body-medium truncate text-ink group-hover:text-brand">{shop.name}</p>
           {shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={shop.verificationLevel} size="sm" />}
         </div>
-        {place && <p className="type-caption text-ink-muted">{place}</p>}
+        <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          {place && <p className="type-caption text-ink-muted">{place}</p>}
+          <OpenBadge shop={shop} />
+        </div>
       </div>
       <ChevronRight className="size-5 shrink-0 text-ink-muted" aria-hidden />
     </Link>

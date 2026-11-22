@@ -12,6 +12,7 @@ import { Link } from "@/i18n/routing";
 import { api } from "@/lib/api/client";
 import { callHref, safeMediaUrl, safeSocialUrl, shopPlace, SOCIAL_KEYS, whatsappHref, type Storefront } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
+import { HoursList, OpenBadge } from "@/components/shop/open-badge";
 
 function initials(name: string): string {
   return (
@@ -182,6 +183,7 @@ function FollowButton({ slug, onFollowers }: { slug: string; onFollowers: (n: nu
 }
 
 export function StorefrontHeader({ shop }: { shop: Storefront }) {
+  const tHours = useTranslations("ShopHours");
   const t = useTranslations("Shop");
   const format = useFormatter();
   const [followers, setFollowers] = useState(shop.stats.followers);
@@ -238,6 +240,7 @@ export function StorefrontHeader({ shop }: { shop: Storefront }) {
             {/* Name with the seal beside it on desktop; seal below the name on phones */}
             <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-x-4">
               <h1 className="type-display break-words text-ink">{shop.name}</h1>
+              <OpenBadge shop={shop} detailed className="self-start md:mt-4 md:self-auto" />
               {level !== "UNVERIFIED" && (
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <VerificationSeal level={level} size="md" withLabel className="mt-4" />
@@ -267,6 +270,18 @@ export function StorefrontHeader({ shop }: { shop: Storefront }) {
         </div>
 
         <ShopContact shop={shop} />
+        {shop.hours && shop.hours.length > 0 && (
+          <details className="group/hours self-start rounded-md border border-line bg-card px-3">
+            <summary className="type-body-medium flex min-h-11 cursor-pointer list-none items-center gap-2 text-ink focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
+              <Clock className="size-4 text-highlight" aria-hidden />
+              {tHours("title")}
+              <span aria-hidden className="text-ink-muted motion-safe:transition-transform group-open/hours:rotate-180">▾</span>
+            </summary>
+            <div className="pb-3">
+              <HoursList shop={shop} />
+            </div>
+          </details>
+        )}
 
         <ul aria-label={t("trustStats")} className="flex flex-wrap gap-x-6 gap-y-2 border-y border-line py-3">
           {stats.map(({ icon: Icon, text }) => (
