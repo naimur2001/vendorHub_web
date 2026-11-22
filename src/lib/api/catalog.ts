@@ -102,6 +102,17 @@ export async function getProduct(slug: string, listingId?: string): Promise<Prod
   return data;
 }
 
+// Distance (km) from a point to each shop offering this product: listing id -> km (null = market has no map point).
+// The point goes only to our API for this request.
+export async function getListingDistances(slug: string, lat: number, lng: number): Promise<Record<string, number | null>> {
+  const round = (n: number) => Math.round(n * 1e4) / 1e4;
+  const { data } = await publicGet<ProductDetail>(`/products/${encodeURIComponent(slug)}`, { lat: round(lat), lng: round(lng) });
+  const out: Record<string, number | null> = {};
+  const all = [data.selectedListing, ...data.otherListings].filter(Boolean) as (Listing & { distanceKm?: number | null })[];
+  for (const l of all) out[l.id] = l.distanceKm ?? null;
+  return out;
+}
+
 export async function listCategories(): Promise<Category[]> {
   return (await publicGet<Category[]>("/categories")).data;
 }

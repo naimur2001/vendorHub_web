@@ -378,7 +378,14 @@
     "specifications": "Specifications",
     "description": "Description",
     "noListings": "No shop sells this product right now.",
-    "loadError": "This product couldn't load right now. Try again in a moment."
+    "loadError": "This product couldn't load right now. Try again in a moment.",
+    "kmAway": "{km} km away",
+    "showDistance": "Show distance to each shop",
+    "nearestFirst": "Nearest shops first.",
+    "sortNearest": "Nearest first",
+    "locationDenied": "Location is turned off for this site. Allow it in your browser settings.",
+    "locationUnavailable": "We couldn't get your location.",
+    "distanceError": "Distances couldn't load. Try again."
   },
   "Shop": {
     "bannerAlt": "Photo of {name}",

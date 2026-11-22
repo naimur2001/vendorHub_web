@@ -142,8 +142,19 @@ export function SelectedListingCard({
 }
 
 /** One other shop in the comparison list; tapping it makes it the selected offer. */
-export function OtherShopRow({ slug, listing, onSelect }: { slug: string; listing: Listing; onSelect?: () => void }) {
+export function OtherShopRow({
+  slug,
+  listing,
+  onSelect,
+  distanceKm,
+}: {
+  slug: string;
+  listing: Listing;
+  onSelect?: () => void;
+  distanceKm?: number | null; // shown once the visitor shared their location
+}) {
   const { shop } = listing;
+  const t = useTranslations("Product");
   return (
     <Link
       href={`/products/${slug}?listing=${listing.id}`}
@@ -161,6 +172,9 @@ export function OtherShopRow({ slug, listing, onSelect }: { slug: string; listin
           <AvailabilityBadge value={listing.availability} />
           {shop.supportsDelivery && <Truck className="size-4 text-ink-muted" aria-hidden />}
           {shop.supportsPickup && <Store className="size-4 text-ink-muted" aria-hidden />}
+          {typeof distanceKm === "number" && (
+            <span className="type-caption rounded-full bg-highlight-soft px-2 py-0.5 text-highlight">{t("kmAway", { km: distanceKm })}</span>
+          )}
         </div>
       </div>
       <PriceTicket amount={listing.price} />

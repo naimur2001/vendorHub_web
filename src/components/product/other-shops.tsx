@@ -1,11 +1,11 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, LoaderCircle, LocateFixed } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useMemo, useState } from "react";
 import { OtherShopRow } from "@/components/product/listing-card";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import type { Listing } from "@/lib/api/catalog";
+import { getListingDistances, type Listing } from "@/lib/api/catalog";
 
 const SHOWN_ON_PAGE = 3;
 
@@ -17,10 +17,15 @@ const LEVEL_RANK: Record<Listing["shop"]["verificationLevel"], number> = {
   TRUSTED_VENDOR: 4,
 };
 
-type SortKey = "price" | "verified" | "market";
+type SortKey = "price" | "verified" | "market" | "nearest";
+type Distances = Record<string, number | null>;
 
-function sortListings(listings: Listing[], key: SortKey): Listing[] {
+function sortListings(listings: Listing[], key: SortKey, distances?: Distances): Listing[] {
   const copy = [...listings];
+  if (key === "nearest" && distances) {
+    const d = (l: Listing) => distances[l.id] ?? Number.POSITIVE_INFINITY;
+    return copy.sort((a, b) => d(a) - d(b) || a.price - b.price);
+  }
   if (key === "price") return copy.sort((a, b) => a.price - b.price);
   if (key === "verified") {
     return copy.sort((a, b) => LEVEL_RANK[b.shop.verificationLevel] - LEVEL_RANK[a.shop.verificationLevel] || a.price - b.price);
@@ -34,21 +39,66 @@ export function OtherShops({ slug, listings }: { slug: string; listings: Listing
   const sortId = useId();
   const [open, setOpen] = useState(false);
   const [sort, setSort] = useState<SortKey>("price");
-  const sorted = useMemo(() => sortListings(listings, sort), [listings, sort]);
+  const [distances, setDistances] = useState<Distances | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+
+  // Only when the visitor taps: browser location -> distances from our API (nothing is stored).
+  function showDistances() {
+    if (!("geolocation" in navigator)) return setLocError(t("locationUnavailable"));
+    setLocating(true);
+    setLocError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          setDistances(await getListingDistances(slug, pos.coords.latitude, pos.coords.longitude));
+          setSort("nearest");
+        } catch {
+          setLocError(t("distanceError"));
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        setLocError(err.code === err.PERMISSION_DENIED ? t("locationDenied") : t("locationUnavailable"));
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 5 * 60_000 },
+    );
+  }
+  const sorted = useMemo(() => sortListings(listings, sort, distances ?? undefined), [listings, sort, distances]);
 
   if (listings.length === 0) return null;
-  const cheapestFirst = sortListings(listings, "price");
+  const cheapestFirst = sortListings(listings, distances ? "nearest" : "price", distances ?? undefined);
 
   return (
     <section id="other-shops" aria-labelledby="other-shops-heading" className="flex scroll-mt-24 flex-col gap-3">
       <h2 id="other-shops-heading" className="type-h3 text-ink">
         {t("otherShopsTitle", { count: listings.length })}
       </h2>
+      {!distances && (
+        <button
+          type="button"
+          onClick={showDistances}
+          disabled={locating}
+          aria-busy={locating}
+          className="type-body-medium inline-flex h-11 items-center gap-2 self-start rounded-full border border-line bg-card px-4 text-ink-secondary hover:border-brand hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:opacity-60"
+        >
+          {locating ? <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden /> : <LocateFixed className="size-4" aria-hidden />}
+          {t("showDistance")}
+        </button>
+      )}
+      {distances && <p className="type-caption text-ink-muted">{t("nearestFirst")}</p>}
+      {locError && (
+        <p role="alert" className="type-caption text-error">
+          {locError}
+        </p>
+      )}
 
       <ul className="flex flex-col gap-2">
         {cheapestFirst.slice(0, SHOWN_ON_PAGE).map((listing) => (
           <li key={listing.id}>
-            <OtherShopRow slug={slug} listing={listing} />
+            <OtherShopRow slug={slug} listing={listing} distanceKm={distances?.[listing.id]} />
           </li>
         ))}
       </ul>
@@ -78,12 +128,13 @@ export function OtherShops({ slug, listings }: { slug: string; listings: Listing
                   <option value="price">{t("sortPrice")}</option>
                   <option value="verified">{t("sortVerified")}</option>
                   <option value="market">{t("sortMarket")}</option>
+                  {distances && <option value="nearest">{t("sortNearest")}</option>}
                 </select>
               </div>
               <ul className="flex flex-col gap-2">
                 {sorted.map((listing) => (
                   <li key={listing.id}>
-                    <OtherShopRow slug={slug} listing={listing} onSelect={() => setOpen(false)} />
+                    <OtherShopRow slug={slug} listing={listing} onSelect={() => setOpen(false)} distanceKm={distances?.[listing.id]} />
                   </li>
                 ))}
               </ul>
