@@ -2346,6 +2346,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/wishlist/product/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove every saved listing of one product (idempotent)
+         * @description For the heart on a product card. Only this user's rows; 204 also when nothing was saved.
+         */
+        delete: operations["removeProductFromWishlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/wishlist/{listingId}": {
         parameters: {
             query?: never;
@@ -2474,6 +2494,12 @@ export interface components {
             slug?: string;
         };
         ProductCard: {
+            /**
+             * Format: uuid
+             * @description The listing the card's wishlist heart saves: the cheapest IN_STOCK listing (among the listings
+             *     that match the filters), else the cheapest one; null when there is none.
+             */
+            bestListingId: string | null;
             /** Format: uuid */
             id?: string;
             slug?: string;
@@ -8066,6 +8092,11 @@ export interface operations {
                             } | null;
                             /** @description Most similar first (best of photo similarity and title match). */
                             products: {
+                                /**
+                                 * Format: uuid
+                                 * @description The cheapest IN_STOCK listing, else the cheapest (what the wishlist heart saves).
+                                 */
+                                bestListingId: string | null;
                                 /** Format: uuid */
                                 id: string;
                                 slug: string;
@@ -8496,11 +8527,37 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         data: {
+                            /** @description Saved listings (hearts on shop offers). */
                             listingIds: string[];
+                            /** @description The distinct products behind the saved listings (hearts on product cards). */
+                            productIds: string[];
                         };
                     };
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    removeProductFromWishlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed (also when nothing was saved). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
         };

@@ -17,6 +17,7 @@ import { AvailabilityBadge } from "@/components/catalog/availability-badge";
 import { Reveal } from "@/components/motion/reveal";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
+import { ProductHeart } from "@/components/wishlist/heart-button";
 
 type CategoryKind = "phone" | "tablet" | "laptop" | "watch" | "audio" | "accessory" | "fashion" | "other";
 
@@ -61,10 +62,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
   return (
     // Reveal: rises in on scroll, neighbours one after another. The link lifts on hover (.lift).
-    <Reveal className="flex">
+    <Reveal className="relative flex">
     <Link
       href={`/products/${product.slug}`}
-      className="group lift flex w-full flex-col gap-2 rounded-md border border-line bg-card p-2 pb-3 shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+      className="peer group lift flex w-full flex-col gap-2 rounded-md border border-line bg-card p-2 pb-3 shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
     >
       <ArchFrame className="arch-reveal bg-highlight-soft">
         {product.image ? (
@@ -114,6 +115,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         <span className="type-caption text-ink-muted">{t("shops", { count: product.shopCount })}</span>
       </div>
     </Link>
+      {/* Outside the link (a button can't sit inside a link); floats over the photo */}
+      {product.bestListingId && (
+        <ProductHeart productId={product.id} listingId={product.bestListingId} title={product.title} className="absolute top-3 right-3 z-10 motion-safe:transition-transform motion-safe:duration-300 motion-safe:peer-hover:-translate-y-1" />
+      )}
     </Reveal>
   );
 }
