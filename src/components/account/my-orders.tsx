@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, LoaderCircle, PackageSearch, Store, Truck } from "lucide-react";
+import { ChevronLeft, ChevronRight, LoaderCircle, MapPin, PackageSearch, Store, Truck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useSession } from "@/components/app-providers";
@@ -212,6 +212,14 @@ function OrderRow({ order }: { order: Order }) {
             {t("payPending")}
           </Link>
         )}
+        <Link
+          href={`/account/orders/${order.id}`}
+          aria-label={t("trackLabel", { number: order.orderNumber })}
+          className="type-body-medium flex h-11 items-center justify-center gap-1.5 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          <MapPin className="size-4" aria-hidden />
+          {t("track")}
+        </Link>
         <Link
           href={detailHref}
           className="type-body-medium flex h-11 items-center justify-center gap-1 rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"

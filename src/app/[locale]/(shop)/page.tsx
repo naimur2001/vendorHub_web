@@ -279,6 +279,12 @@ export default async function HomePage({ params }: Props) {
             >
               {t("closingMarkets")}
             </Link>
+            <Link
+              href="/account/orders"
+              className="type-body-medium flex h-12 items-center justify-center rounded-sm border border-gold px-8 text-primary-foreground hover:bg-brand-alt focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none"
+            >
+              {t("closingTrack")}
+            </Link>
           </div>
         </section>
       </Reveal>

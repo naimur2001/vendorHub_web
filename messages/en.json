@@ -40,7 +40,8 @@
     "step3Text": "Collect it from the shop or have it brought to you.",
     "closingTitle": "Your market is open",
     "closingText": "Walk through the doors and see what the shops have today.",
-    "closingMarkets": "Browse markets"
+    "closingMarkets": "Browse markets",
+    "closingTrack": "Track your order"
   },
   "Verification": {
     "UNVERIFIED": "Not verified yet",
@@ -713,7 +714,9 @@
     "pagination": "Pages",
     "previous": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {total}"
+    "pageOf": "Page {page} of {total}",
+    "track": "Track order",
+    "trackLabel": "Track order {number}"
   },
   "Bargain": {
     "makeOffer": "Make an offer",
