@@ -171,9 +171,9 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setFocused(false)}
-      className="group/slider relative rounded-md bg-brand p-1 shadow-card ring-1 ring-gold/50"
+      className="group/slider relative rounded-3xl shadow-card"
     >
-      <div className="relative overflow-hidden rounded-sm">
+      <div className="relative overflow-hidden rounded-3xl">
         <div
           className={cn("flex touch-pan-y motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out", BANNER_FRAME)}
           style={{ transform: `translateX(-${index * 100}%)` }}
@@ -196,9 +196,6 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
             </div>
           ))}
         </div>
-
-        {/* Thin gold inner frame with arched top corners */}
-        <span aria-hidden className="pointer-events-none absolute inset-2 rounded-t-[2.5rem] rounded-b-sm border border-gold/40 md:inset-3" />
 
         {count > 1 && (
           <>

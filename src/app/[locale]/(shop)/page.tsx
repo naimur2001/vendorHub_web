@@ -167,7 +167,7 @@ export default async function HomePage({ params }: Props) {
             {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
       <OwnerStrip />
       {/* Admin banners (1-minute cache); nothing shows when there are none or the API is down */}
-      <Suspense fallback={<div className="aspect-5/2 skeleton rounded-md sm:aspect-4/1" aria-hidden />}>
+      <Suspense fallback={<div className="aspect-5/2 skeleton rounded-3xl sm:aspect-4/1" aria-hidden />}>
         <HomeBanners />
       </Suspense>
       <section className="flex flex-col items-center gap-6 pt-4 text-center md:gap-8 md:pt-10">
