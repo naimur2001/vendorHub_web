@@ -86,6 +86,7 @@ export type ShopOrder = {
   deliveryFee: number;
   reservedUntil?: string | null; // RESERVE_PICKUP only
   confirmBy?: string | null; // RESERVE_PICKUP only: confirm by then or it is cancelled
+  unreadCount?: number; // order lists only: chat messages from the customer not read yet
   subtotal: number;
   total: number;
   createdAt: string;

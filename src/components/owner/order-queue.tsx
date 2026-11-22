@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { ReservationNote } from "@/components/orders/reservation-note";
 import { OrderChat } from "@/components/orders/order-chat";
+import { UnreadBadge } from "@/components/orders/unread-badge";
 const PAGE_SIZE = 20;
 const FILTERS: OrderFilter[] = ["ALL", ...ORDER_STATUSES];
 
@@ -289,6 +290,7 @@ function OrderRow({ order, onOpen }: { order: ShopOrder; onOpen: () => void }) {
         </div>
         <p className="type-body truncate text-ink-secondary">{order.customer.name}</p>
         <Pills order={order} />
+        <UnreadBadge count={order.unreadCount} />
         <p className="type-caption flex items-center gap-1.5 text-ink-muted">
           {order.deliveryMethod !== "VENDOR_DELIVERY" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
           {order.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("delivery")} · {t("items", { count: items })} ·{" "}

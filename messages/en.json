@@ -2547,6 +2547,7 @@
     "network": "No connection. Try again.",
     "error": "Couldn't send. Try again.",
     "loadError": "Messages couldn't load.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "unread": "{count, plural, one {# new message} other {# new messages}}"
   }
 }

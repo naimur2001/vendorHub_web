@@ -37,6 +37,7 @@ export type Order = {
   deliveryFee: number;
   reservedUntil?: string | null; // RESERVE_PICKUP: cancelled if not picked up by then
   confirmBy?: string | null; // RESERVE_PICKUP: the shop must confirm by then
+  unreadCount?: number; // order lists only: chat messages from the shop not read yet
   subtotal: number;
   total: number;
   createdAt: string;

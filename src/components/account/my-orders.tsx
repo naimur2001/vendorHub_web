@@ -11,6 +11,7 @@ import { Link, useRouter } from "@/i18n/routing";
 import { checkoutKeys, listOrders, ORDER_STATUSES, type Order, type OrderStatus } from "@/lib/api/checkout";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { UnreadBadge } from "@/components/orders/unread-badge";
 
 const PAGE_SIZE = 10;
 
@@ -198,6 +199,7 @@ function OrderRow({ order }: { order: Order }) {
           {order.shop.verificationLevel !== "UNVERIFIED" && <VerificationSeal level={order.shop.verificationLevel} size="sm" />}
         </div>
         <OrderBadges order={order} />
+        <UnreadBadge count={order.unreadCount} />
         <p className="type-caption flex items-center gap-1.5 text-ink-muted">
           {order.deliveryMethod !== "VENDOR_DELIVERY" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
           {order.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("delivery")}
