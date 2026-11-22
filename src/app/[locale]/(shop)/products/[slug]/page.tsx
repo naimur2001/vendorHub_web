@@ -191,6 +191,9 @@ async function ProductView({ params, searchParams }: Props) {
         <ProductReviews slug={product.slug} />
       </Suspense>
 
+      {/* Other products opened during this visit */}
+      <RecentlyViewed exclude={product.slug} />
+
       
     </div>
   );
