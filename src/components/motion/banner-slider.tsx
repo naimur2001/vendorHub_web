@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { getImageProps } from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
@@ -46,7 +46,6 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-const pad = (n: number) => String(n).padStart(2, "0");
 
 function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean; first: boolean }) {
   const t = useTranslations("Banners");
@@ -122,7 +121,6 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
   const t = useTranslations("Banners");
   const reduced = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const [userPaused, setUserPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -137,7 +135,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
 
-  const playing = count > 1 && !reduced && !userPaused && !hovered && !focused && !hidden;
+  const playing = count > 1 && !reduced && !hovered && !focused && !hidden;
   useEffect(() => {
     if (!playing) return;
     const id = window.setTimeout(() => go(index + 1), AUTOPLAY_MS);
@@ -218,40 +216,6 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
               <ChevronRight className="size-5" aria-hidden />
             </button>
 
-            {/* Counter, segments and pause, bottom right */}
-            <div className="absolute right-2 bottom-1 flex items-center md:right-4">
-              <span aria-hidden className="mr-1 font-heading text-sm text-primary-foreground tabular-nums">
-                <span className="text-gold">{pad(index + 1)}</span>
-                <span className="opacity-60"> / {pad(count)}</span>
-              </span>
-              {banners.map((b, i) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => go(i)}
-                  aria-label={t("goTo", { n: i + 1 })}
-                  aria-current={i === index ? "true" : undefined}
-                  className="flex h-11 w-7 items-center justify-center focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
-                >
-                  <span aria-hidden className="h-1 w-5 overflow-hidden rounded-full bg-card/40">
-                    <span
-                      className={cn(
-                        "block h-full w-full origin-left rounded-full bg-gold motion-safe:transition-transform motion-safe:duration-300",
-                        i === index ? "scale-x-100" : "scale-x-0",
-                      )}
-                    />
-                  </span>
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setUserPaused((p) => !p)}
-                aria-label={userPaused ? t("play") : t("pause")}
-                className="flex size-11 items-center justify-center text-primary-foreground hover:text-gold focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
-              >
-                {userPaused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
-              </button>
-            </div>
           </>
         )}
       </div>
