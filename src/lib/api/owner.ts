@@ -84,6 +84,8 @@ export type ShopOrder = {
   deliveryMethod: DeliveryMethod;
   deliveryAddress: string | null;
   deliveryFee: number;
+  reservedUntil?: string | null; // RESERVE_PICKUP only
+  confirmBy?: string | null; // RESERVE_PICKUP only: confirm by then or it is cancelled
   subtotal: number;
   total: number;
   createdAt: string;

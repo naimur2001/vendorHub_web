@@ -24,6 +24,7 @@ import { getMyShops, shopKeys } from "@/lib/api/shops";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
+import { ReservationNote } from "@/components/orders/reservation-note";
 const PAGE_SIZE = 20;
 const FILTERS: OrderFilter[] = ["ALL", ...ORDER_STATUSES];
 
@@ -78,6 +79,7 @@ function Pills({ order }: { order: ShopOrder }) {
       >
         {tOrder(`paymentStatus.${order.paymentStatus}`)}
       </span>
+      <ReservationNote order={order} audience="shop" />
     </div>
   );
 }
@@ -287,8 +289,8 @@ function OrderRow({ order, onOpen }: { order: ShopOrder; onOpen: () => void }) {
         <p className="type-body truncate text-ink-secondary">{order.customer.name}</p>
         <Pills order={order} />
         <p className="type-caption flex items-center gap-1.5 text-ink-muted">
-          {order.deliveryMethod === "STORE_PICKUP" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
-          {order.deliveryMethod === "STORE_PICKUP" ? t("pickup") : t("delivery")} · {t("items", { count: items })} ·{" "}
+          {order.deliveryMethod !== "VENDOR_DELIVERY" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
+          {order.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("delivery")} · {t("items", { count: items })} ·{" "}
           <span className="type-price">{formatTaka(order.total, locale)}</span>
         </p>
       </div>
@@ -385,15 +387,15 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
       </section>
 
       <section className="flex flex-col gap-1">
-        <h3 className="type-caption text-ink-muted">{o.deliveryMethod === "STORE_PICKUP" ? t("pickup") : t("deliverTo")}</h3>
+        <h3 className="type-caption text-ink-muted">{o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("deliverTo")}</h3>
         <p className="type-body flex items-start gap-2 text-ink">
-          {o.deliveryMethod === "STORE_PICKUP" ? (
+          {o.deliveryMethod !== "VENDOR_DELIVERY" ? (
             <Store className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
           ) : (
             <MapPin className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
           )}
           {/* Customer text: plain text, React escapes it */}
-          {o.deliveryMethod === "STORE_PICKUP" ? t("pickupNote") : (o.deliveryAddress ?? "")}
+          {o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickupNote") : (o.deliveryAddress ?? "")}
         </p>
       </section>
 

@@ -7,7 +7,8 @@ type VerificationLevel = components["schemas"]["VerificationLevel"];
 export type OrderStatus = components["schemas"]["OrderStatus"];
 export type PaymentStatus = components["schemas"]["PaymentStatus"];
 
-export type DeliveryMethod = "STORE_PICKUP" | "VENDOR_DELIVERY";
+// RESERVE_PICKUP: held for 2 hours, the shop confirms within 30 minutes, paid at the store.
+export type DeliveryMethod = "STORE_PICKUP" | "VENDOR_DELIVERY" | "RESERVE_PICKUP";
 export type PaymentMethod = "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
 
 export const ORDER_STATUSES: OrderStatus[] = [
@@ -34,6 +35,8 @@ export type Order = {
   deliveryMethod: DeliveryMethod;
   deliveryAddress: string | null;
   deliveryFee: number;
+  reservedUntil?: string | null; // RESERVE_PICKUP: cancelled if not picked up by then
+  confirmBy?: string | null; // RESERVE_PICKUP: the shop must confirm by then
   subtotal: number;
   total: number;
   createdAt: string;

@@ -630,8 +630,11 @@
       "invalid": "A choice isn't possible for one of the shops. Check delivery, payment and the address.",
       "empty": "Your cart is empty.",
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
-      "generic": "Your orders couldn't be placed. Nothing was charged. Try again in a moment."
-    }
+      "generic": "Your orders couldn't be placed. Nothing was charged. Try again in a moment.",
+      "reservationLimit": "You already have 3 open reservations. Pick one up or cancel it first."
+    },
+    "reserve": "Reserve, pick up within 2 hours",
+    "reserveHint": "The shop holds it for you. Pay at the store. The shop confirms within 30 minutes."
   },
   "Order": {
     "metaTitle": "Order confirmation",
@@ -2521,5 +2524,10 @@
     "retry": "Try again",
     "none": "No shops within {km} km yet. Try a bigger distance.",
     "distance": "{km} km away"
+  },
+  "Reservation": {
+    "heldUntil": "Held until {time}",
+    "shopConfirmsBy": "Shop confirms by {time}",
+    "confirmBy": "Confirm by {time} or it cancels"
   }
 }

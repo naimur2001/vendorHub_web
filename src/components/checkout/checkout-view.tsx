@@ -35,6 +35,7 @@ type AddressErrors = Partial<Record<keyof Address | "all", string>>;
 const PAYMENTS: Record<DeliveryMethod, PaymentMethod[]> = {
   STORE_PICKUP: ["PAY_AT_STORE", "ONLINE"],
   VENDOR_DELIVERY: ["CASH_ON_DELIVERY", "ONLINE"],
+  RESERVE_PICKUP: ["PAY_AT_STORE"], // nothing to pay now; paid when picked up
 };
 
 function defaultChoice(group: CartGroup): Choice {
@@ -63,6 +64,7 @@ function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
         if (isEmailNotVerified(err)) return "errors.verifyEmail";
     if (err.status === 409 && /already being placed/i.test(err.message)) return "errors.inProgress";
+    if (err.status === 409 && (err.details as { code?: string } | undefined)?.code === "RESERVATION_LIMIT") return "errors.reservationLimit";
     if (err.status === 409) return Array.isArray(err.details) ? "errors.problems" : "errors.stock";
     if (err.status === 400) return err.message === "Your cart is empty" ? "errors.empty" : "errors.invalid";
     if (err.status === 0) return "errors.network";
@@ -409,6 +411,7 @@ function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange
 
   const deliveryOptions: { value: DeliveryMethod; label: string; hint: string; offered: boolean }[] = [
     { value: "STORE_PICKUP", label: t("pickup"), hint: t("pickupHint"), offered: shop.supportsPickup },
+    { value: "RESERVE_PICKUP", label: t("reserve"), hint: t("reserveHint"), offered: shop.supportsPickup },
     { value: "VENDOR_DELIVERY", label: t("delivery"), hint: `${t("deliveryHint")} ${formatTaka(DELIVERY_FEE, locale)}`, offered: shop.supportsDelivery },
   ];
   const paymentLabels: Record<PaymentMethod, { label: string; hint: string }> = {

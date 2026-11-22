@@ -199,8 +199,8 @@ function OrderRow({ order }: { order: Order }) {
         </div>
         <OrderBadges order={order} />
         <p className="type-caption flex items-center gap-1.5 text-ink-muted">
-          {order.deliveryMethod === "STORE_PICKUP" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
-          {order.deliveryMethod === "STORE_PICKUP" ? t("pickup") : t("delivery")}
+          {order.deliveryMethod !== "VENDOR_DELIVERY" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
+          {order.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("delivery")}
           {" · "}
           {t("summary", { items, total: formatTaka(order.total, locale) })}
         </p>

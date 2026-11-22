@@ -20,7 +20,7 @@ function buildSteps(order: TimelineOrder): Step[] {
   const path: OrderStatus[] = [
     "PLACED",
     "CONFIRMED",
-    order.deliveryMethod === "STORE_PICKUP" ? "READY_FOR_PICKUP" : "OUT_FOR_DELIVERY",
+    order.deliveryMethod !== "VENDOR_DELIVERY" ? "READY_FOR_PICKUP" : "OUT_FOR_DELIVERY",
     "COMPLETED",
   ];
   const latest = new Map<OrderStatus, { at: string; note: string | null }>();

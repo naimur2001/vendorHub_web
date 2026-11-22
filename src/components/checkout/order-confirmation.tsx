@@ -23,6 +23,7 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { RequestReturn } from "@/components/returns/return-detail";
+import { ReservationNote } from "@/components/orders/reservation-note";
 
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
@@ -50,6 +51,7 @@ export function OrderBadges({ order }: { order: Order }) {
       <span className={cn("type-caption rounded-full px-2.5 py-0.5", PAYMENT_STYLE[order.paymentStatus])}>
         {t(`paymentStatus.${order.paymentStatus}`)}
       </span>
+      <ReservationNote order={order} audience="customer" />
     </div>
   );
 }
@@ -154,7 +156,7 @@ export function OrderConfirmation({ checkoutId }: { checkoutId: string }) {
 /** Where the first order goes: the delivery address, or the shop for a store pickup. */
 function mapTarget(order: Order | undefined): { address: string; pickup: boolean } | null {
   if (!order) return null;
-  if (order.deliveryMethod === "STORE_PICKUP") {
+  if (order.deliveryMethod !== "VENDOR_DELIVERY") {
     const place = [shopPlace(order.shop.levelFloor, order.shop.shopNumber), order.shop.addressLine].filter(Boolean).join(", ");
     return place ? { address: place, pickup: true } : null;
   }
@@ -315,12 +317,12 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
 
       <div className="type-body flex flex-col gap-1.5 text-ink-secondary">
         <p className="flex items-start gap-2">
-          {order.deliveryMethod === "STORE_PICKUP" ? (
+          {order.deliveryMethod !== "VENDOR_DELIVERY" ? (
             <Store className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
           ) : (
             <Truck className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
           )}
-          {order.deliveryMethod === "STORE_PICKUP"
+          {order.deliveryMethod !== "VENDOR_DELIVERY"
             ? t("pickupAt", { place: pickupPlace })
             : t("deliverTo", { address: order.deliveryAddress ?? "" })}
         </p>
