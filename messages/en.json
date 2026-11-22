@@ -480,7 +480,13 @@
     "homeTitle": "Walk into a market",
     "homeText": "Every arch is a real market or mall. Step inside to see its shops, floor by floor.",
     "viewAll": "All markets",
-    "enterMarket": "Enter {market}"
+    "enterMarket": "Enter {market}",
+    "findLabel": "Find a shop in this market",
+    "findPlaceholder": "Shop name or number",
+    "clearFind": "Clear search",
+    "floorsLabel": "Jump to a floor",
+    "findResults": "{count, plural, =0 {No shops found} one {# shop found} other {# shops found}}",
+    "findNone": "No shop matches \"{query}\"."
   },
   "Cart": {
     "add": "Add to cart",

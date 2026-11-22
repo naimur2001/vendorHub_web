@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight, MapPin, Search } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
-import { MarketShopCard } from "@/components/shop/market-cards";
+import { MarketShopFinder } from "@/components/shop/market-shop-finder";
 import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import { publicGet } from "@/lib/api/public";
@@ -155,22 +155,7 @@ async function MarketView({ params }: Props) {
           {t("shopsTitle", { market: market.name })}
         </h2>
 
-        {floors.length === 0 ? (
-          <p className="type-body text-ink-secondary">{t("noShops")}</p>
-        ) : (
-          floors.map(([floor, shops]) => (
-            <section key={floor ?? "other"} aria-label={floor ?? t("otherFloor")} className="flex flex-col gap-3">
-              <h3 className="type-h3 border-b border-line pb-2 text-ink">{floor ?? t("otherFloor")}</h3>
-              <ul className="grid gap-3 md:grid-cols-2">
-                {shops.map((shop) => (
-                  <li key={shop.id}>
-                    <MarketShopCard shop={shop} />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
-        )}
+        <MarketShopFinder floors={floors} />
       </section>
     </div>
   );

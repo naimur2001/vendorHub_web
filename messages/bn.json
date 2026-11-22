@@ -396,7 +396,13 @@
     "homeTitle": "মার্কেটে ঢুকুন",
     "homeText": "প্রতিটি খিলান একটি আসল মার্কেট বা মল। ভেতরে ঢুকে তলা ধরে দোকান দেখুন।",
     "viewAll": "সব মার্কেট",
-    "enterMarket": "{market}-এ ঢুকুন"
+    "enterMarket": "{market}-এ ঢুকুন",
+    "findLabel": "এই মার্কেটে দোকান খুঁজুন",
+    "findPlaceholder": "দোকানের নাম বা নম্বর",
+    "clearFind": "খোঁজা মুছুন",
+    "floorsLabel": "তলায় যান",
+    "findResults": "{count, plural, =0 {কোনো দোকান পাওয়া যায়নি} other {#টি দোকান পাওয়া গেছে}}",
+    "findNone": "\"{query}\"-এর সাথে কোনো দোকান মেলেনি।"
   },
   "ShopSearch": {
     "title": "“{q}”-এর সাথে মেলে এমন দোকান",
