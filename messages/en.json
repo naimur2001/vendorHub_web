@@ -269,7 +269,8 @@
     "bargains": "My bargains",
     "addresses": "Saved addresses",
     "logOut": "Log out",
-    "loggingOut": "Logging out…"
+    "loggingOut": "Logging out…",
+    "saved": "Saved items"
   },
   "Catalog": {
     "availability": {
@@ -2428,6 +2429,22 @@
     "remove": "Remove {title} offer from saved",
     "loginToSave": "Log in to save the {title} offer",
     "limit": "You can save up to 200 items.",
-    "error": "Couldn't update. Try again."
+    "error": "Couldn't update. Try again.",
+    "metaTitle": "Saved items",
+    "title": "Saved items",
+    "loading": "Loading your saved items…",
+    "guestTitle": "Log in to see your saved items",
+    "logIn": "Log in",
+    "customersOnly": "Saved items are for customer accounts.",
+    "loadError": "Your saved items couldn't load. Check your connection and try again.",
+    "retry": "Try again",
+    "emptyTitle": "Nothing saved yet",
+    "emptyText": "Tap the heart on a shop's offer to save it. We'll tell you when the price drops.",
+    "browse": "Browse products",
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}",
+    "dropped": "Price dropped (was {from})"
   }
 }

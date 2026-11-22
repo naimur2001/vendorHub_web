@@ -17,8 +17,7 @@ import {
   UserRound,
   LayoutDashboard,
   
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSession } from "@/components/app-providers";
@@ -46,7 +45,7 @@ export function initials(name: string): string {
   );
 }
 
-type LinkKey = "adminPortal" | "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "returns" | "profile" | "addresses" | "account";
+type LinkKey = "adminPortal" | "ownerArea" | "storefront" | "ownerOffers" | "orders" | "bargains" | "returns" | "profile" | "addresses" | "account" | "saved";
 type AccountLink = { href: string; key: LinkKey; icon: LucideIcon };
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -68,6 +67,7 @@ function linksFor(user: SessionUser, storefrontSlug?: string): AccountLink[] {
   if (user.role === "SHOP_OWNER" || user.role === "SHOP_STAFF") links.push({ href: "/owner/bargains", key: "ownerOffers", icon: Inbox });
   links.push(
     { href: "/account/orders", key: "orders", icon: Package },
+    ...(user.role === "CUSTOMER" ? [{ href: "/account/saved", key: "saved" as const, icon: Heart }] : []),
     { href: "/bargains", key: "bargains", icon: Handshake },
     { href: "/account/returns", key: "returns", icon: RotateCcw },
     { href: "/account/profile", key: "profile", icon: UserRound },
