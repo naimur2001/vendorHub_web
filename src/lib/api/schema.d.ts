@@ -2222,7 +2222,7 @@ export interface paths {
         /**
          * Live home page banners (no login)
          * @description Active banners whose schedule includes now (startsAt null or <= now, endsAt null or > now),
-         *     ordered by sortOrder then createdAt, at most 10. Sent with `Cache-Control: public, max-age=60`.
+         *     ordered by sortOrder then createdAt, at most 12 (the total limit). Sent with `Cache-Control: public, max-age=60`.
          */
         get: operations["listBanners"];
         put?: never;
@@ -2247,7 +2247,8 @@ export interface paths {
          * Create a banner (admin, multipart)
          * @description Send the image in `media` (required) and an optional phone version in `mobileMedia`.
          *     Recommended size 3:1, e.g. 1800 x 600 (at least 900 x 300; phone version at least 400 x 300).
-         *     A new banner goes to the end unless sortOrder is given. Writes an audit log entry.
+         *     A new banner goes to the end unless sortOrder is given. At most 12 banners in total (active or not):
+         *     the 13th returns 409 with error.details.code BANNER_LIMIT and no file is kept. Writes an audit log entry.
          */
         post: operations["adminCreateBanner"];
         delete?: never;
@@ -3192,6 +3193,30 @@ export interface components {
              * @description Must be after startsAt.
              */
             endsAt?: string | null;
+        };
+        BannerListMeta: {
+            /**
+             * @description All banners, active or not.
+             * @example 8
+             */
+            total: number;
+            /**
+             * @description The limit; disable "Add banner" when total reaches it.
+             * @example 12
+             */
+            max: number;
+        };
+        BannerLimitError: {
+            /** @example false */
+            success: boolean;
+            error: {
+                /** @example You can have at most 12 banners. Delete one first. */
+                message: string;
+                details: {
+                    /** @enum {string} */
+                    code: "BANNER_LIMIT";
+                };
+            };
         };
         BannerUpdateExtra: {
             /** @description true removes the phone version. */
@@ -8010,6 +8035,7 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         data: components["schemas"]["AdminBanner"][];
+                        meta: components["schemas"]["BannerListMeta"];
                     };
                 };
             };
@@ -8047,6 +8073,15 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            /** @description The limit of 12 banners is reached. Delete one first. error.details.code is BANNER_LIMIT. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerLimitError"];
+                };
+            };
             /** @description A file is larger than 5 MB. */
             413: {
                 headers: {
@@ -8092,6 +8127,7 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         data: components["schemas"]["AdminBanner"][];
+                        meta: components["schemas"]["BannerListMeta"];
                     };
                 };
             };
