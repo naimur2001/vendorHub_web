@@ -20,7 +20,9 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 const snapshot = () => items;
-const serverSnapshot = (): Viewed[] => [];
+// Must return the same array every time, or React keeps re-rendering.
+const EMPTY: Viewed[] = [];
+const serverSnapshot = () => EMPTY;
 
 function remember(entry: Viewed) {
   if (!SLUG.test(entry.slug) || entry.slug.length > 200) return;
