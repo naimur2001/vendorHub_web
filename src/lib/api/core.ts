@@ -113,6 +113,9 @@ export async function readResponse<T>(res: Response): Promise<ApiResult<T>> {
     }
   }
 
+  // 204 No Content (e.g. a DELETE): success with nothing to read.
+  if (res.ok && !text) return { data: undefined as T };
+
   if (res.ok && isObject(body) && body.success === true) {
     return { data: body.data as T, meta: body.meta as ApiMeta | undefined };
   }
