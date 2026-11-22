@@ -10,6 +10,8 @@ import { safeMediaUrl } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 6000;
+// Gentle glide between slides (owner's choice: slower than the usual 300 ms rule).
+const SLIDE_EASE = "motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-in-out";
 const SWIPE_PX = 50;
 
 // Slim billboard: wide and low. Phones get a little more height so text still fits.
@@ -174,7 +176,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     >
       <div className="relative overflow-hidden rounded-3xl">
         <div
-          className={cn("flex touch-pan-y motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out", BANNER_FRAME)}
+          className={cn("flex touch-pan-y", SLIDE_EASE, BANNER_FRAME)}
           style={{ transform: `translateX(-${index * 100}%)` }}
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
