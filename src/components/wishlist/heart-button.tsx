@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
@@ -45,7 +45,18 @@ function withChange(ids: WishlistIds = EMPTY, target: Target, save: boolean): Wi
   };
 }
 
-function HeartToggle({ target, title, className, overlay }: { target: Target; title: string; className?: string; overlay?: boolean }) {
+type ToggleProps = { target: Target; title: string; className?: string; overlay?: boolean };
+
+const noop = () => () => {};
+
+// The heart renders only in the browser: the server can't know who is logged in, and the
+// query hooks read the clock, which Next.js does not allow while prerendering a page.
+function HeartToggle(props: ToggleProps) {
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  return mounted ? <HeartToggleLive {...props} /> : null;
+}
+
+function HeartToggleLive({ target, title, className, overlay }: ToggleProps) {
   const t = useTranslations("Wishlist");
   const pathname = usePathname();
   const queryClient = useQueryClient();
