@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
+import { OrderTimeline } from "@/components/orders/order-timeline";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Link, useRouter } from "@/i18n/routing";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/api/checkout";
@@ -310,6 +311,7 @@ function OrderRow({ order, onOpen }: { order: ShopOrder; onOpen: () => void }) {
 function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }) {
   const t = useTranslations("OwnerOrders");
   const tOrder = useTranslations("Order");
+  const tTrack = useTranslations("OrderTracking");
   const locale = useLocale();
   const queryClient = useQueryClient();
   const reasonId = useId();
@@ -328,7 +330,12 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
     mutationFn: ({ status, why }: { status: NextStatus; why?: string }) => changeOrderStatus(shopId, initial.id, status, why),
     onMutate: () => setMessage(null),
     onSuccess: (updated) => {
-      queryClient.setQueryData(ownerKeys.order(shopId, initial.id), updated);
+      // Keep the timeline we have until the refetch brings the new event.
+      queryClient.setQueryData<ShopOrder>(ownerKeys.order(shopId, initial.id), (prev) => ({
+        ...updated,
+        statusEvents: updated.statusEvents ?? prev?.statusEvents,
+      }));
+      void queryClient.invalidateQueries({ queryKey: ownerKeys.order(shopId, initial.id) });
       void queryClient.invalidateQueries({ queryKey: ["owner", "orders"] });
       void queryClient.invalidateQueries({ queryKey: ["owner", "dashboard"] });
       setCancelling(false);
@@ -393,6 +400,17 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
       <section className="flex flex-col gap-1">
         <h3 className="type-caption text-ink-muted">{t("payment")}</h3>
         <p className="type-body text-ink">{tOrder(`payment.${o.paymentMethod}`)}</p>
+      </section>
+
+      <section aria-labelledby={`timeline-${o.id}`} className="flex flex-col gap-3 border-t border-line pt-3">
+        <h3 id={`timeline-${o.id}`} className="type-caption text-ink-muted">
+          {tTrack("timeline")}
+        </h3>
+        {o.statusEvents ? (
+          <OrderTimeline order={o} />
+        ) : (
+          <div className="h-40 skeleton rounded-md" aria-hidden />
+        )}
       </section>
 
       <section className="flex flex-col gap-1.5 border-t border-line pt-3">
