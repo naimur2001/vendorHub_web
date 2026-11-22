@@ -1,5 +1,6 @@
 import "client-only";
 import { api } from "./client";
+import type { components } from "./schema";
 import type { SocialLinks } from "./storefront";
 
 export type ShopUpdate = {
@@ -63,4 +64,10 @@ export function addStaff(shopId: string, email: string): Promise<unknown> {
 }
 export function removeStaff(shopId: string, userId: string): Promise<unknown> {
   return api.delete<unknown>(`${base(shopId)}/staff/${encodeURIComponent(userId)}`);
+}
+export type OpeningDayInput = components["schemas"]["OpeningDay"];
+
+// PUT /shops/:shopId/hours (owner or staff of that shop). hours: null removes the hours.
+export function saveShopHours(shopId: string, hours: OpeningDayInput[] | null, weeklyHoliday: number | null): Promise<unknown> {
+  return api.put<unknown>(`/shops/${encodeURIComponent(shopId)}/hours`, { hours, weeklyHoliday });
 }

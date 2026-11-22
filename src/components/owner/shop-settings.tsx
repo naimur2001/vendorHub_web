@@ -17,6 +17,7 @@ import { getStorefront, safeMediaUrl, safeSocialUrl, SOCIAL_KEYS, type SocialKey
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
 import { OwnerShopPhotos } from "@/components/shop/shop-photos";
+import { HoursForm } from "@/components/owner/hours-form";
 
 const LINK_PLACEHOLDER: Record<SocialKey, string> = {
   facebook: "https://www.facebook.com/yourshop",
@@ -365,6 +366,7 @@ export function ShopSettings() {
   const shop = owned.find((s) => s.id === searchParams.get("shop")) ?? owned[0];
   const profile = useQuery({ queryKey: ["owner", "profile", shop?.slug ?? ""], queryFn: () => getStorefront(shop?.slug ?? ""), enabled: Boolean(shop) });
   const tPhotos = useTranslations("ShopPhotos");
+  const tHours = useTranslations("OwnerHours");
   const changed = () => {
     void queryClient.invalidateQueries({ queryKey: ["owner", "profile"] });
     void queryClient.invalidateQueries({ queryKey: shopKeys.mine });
@@ -397,6 +399,9 @@ export function ShopSettings() {
       </Section>
       <Section title={t("profile.title")}>
         <ProfileForm key={p.id} shop={p} onSaved={changed} />
+      </Section>
+      <Section title={tHours("title")}>
+        <HoursForm key={p.id} shopId={p.id} hours={p.hours} weeklyHoliday={p.weeklyHoliday} onSaved={changed} />
       </Section>
       <Section title={t("staff.title")}>
         <StaffSection shopId={p.id} />

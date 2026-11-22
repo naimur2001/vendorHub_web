@@ -2463,5 +2463,24 @@
       "5": "Friday",
       "6": "Saturday"
     }
+  },
+  "OwnerHours": {
+    "title": "Opening hours",
+    "hint": "Customers see \"Open now\" or \"Closed\" on your shop, worked out in Dhaka time.",
+    "holiday": "Weekly holiday",
+    "noHoliday": "No weekly holiday",
+    "open": "Open",
+    "closed": "Closed",
+    "opensAt": "{day} opens at",
+    "closesAt": "{day} closes at",
+    "overnight": "A closing time earlier than the opening time means you close after midnight.",
+    "save": "Save hours",
+    "copy": "Copy {day} to all days",
+    "clear": "Remove hours",
+    "saved": "Opening hours saved.",
+    "cleared": "Opening hours removed.",
+    "sameTime": "{day}: opening and closing time can't be the same.",
+    "invalid": "Some times are not valid. Check them and try again.",
+    "error": "Couldn't save. Try again."
   }
 }
