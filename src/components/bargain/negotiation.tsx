@@ -24,6 +24,7 @@ import { ApiError } from "@/lib/api/core";
 import type { ShopBargain } from "@/lib/api/owner";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { AcceptBurst } from "@/components/motion/accept-burst";
 
 type Side = "CUSTOMER" | "SHOP";
 
@@ -290,9 +291,12 @@ export function Negotiation({
           {isShop && b.customer ? tShop("customer", { name: b.customer.name }) : b.shop.name} ·{" "}
           {t("listPrice", { price: money(b.listPrice) })}
         </p>
-        <span className={cn("type-caption mt-1 self-start rounded-full px-2.5 py-0.5", STATUS_STYLE[b.status])}>
-          {statusText}
-          {b.status === "ACCEPTED" && b.agreedPrice !== null && ` · ${money(b.agreedPrice)}`}
+        <span className="relative mt-1 self-start">
+          <span className={cn("type-caption inline-block rounded-full px-2.5 py-0.5", STATUS_STYLE[b.status])}>
+            {statusText}
+            {b.status === "ACCEPTED" && b.agreedPrice !== null && ` · ${money(b.agreedPrice)}`}
+          </span>
+          <AcceptBurst active={b.status === "ACCEPTED"} />
         </span>
       </div>
 

@@ -200,6 +200,23 @@ html {
   .reveal[data-shown] .arch-reveal > img {
     clip-path: inset(0 0 0 0);
   }
+  /* Bargain accepted: confetti flies out from the status pill and fades (one-shot) */
+  .confetti-piece {
+    animation: vh-confetti 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes vh-confetti {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg) scale(0.6);
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1);
+    }
+  }
   /* Wishlist heart: a quick pop and a gold ring that fades outwards (both one-shot, 300 ms) */
   .heart-pop {
     animation: vh-heart-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
