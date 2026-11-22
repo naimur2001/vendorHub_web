@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/api/core";
 import { publicGet } from "@/lib/api/public";
 import { ProductReviews } from "@/components/reviews/product-reviews";
 import { TryOn } from "@/components/catalog/try-on";
+import { RecentlyViewed, RememberView } from "@/components/catalog/recently-viewed";
 
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = {
@@ -112,6 +113,7 @@ async function ProductView({ params, searchParams }: Props) {
         </ol>
       </nav>
 
+      <RememberView slug={product.slug} title={product.title} image={product.images[0] ?? null} />
       <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)] lg:gap-12">
         <ProductGallery
           images={product.images}

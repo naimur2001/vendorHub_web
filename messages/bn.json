@@ -1873,5 +1873,8 @@
     "allMarkets": "সব মার্কেট",
     "cart": "{count, plural, other {কার্টে #টি পণ্য}}",
     "shops": "{count, plural, other {#টি দোকান}}"
+  },
+  "RecentlyViewed": {
+    "title": "সম্প্রতি দেখেছেন"
   }
 }

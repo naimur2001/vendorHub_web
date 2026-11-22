@@ -12,6 +12,7 @@ import type { ProductCardData } from "@/lib/api/catalog";
 import { getBanners, getCategories, getLatestProducts, getMarkets, type HomeBanner } from "@/lib/api/catalog-cache";
 import { BannerSlider } from "@/components/motion/banner-slider";
 import { BannerLeft, BannerRight } from "@/components/home/banner-sides";
+import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
 
@@ -241,6 +242,9 @@ export default async function HomePage({ params }: Props) {
           <LatestProducts />
         </Suspense>
       </section>
+
+      {/* Products opened during this visit (shows from the second one) */}
+      <RecentlyViewed />
 
       {/* How it works: three numbered arches that grow up as you reach them, joined by a gold line */}
       <section aria-labelledby="how-title" className="flex flex-col gap-8">
