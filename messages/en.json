@@ -2499,5 +2499,20 @@
   "SideAd": {
     "label": "Ad",
     "open": "Learn more"
+  },
+  "NearYou": {
+    "title": "Shops near you",
+    "subtitle": "Shops close to where you are, with how far each one is.",
+    "privacy": "We use your location only to find shops near you. It is not saved.",
+    "useLocation": "Use my location",
+    "locating": "Finding you…",
+    "denied": "Location is turned off for this site. Allow it in your browser settings, then try again.",
+    "unavailable": "We couldn't get your location. Check that location is on and try again.",
+    "radiusLabel": "Distance",
+    "within": "Within {km} km",
+    "loadError": "Nearby shops couldn't load.",
+    "retry": "Try again",
+    "none": "No shops within {km} km yet. Try a bigger distance.",
+    "distance": "{km} km away"
   }
 }

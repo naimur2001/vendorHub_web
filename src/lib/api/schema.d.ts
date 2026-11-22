@@ -2417,6 +2417,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shops/near": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shops near a point, nearest first (no login)
+         * @description Distance = great-circle (Haversine) distance to the shop's market. Shops whose market has no
+         *     coordinates are left out. distanceKm is rounded to 0.1.
+         */
+        get: operations["nearShops"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{orderId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        /** Messages of one of my orders (customer), oldest first */
+        get: operations["listMyOrderMessages"];
+        put?: never;
+        /** Write to the shop about one of my orders (customer) */
+        post: operations["sendMyOrderMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{orderId}/messages/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark the shop's messages as read (customer) */
+        post: operations["readMyOrderMessages"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/orders/{orderId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ChatShopId"];
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        /** Messages of one of the shop's orders (shop owner or staff), oldest first */
+        get: operations["listShopOrderMessages"];
+        put?: never;
+        /** Write to the customer about an order (shop owner or staff) */
+        post: operations["sendShopOrderMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/orders/{orderId}/messages/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ChatShopId"];
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark the customer's messages as read (shop owner or staff) */
+        post: operations["readShopOrderMessages"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Views, add-to-carts, orders, revenue and bargains per day, and the top 5 listings
+         * @description Days are Asia/Dhaka days, oldest first, every day present (zeros included).
+         *     views = unique visitors of the shop's product pages (one per visitor per day; only a keyed
+         *     hash is stored, no personal data). orders and revenue = orders placed that day, cancelled
+         *     ones excluded. bargainWinRate = accepted / offers in percent (null without offers).
+         *     topListings = the most viewed listings in the range (then units sold).
+         */
+        get: operations["shopAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/listings/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create or update many listings from a CSV file (all or nothing)
+         * @description Multipart field `file`, at most 1 MB and 500 data rows, UTF-8, first row = header.
+         *     Columns (any order, case-insensitive): productSlug, or title + category (category slug); price
+         *     (whole taka, required); stockQty (empty = not tracked); availability (IN_STOCK, AVAILABLE,
+         *     LIMITED, OUT_OF_STOCK; empty = from stockQty). A title + category must match an EXISTING product:
+         *     the CSV never creates products (add a new one with POST /shops/{shopId}/products). Photos are not
+         *     part of the CSV.
+         *     Every row is checked first. Any wrong row: 422, nothing saved, error.details.errors lists every
+         *     problem with its row number (row 1 = the header). Otherwise everything is saved in one
+         *     transaction: an existing listing of the product is updated (and re-activated), else created.
+         *     Audited as listing.imported.
+         */
+        post: operations["importShopListings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2542,7 +2696,7 @@ export interface components {
             supportsDelivery?: boolean;
             supportsPickup?: boolean;
             avgResponseMins?: number | null;
-            market?: components["schemas"]["IdNameSlug"] | null;
+            market?: components["schemas"]["MarketRef"] | null;
             rating?: {
                 average?: number | null;
                 count?: number;
@@ -2557,6 +2711,12 @@ export interface components {
             bargainEnabled?: boolean;
             discountPercent?: number | null;
             shop?: components["schemas"]["ListingShop"];
+            /**
+             * @description Only when the request has ?lat=&lng=: kilometres (rounded to 0.1) from that point to the shop's
+             *     market; null when the market has no coordinates.
+             * @example 7.9
+             */
+            distanceKm?: number | null;
         };
         ProductDetail: {
             product?: {
@@ -2585,9 +2745,9 @@ export interface components {
             city: string;
             district: components["schemas"]["District"];
             address: string | null;
-            /** @description Detail answer only. */
+            /** @description Set by an admin; null when not set. */
             latitude?: number | null;
-            /** @description Detail answer only. */
+            /** @description Set by an admin; null when not set. */
             longitude?: number | null;
             /** @description List answer only (active shops). */
             shopCount?: number;
@@ -2686,7 +2846,7 @@ export interface components {
                 latitude?: number | null;
                 longitude?: number | null;
             };
-            market?: components["schemas"]["IdNameSlug"] | null;
+            market?: components["schemas"]["MarketRef"] | null;
             verification?: {
                 level?: components["schemas"]["VerificationLevel"];
                 /** Format: date-time */
@@ -2816,10 +2976,13 @@ export interface components {
             paymentMethod?: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
             paymentStatus?: components["schemas"]["PaymentStatus"];
             /** @enum {string} */
-            deliveryMethod?: "STORE_PICKUP" | "VENDOR_DELIVERY";
+            deliveryMethod?: "STORE_PICKUP" | "VENDOR_DELIVERY" | "RESERVE_PICKUP";
             deliveryAddress?: string | null;
             deliveryFee?: number;
             total?: number;
+            reservedUntil?: components["schemas"]["ReservedUntil"];
+            confirmBy?: components["schemas"]["ConfirmBy"];
+            unreadCount?: components["schemas"]["UnreadCount"];
             items?: {
                 [key: string]: unknown;
             }[];
@@ -3053,12 +3216,7 @@ export interface components {
             whatsapp: string | null;
             socialLinks: components["schemas"]["ShopSocialLinks"];
             verificationLevel: components["schemas"]["VerificationLevel"];
-            market: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                slug: string;
-            } | null;
+            market: components["schemas"]["MarketRef"] | null;
             coverPhoto: {
                 url: string;
                 /** @enum {string} */
@@ -3183,11 +3341,14 @@ export interface components {
             paymentMethod: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
             paymentStatus: components["schemas"]["PaymentStatus"];
             /** @enum {string} */
-            deliveryMethod: "STORE_PICKUP" | "VENDOR_DELIVERY";
+            deliveryMethod: "STORE_PICKUP" | "VENDOR_DELIVERY" | "RESERVE_PICKUP";
             deliveryAddress?: string | null;
             deliveryFee: number;
             subtotal?: number;
             total: number;
+            reservedUntil?: components["schemas"]["ReservedUntil"];
+            confirmBy?: components["schemas"]["ConfirmBy"];
+            unreadCount?: components["schemas"]["UnreadCount"];
             shop: {
                 /** Format: uuid */
                 id: string;
@@ -3441,6 +3602,92 @@ export interface components {
         WeeklyHoliday: number | null;
         /** @description Open at this moment in Asia/Dhaka time (false on the weekly holiday). Null when no hours are set. */
         OpenNow: boolean | null;
+        MarketRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            latitude: number | null;
+            longitude: number | null;
+        };
+        /**
+         * Format: date-time
+         * @description RESERVE_PICKUP only (else null) - the reservation is cancelled if the order is not COMPLETED by then.
+         */
+        ReservedUntil: string | null;
+        /**
+         * Format: date-time
+         * @description RESERVE_PICKUP only (else null) - the shop must confirm by then (30 minutes after ordering).
+         */
+        ConfirmBy: string | null;
+        OrderMessage: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            senderRole: "CUSTOMER" | "SHOP";
+            /** @description true when the reader's side wrote it. */
+            mine: boolean;
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description When the other side read it.
+             */
+            readAt: string | null;
+        };
+        /** @description Order lists only - unread chat messages from the other side. */
+        UnreadCount: number;
+        /**
+         * @description Notify the shop team when stockQty falls to this or below; null = no alert.
+         * @default 3
+         */
+        LowStockAt: number | null;
+        ImportResult: {
+            created: number;
+            updated: number;
+            errors: {
+                /** @description The spreadsheet row (row 1 is the header). */
+                row: number;
+                message: string;
+            }[];
+        };
+        AnalyticsDay: {
+            /** Format: date */
+            date: string;
+            views: number;
+            addToCarts: number;
+            orders: number;
+            revenue: number;
+            bargainOffers: number;
+            bargainsAccepted: number;
+        };
+        ShopAnalytics: {
+            /** @enum {string} */
+            range: "7d" | "30d";
+            /** @example Asia/Dhaka */
+            timeZone: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            days: components["schemas"]["AnalyticsDay"][];
+            totals: components["schemas"]["AnalyticsDay"] & {
+                /** @description Percent, one decimal. */
+                bargainWinRate: number | null;
+            };
+            topListings: {
+                /** Format: uuid */
+                listingId: string;
+                productTitle: string | null;
+                productSlug: string | null;
+                price: number | null;
+                views: number;
+                addToCarts: number;
+                unitsSold: number;
+                revenue: number;
+            }[];
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -3586,6 +3833,59 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        /** @description Up to 100 messages, oldest first. */
+        ChatList: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        messages: components["schemas"]["OrderMessage"][];
+                        /** @description Messages from the other side not read yet. */
+                        unreadCount: number;
+                        /** @description true = sending is no longer possible (7 days after COMPLETED or CANCELLED). */
+                        closed: boolean;
+                    };
+                };
+            };
+        };
+        /** @description The new message. */
+        ChatSent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["OrderMessage"];
+                };
+            };
+        };
+        /** @description How many messages were marked read. */
+        ChatRead: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        marked: number;
+                    };
+                };
+            };
+        };
+        /** @description The chat closed 7 days after the order ended. error.details.code is CHAT_CLOSED. */
+        ChatClosed: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
     };
     parameters: {
         Page: number;
@@ -3595,6 +3895,15 @@ export interface components {
         ShopIdPath: string;
         ProductIdPath: string;
         ImageIdPath: string;
+        /** @description The visitor's latitude; with lng, every listing gets distanceKm. Send both or neither (else 400). */
+        VisitorLat: number;
+        /** @description The visitor's longitude; see lat. */
+        VisitorLng: number;
+        ChatOrderId: string;
+        ChatShopId: string;
+        /** @description Only messages after this message id (polling). Without it, the latest 100. */
+        ChatAfter: string;
+        ToolsShopId: string;
     };
     requestBodies: {
         PhotoUpload: {
@@ -3605,6 +3914,14 @@ export interface components {
                      * @description One JPG, PNG or WebP photo, max 5 MB, at least 480 x 270.
                      */
                     image: string;
+                };
+            };
+        };
+        ChatSend: {
+            content: {
+                "application/json": {
+                    /** @description Plain text (control characters are removed; shown as text, never as HTML). */
+                    body: string;
                 };
             };
         };
@@ -4025,6 +4342,10 @@ export interface operations {
         parameters: {
             query?: {
                 listingId?: string;
+                /** @description The visitor's latitude; with lng, every listing gets distanceKm. Send both or neither (else 400). */
+                lat?: components["parameters"]["VisitorLat"];
+                /** @description The visitor's longitude; see lat. */
+                lng?: components["parameters"]["VisitorLng"];
             };
             header?: never;
             path: {
@@ -4053,7 +4374,12 @@ export interface operations {
     };
     compareListings: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description The visitor's latitude; with lng, every listing gets distanceKm. Send both or neither (else 400). */
+                lat?: components["parameters"]["VisitorLat"];
+                /** @description The visitor's longitude; see lat. */
+                lng?: components["parameters"]["VisitorLng"];
+            };
             header?: never;
             path: {
                 slug: string;
@@ -4513,7 +4839,10 @@ export interface operations {
     };
     listShopListings: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description true = only listings whose stockQty is at or below their lowStockAt. */
+                lowStock?: "true" | "false";
+            };
             header?: never;
             path: {
                 shopId: string;
@@ -4561,6 +4890,7 @@ export interface operations {
                     bargainEnabled?: boolean;
                     /** @default 92 */
                     minOfferPercent?: number;
+                    lowStockAt?: components["schemas"]["LowStockAt"];
                 };
             };
         };
@@ -4625,6 +4955,7 @@ export interface operations {
                     bargainEnabled?: boolean;
                     minOfferPercent?: number;
                     isActive?: boolean;
+                    lowStockAt?: components["schemas"]["LowStockAt"];
                 };
             };
         };
@@ -4792,7 +5123,7 @@ export interface operations {
                         /** Format: uuid */
                         shopId: string;
                         /** @enum {string} */
-                        deliveryMethod: "STORE_PICKUP" | "VENDOR_DELIVERY";
+                        deliveryMethod: "STORE_PICKUP" | "VENDOR_DELIVERY" | "RESERVE_PICKUP";
                         /** @enum {string} */
                         paymentMethod: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
                         deliveryAddress?: string;
@@ -4819,7 +5150,10 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            /** @description Out of stock or changed prices, or "This order is already being placed" (same key still running). */
+            /**
+             * @description Out of stock or changed prices, or "This order is already being placed" (same key still running),
+             *     or more than 3 open reservations (RESERVE_PICKUP): error.details.code RESERVATION_LIMIT.
+             */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8698,6 +9032,254 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    nearShops: {
+        parameters: {
+            query: {
+                /** @example 23.8133 */
+                lat: number;
+                /** @example 90.4246 */
+                lng: number;
+                radiusKm?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The shops inside the radius, nearest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: (components["schemas"]["ShopSearchItem"] & {
+                            /** @example 7.7 */
+                            distanceKm: number;
+                        })[];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    listMyOrderMessages: {
+        parameters: {
+            query?: {
+                /** @description Only messages after this message id (polling). Without it, the latest 100. */
+                after?: components["parameters"]["ChatAfter"];
+            };
+            header?: never;
+            path: {
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ChatList"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    sendMyOrderMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["ChatSend"];
+        responses: {
+            201: components["responses"]["ChatSent"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["ChatClosed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readMyOrderMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ChatRead"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listShopOrderMessages: {
+        parameters: {
+            query?: {
+                /** @description Only messages after this message id (polling). Without it, the latest 100. */
+                after?: components["parameters"]["ChatAfter"];
+            };
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ChatShopId"];
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ChatList"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    sendShopOrderMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ChatShopId"];
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["ChatSend"];
+        responses: {
+            201: components["responses"]["ChatSent"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["ChatClosed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readShopOrderMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ChatShopId"];
+                orderId: components["parameters"]["ChatOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ChatRead"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    shopAnalytics: {
+        parameters: {
+            query?: {
+                range?: "7d" | "30d";
+            };
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ToolsShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopAnalytics"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    importShopListings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["ToolsShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example productSlug,price,stockQty,availability
+                 *     galaxy-a55-5g-8-128gb,38500,12,
+                 *     redmi-note-13,19999,,AVAILABLE
+                 */
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ImportResult"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Larger than 1 MB or more than 500 rows. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Some rows are invalid; nothing was saved. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example false */
+                        success: boolean;
+                        error: {
+                            /** @example Some rows are invalid. Nothing was saved. */
+                            message: string;
+                            details: components["schemas"]["ImportResult"];
+                        };
+                    };
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
         };
     };
 }

@@ -13,6 +13,7 @@ import { getBanners, getCategories, getLatestProducts, getMarkets, getSideAds, t
 import { BannerSlider } from "@/components/motion/banner-slider";
 import { BannerLeft } from "@/components/home/banner-sides";
 import { SideAd } from "@/components/home/side-ad";
+import { ShopsNearYou } from "@/components/shop/shops-near-you";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
@@ -242,6 +243,9 @@ export default async function HomePage({ params }: Props) {
           <MarketDoors />
         </Suspense>
       </section>
+
+      {/* Asks for location only when the visitor taps the button */}
+      <ShopsNearYou />
 
       <section aria-labelledby="latest-title" className="flex flex-col gap-5">
         <SectionHeading
