@@ -90,3 +90,15 @@ export function listOrders(query: { status?: OrderStatus; page: number; limit: n
 export function cancelOrder(orderId: string, reason?: string): Promise<Order> {
   return api.post<Order>(`/orders/${encodeURIComponent(orderId)}/cancel`, reason ? { reason } : {});
 }
+// One saved status change (oldest first). No ids or user data.
+export type OrderStatusEvent = components["schemas"]["OrderStatusEvent"];
+export type OrderDetail = Order & { statusEvents: OrderStatusEvent[] };
+
+export const orderKeys = {
+  detail: (orderId: string) => ["order", orderId] as const,
+};
+
+// The logged-in customer's own order with its tracking timeline (404 for anyone else's).
+export function getOrder(orderId: string): Promise<OrderDetail> {
+  return api.get<OrderDetail>(`/orders/${encodeURIComponent(orderId)}`);
+}

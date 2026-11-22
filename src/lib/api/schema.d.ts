@@ -594,7 +594,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** One of my orders, with the shop's address and the items */
+        /** One of my orders, with the shop's address, the items and the tracking timeline */
         get: operations["getMyOrder"];
         put?: never;
         post?: never;
@@ -665,7 +665,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** One of the shop's orders, with the allowed next statuses */
+        /** One of the shop's orders, with the allowed next statuses and the tracking timeline */
         get: operations["getShopOrder"];
         put?: never;
         post?: never;
@@ -3011,6 +3011,24 @@ export interface components {
              */
             imageId: string | null;
         };
+        OrderStatusEvent: {
+            status: components["schemas"]["OrderStatus"];
+            /** @description Short reason, e.g. the cancel reason. */
+            note: string | null;
+            /**
+             * @description Who made the change. SYSTEM for rows backfilled from older orders.
+             * @enum {string|null}
+             */
+            actorRole: "CUSTOMER" | "SHOP" | "SYSTEM" | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        OrderStatusTimeline: {
+            /** @description Every status change, oldest first. The first entry is always PLACED. */
+            statusEvents: components["schemas"]["OrderStatusEvent"][];
+        };
+        CustomerOrderDetail: components["schemas"]["CustomerOrder"] & components["schemas"]["OrderStatusTimeline"];
+        ShopOrderDetail: components["schemas"]["Order"] & components["schemas"]["OrderStatusTimeline"];
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -4479,7 +4497,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The order. */
+            /** @description The order (someone else's order is 404). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4487,7 +4505,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         success: boolean;
-                        data: components["schemas"]["CustomerOrder"];
+                        data: components["schemas"]["CustomerOrderDetail"];
                     };
                 };
             };
@@ -4605,7 +4623,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderResponse"];
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopOrderDetail"];
+                    };
                 };
             };
             401: components["responses"]["Unauthorized"];

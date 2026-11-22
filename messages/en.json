@@ -2273,5 +2273,25 @@
     "rajshahi": "Rajshahi",
     "rangpur": "Rangpur",
     "sylhet": "Sylhet"
+  },
+  "OrderTracking": {
+    "metaTitle": "Track your order",
+    "title": "Track your order",
+    "loading": "Loading your order…",
+    "loadError": "Your order couldn't load. Check your connection and try again.",
+    "guestTitle": "Log in to track your order",
+    "notFoundTitle": "Order not found",
+    "backToOrders": "Back to my orders",
+    "timeline": "Order progress",
+    "autoRefresh": "Updates automatically",
+    "waiting": "Waiting",
+    "reason": "Reason: {reason}",
+    "viewDetails": "View order details",
+    "state": {
+      "done": "done",
+      "current": "current step",
+      "todo": "not yet",
+      "cancelled": "cancelled"
+    }
   }
 }
