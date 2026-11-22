@@ -11,7 +11,7 @@ import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
 import { getBanners, getCategories, getLatestProducts, getMarkets, type HomeBanner } from "@/lib/api/catalog-cache";
 import { BannerSlider } from "@/components/motion/banner-slider";
-import { BannerLeft, BannerRight } from "@/components/home/banner-sides";
+import { BannerLeft } from "@/components/home/banner-sides";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
@@ -32,18 +32,15 @@ async function HomeBanners() {
   if (banners.length === 0) return null;
   // Side panels need lists too; if those fail, the banner still shows alone.
   const [categories, markets] = await Promise.all([getCategories().catch(() => []), getMarkets().catch(() => [])]);
-  const topCategories = [...categories].filter((c) => !c.parentId).sort((a, b) => b.productCount - a.productCount).slice(0, 4);
-  const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 4);
+  const topCategories = [...categories].filter((c) => !c.parentId).sort((a, b) => b.productCount - a.productCount).slice(0, 3);
+  const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 3);
   return (
-    // Wide screens: [your corner | banner | markets]. Smaller screens: the banner alone.
-    <div className="-mb-2 md:mb-0 xl:grid xl:grid-cols-[13rem_minmax(0,1fr)_13rem] xl:gap-10">
+    // Wide screens: [your corner + markets | banner]. Smaller screens: the banner alone.
+    <div className="-mb-2 md:mb-0 xl:grid xl:grid-cols-[14rem_minmax(0,1fr)] xl:gap-10">
       <div className="hidden xl:block">
-        <BannerLeft categories={topCategories} />
+        <BannerLeft categories={topCategories} markets={topMarkets} />
       </div>
       <BannerSlider banners={banners} />
-      <div className="hidden xl:block">
-        <BannerRight markets={topMarkets} />
-      </div>
     </div>
   );
 }
