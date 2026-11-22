@@ -4,6 +4,7 @@ import type { components } from "./schema";
 
 export type AdminBanner = components["schemas"]["AdminBanner"];
 export type BannerListMeta = components["schemas"]["BannerListMeta"];
+export type BannerFit = components["schemas"]["BannerFit"];
 
 // Text fields as the form holds them: "" clears an optional field on the server.
 export type BannerInput = {
@@ -15,6 +16,7 @@ export type BannerInput = {
   ctaLabelEn: string;
   ctaLabelBn: string;
   isActive: boolean;
+  fit: BannerFit; // COVER fills the frame (may crop), CONTAIN shows the whole image
   startsAt: string; // ISO or ""
   endsAt: string; // ISO or ""
 };

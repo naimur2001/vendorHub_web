@@ -3149,6 +3149,7 @@ export interface components {
              * @enum {string}
              */
             mediaType: "IMAGE" | "GIF" | "SVG" | "VIDEO";
+            fit: components["schemas"]["BannerFit"];
             media: components["schemas"]["BannerMedia"];
             /** @description Optional phone version; use media when null. */
             mobileMedia: components["schemas"]["BannerMedia"] | null;
@@ -3185,6 +3186,7 @@ export interface components {
             ctaLabelEn?: string | null;
             ctaLabelBn?: string | null;
             sortOrder?: number;
+            fit?: components["schemas"]["BannerFit"];
             isActive?: boolean;
             /** Format: date-time */
             startsAt?: string | null;
@@ -3194,6 +3196,12 @@ export interface components {
              */
             endsAt?: string | null;
         };
+        /**
+         * @description COVER fills the slide and crops the edges (CSS object-fit cover); CONTAIN shows the whole image.
+         * @default COVER
+         * @enum {string}
+         */
+        BannerFit: "COVER" | "CONTAIN";
         BannerListMeta: {
             /**
              * @description All banners, active or not.

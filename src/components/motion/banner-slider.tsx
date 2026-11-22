@@ -64,12 +64,18 @@ function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean;
 
   const { props: img } = getImageProps({ src, alt: title, fill: true, unoptimized: true, priority: first, sizes: "(min-width: 1280px) 1200px, 100vw" });
   const showText = Boolean(subtitle || link);
+  const contain = banner.fit === "CONTAIN";
   // Enter effect for the visible slide: transform + opacity only, 300 ms.
   const enter = cn("motion-safe:transition motion-safe:duration-300 motion-safe:ease-out", active ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0");
   const arrow = <ArrowRight className="size-4 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover/cta:translate-x-1" aria-hidden />;
 
   return (
     <div className="relative size-full overflow-hidden">
+      {/* "Show whole image": a soft blurred copy fills the empty sides, the image itself is never cropped */}
+      {contain && (
+        // eslint-disable-next-line @next/next/no-img-element -- decorative backdrop of the same media file
+        <img src={still ?? src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover opacity-70 blur-2xl" />
+      )}
       <picture>
         {/* Animated banners stay still for people who turn motion off */}
         {banner.mediaType === "GIF" && still && <source media="(prefers-reduced-motion: reduce)" srcSet={still} />}
@@ -77,7 +83,7 @@ function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean;
         <img
           {...img}
           alt={title}
-          className={cn("object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out", active ? "scale-100" : "scale-105")}
+          className={cn(contain ? "object-contain" : "object-cover", "motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out", active ? "scale-100" : "scale-105")}
         />
       </picture>
 

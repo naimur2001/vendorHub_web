@@ -2392,6 +2392,17 @@
       "media": "Choose a banner image.",
       "link": "Use a path starting with / or an https:// address.",
       "dates": "\"Show until\" must be after \"Show from\"."
+    },
+    "fit": "How the image fits",
+    "fitOptions": {
+      "COVER": {
+        "label": "Fill the banner",
+        "hint": "Fills the whole space. Edges may be cut off."
+      },
+      "CONTAIN": {
+        "label": "Show whole image",
+        "hint": "Nothing is cut off. Empty sides get a soft blur."
+      }
     }
   },
   "BannerSides": {

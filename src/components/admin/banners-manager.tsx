@@ -323,7 +323,7 @@ function BannerRow(props: {
 }
 
 function emptyInput(): BannerInput {
-  return { titleEn: "", titleBn: "", subtitleEn: "", subtitleBn: "", linkUrl: "", ctaLabelEn: "", ctaLabelBn: "", isActive: true, startsAt: "", endsAt: "" };
+  return { titleEn: "", titleBn: "", subtitleEn: "", subtitleBn: "", linkUrl: "", ctaLabelEn: "", ctaLabelBn: "", isActive: true, fit: "COVER", startsAt: "", endsAt: "" };
 }
 
 function FilePicker(props: {
@@ -332,6 +332,7 @@ function FilePicker(props: {
   current: string | null;
   preview: string | null;
   aspect: string;
+  fit?: BannerInput["fit"];
   onPick: (file: File | undefined) => void;
 }) {
   const id = useId();
@@ -343,7 +344,7 @@ function FilePicker(props: {
       </label>
       <div className={cn("relative overflow-hidden rounded-xl border border-dashed border-line-strong bg-subtle", props.aspect)}>
         {/* eslint-disable-next-line @next/next/no-img-element -- local preview (blob:) or media thumbnail */}
-        {shown && <img src={shown} alt="" className="size-full object-cover" />}
+        {shown && <img src={shown} alt="" className={cn("size-full", props.fit === "CONTAIN" ? "object-contain" : "object-cover")} />}
       </div>
       <input
         id={id}
@@ -370,6 +371,7 @@ function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: ()
           ctaLabelEn: banner.ctaLabelEn ?? "",
           ctaLabelBn: banner.ctaLabelBn ?? "",
           isActive: banner.isActive,
+          fit: banner.fit ?? "COVER",
           startsAt: toLocalInput(banner.startsAt),
           endsAt: toLocalInput(banner.endsAt),
         }
@@ -434,6 +436,7 @@ function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: ()
         current={banner ? safeMediaUrl(banner.media.thumbUrl) : null}
         preview={media?.preview ?? null}
         aspect="aspect-4/1"
+        fit={input.fit}
         onPick={(f) => void pick("media", f)}
       />
       <FilePicker
@@ -449,6 +452,27 @@ function BannerForm({ banner, onDone }: { banner: AdminBanner | null; onDone: ()
           {t("removeMobile")}
         </button>
       )}
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="type-body-medium mb-1 text-ink">{t("fit")}</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(["COVER", "CONTAIN"] as const).map((f) => (
+            <label
+              key={f}
+              className={cn(
+                "flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
+                input.fit === f ? "border-brand bg-subtle" : "border-line",
+              )}
+            >
+              <input type="radio" name="fit" value={f} checked={input.fit === f} onChange={() => setInput((v) => ({ ...v, fit: f }))} className="mt-1 size-4 accent-brand" />
+              <span className="flex flex-col">
+                <span className="type-body-medium text-ink">{t(`fitOptions.${f}.label`)}</span>
+                <span className="type-caption text-ink-muted">{t(`fitOptions.${f}.hint`)}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <TextField label={t("titleEn")} value={input.titleEn} onChange={set("titleEn")} maxLength={120} required hint={t("titleHint")} />
       <TextField label={t("titleBn")} value={input.titleBn} onChange={set("titleBn")} maxLength={120} lang="bn" />
