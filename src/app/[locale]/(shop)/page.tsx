@@ -36,7 +36,7 @@ async function HomeBanners() {
   const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 3);
   return (
     // Wide screens: [your corner + markets | banner]. Smaller screens: the banner alone.
-    <div className="-mb-2 md:mb-0 xl:grid xl:grid-cols-[14rem_minmax(0,1fr)] xl:gap-10">
+    <div className="-mb-2 md:mb-0 xl:-ml-6 xl:grid xl:grid-cols-[14rem_minmax(0,1fr)] xl:gap-10 2xl:-ml-24">
       <div className="hidden xl:block">
         <BannerLeft categories={topCategories} markets={topMarkets} />
       </div>
