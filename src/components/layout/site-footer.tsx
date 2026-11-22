@@ -1,6 +1,5 @@
 "use client";
 
-import { MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/components/app-providers";
 import { Link } from "@/i18n/routing";
@@ -63,13 +62,6 @@ export function SiteFooter() {
         <div className="flex flex-col gap-3">
           <p className="font-heading text-[1.5rem] leading-none font-semibold text-primary-foreground">Vendors Hub</p>
           <p className="type-body max-w-xs text-primary-foreground/80">{t("tagline")}</p>
-          <Link
-            href="/account/orders"
-            className="type-body-medium mt-2 inline-flex h-11 items-center gap-2 self-start rounded-sm border border-gold px-4 text-primary-foreground hover:bg-brand-alt focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none"
-          >
-            <MapPin className="size-4" aria-hidden />
-            {t("track")}
-          </Link>
         </div>
         <Column id="footer-shop" title={t("shopTitle")} links={label(shop)} />
         <Column id="footer-account" title={t("accountTitle")} links={label(account)} />
