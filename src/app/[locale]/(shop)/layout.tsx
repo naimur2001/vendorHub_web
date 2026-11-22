@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { TopNav } from "@/components/layout/top-nav";
 import { VerifyBanner } from "@/components/auth/email-verification";
 import { DeletionGate } from "@/components/account/deletion-gate";
@@ -9,13 +10,11 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       <TopNav />
       <VerifyBanner />
       <DeletionGate />
-      {/* Bottom padding on phones = bottom bar (4rem) + iPhone home bar + breathing room */}
-      <main
-        id="main"
-        className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-10 md:pb-10"
-      >
+      {/* The footer below carries the extra room for the phone bottom bar */}
+      <main id="main" className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-10 md:px-10">
         {children}
       </main>
+      <SiteFooter />
       <BottomNav />
     </div>
   );

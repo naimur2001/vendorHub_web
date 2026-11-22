@@ -2296,5 +2296,24 @@
       "todo": "not yet",
       "cancelled": "cancelled"
     }
+  },
+  "Footer": {
+    "tagline": "Real shops from Dhaka's markets, online. Order, bargain and pick up nearby.",
+    "track": "Track your order",
+    "shopTitle": "Shop",
+    "accountTitle": "Your account",
+    "forShopsTitle": "For shops",
+    "rights": "© Vendors Hub. All rights reserved.",
+    "links": {
+      "search": "Search products",
+      "markets": "Markets",
+      "cart": "Cart",
+      "myOrders": "My orders",
+      "account": "Account",
+      "logIn": "Log in",
+      "register": "Create account",
+      "openShop": "Open your shop",
+      "ownerArea": "Shop dashboard"
+    }
   }
 }
