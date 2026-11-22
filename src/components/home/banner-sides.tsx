@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, MapPin, PackageSearch, ShoppingCart, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSyncExternalStore } from "react";
 import { useSession } from "@/components/app-providers";
 import { useCartCount } from "@/components/cart/cart-badge";
 import { Link } from "@/i18n/routing";
@@ -16,6 +17,13 @@ const PANEL = "flex h-full min-h-0 flex-col gap-2 overflow-hidden rounded-3xl bo
 const ROW =
   "group flex min-h-11 items-center justify-between gap-2 rounded-xl px-2 text-ink-secondary hover:bg-subtle hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 const arrow = <ChevronRight className="size-4 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:translate-x-0.5" aria-hidden />;
+
+// False on the server and during hydration, true afterwards. The server can't know who is
+// logged in, so the first browser render must match the guest version; then we switch.
+const noop = () => () => {};
+function useMounted(): boolean {
+  return useSyncExternalStore(noop, () => true, () => false);
+}
 
 function Heading({ children }: { children: React.ReactNode }) {
   return (
@@ -31,7 +39,8 @@ export function BannerLeft({ categories }: { categories: Category[] }) {
   const t = useTranslations("BannerSides");
   const tOrder = useTranslations("Order");
   const { status, user } = useSession();
-  const loggedIn = status === "authenticated" && !!user;
+  const mounted = useMounted();
+  const loggedIn = mounted && status === "authenticated" && !!user;
 
   const latest = useQuery({
     queryKey: ["orders", "latest"],
@@ -99,7 +108,9 @@ export function BannerLeft({ categories }: { categories: Category[] }) {
 /** Right of the banner: the cart (logged in, when not empty) and the busiest markets. */
 export function BannerRight({ markets }: { markets: Market[] }) {
   const t = useTranslations("BannerSides");
-  const cartCount = useCartCount();
+  const mounted = useMounted();
+  const count = useCartCount();
+  const cartCount = mounted ? count : 0;
   const shown = cartCount > 0 ? markets.slice(0, 2) : markets;
 
   return (

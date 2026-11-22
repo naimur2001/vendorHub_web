@@ -36,7 +36,7 @@ async function HomeBanners() {
   const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 4);
   return (
     // Wide screens: [your corner | banner | markets]. Smaller screens: the banner alone.
-    <div className="-mb-6 md:-mb-10 xl:grid xl:grid-cols-[13rem_minmax(0,1fr)_13rem] xl:gap-8">
+    <div className="-mb-2 md:mb-0 xl:grid xl:grid-cols-[13rem_minmax(0,1fr)_13rem] xl:gap-10">
       <div className="hidden xl:block">
         <BannerLeft categories={topCategories} />
       </div>
@@ -185,7 +185,7 @@ export default async function HomePage({ params }: Props) {
             {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
       <OwnerStrip />
       {/* Admin banners (1-minute cache); nothing shows when there are none or the API is down */}
-      <Suspense fallback={<div className="-mb-6 aspect-5/2 skeleton rounded-3xl sm:aspect-7/2 md:-mb-10 xl:aspect-auto xl:h-80" aria-hidden />}>
+      <Suspense fallback={<div className="-mb-2 aspect-5/2 skeleton rounded-3xl sm:aspect-7/2 md:mb-0 xl:aspect-auto xl:h-80" aria-hidden />}>
         <HomeBanners />
       </Suspense>
       <section className="flex flex-col items-center gap-6 pt-2 text-center md:gap-8 md:pt-4">
