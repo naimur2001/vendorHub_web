@@ -192,6 +192,19 @@ html {
     Uses the `scale` property, so it never fights a transform already on the element.
   */
   @media (prefers-reduced-motion: no-preference) {
+  /* Product photos rise up inside their arch as the card scrolls into view */
+  .reveal .arch-reveal > img {
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal[data-shown] .arch-reveal > img {
+    clip-path: inset(0 0 0 0);
+  }
+  /* Order tracker: progress lines draw down, step by step (delay set inline) */
+  .timeline-draw {
+    animation: vh-grow-up 300ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
     :where(button, [role="button"], a:is(.bg-action, .bg-primary, .border-brand, .border-ink, .border-highlight)) {
       transition:
         scale 150ms ease-out,

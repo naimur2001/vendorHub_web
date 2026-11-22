@@ -64,10 +64,12 @@ export function OrderTimeline({ order }: { order: TimelineOrder }) {
             className="relative flex gap-4 pb-6 last:pb-0 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
           >
             {!last && (
-              <span
-                aria-hidden
-                className={cn("absolute top-8 left-[15px] h-[calc(100%-2rem)] w-0.5", step.state === "done" ? "bg-brand" : "bg-line")}
-              />
+              <span aria-hidden className="absolute top-8 left-[15px] h-[calc(100%-2rem)] w-0.5 bg-line">
+                {/* Done lines draw down one after another (CSS .timeline-draw; off with reduced motion) */}
+                {step.state === "done" && (
+                  <span className="timeline-draw block size-full origin-top bg-brand" style={{ animationDelay: `${i * 120}ms` }} />
+                )}
+              </span>
             )}
             <span
               aria-hidden

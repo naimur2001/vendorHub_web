@@ -66,7 +66,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       href={`/products/${product.slug}`}
       className="group lift flex w-full flex-col gap-2 rounded-md border border-line bg-card p-2 pb-3 shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
     >
-      <ArchFrame className="bg-highlight-soft">
+      <ArchFrame className="arch-reveal bg-highlight-soft">
         {product.image ? (
           // Photos come from our API (allowed by the CSP). Optimisation is switched on at deployment.
           <Image
@@ -90,6 +90,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             <span className="sr-only">: {t("bargainAvailable")}</span>
           </span>
         )}
+        {/* Decorative: the whole card is already the link */}
+        <span
+          aria-hidden
+          className="type-caption absolute right-2 bottom-2 rounded-full bg-brand px-3 py-1 text-primary-foreground opacity-0 shadow-card motion-safe:translate-y-2 motion-safe:transition motion-safe:duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+        >
+          {t("view")} →
+        </span>
       </ArchFrame>
 
       <div className="flex flex-col gap-1 px-1">
