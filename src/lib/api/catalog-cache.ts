@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { listProducts, type Brand, type Category, type ProductCardData } from "./catalog";
 import { publicGet } from "./public";
 import type { Market } from "./shops";
+import type { components } from "./schema";
 
 // Lists that rarely change: cached 10 minutes, served stale up to 5 minutes while refreshing.
 const SLOW_CHANGING = { stale: 300, revalidate: 600, expire: 3600 };
@@ -40,4 +41,17 @@ export async function getMarkets(): Promise<Market[]> {
   cacheLife(SLOW_CHANGING);
   cacheTag("markets");
   return (await publicGet<Market[]>("/markets", undefined, { fresh: false })).data;
+}
+export type HomeBanner = components["schemas"]["Banner"];
+
+/**
+ * Home page billboard: the live banners (the backend applies the schedule).
+ * Cached 1 minute so a scheduled banner appears or ends within about a minute;
+ * an admin change refreshes it at once through the "banners" tag.
+ */
+export async function getBanners(): Promise<HomeBanner[]> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 600 });
+  cacheTag("banners");
+  return (await publicGet<HomeBanner[]>("/banners", undefined, { fresh: false })).data;
 }

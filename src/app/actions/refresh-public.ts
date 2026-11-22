@@ -3,7 +3,7 @@
 import { updateTag } from "next/cache";
 
 // The only cache labels the public pages use. Anything else is ignored.
-const ALLOWED = ["products", "catalog", "markets", "shops"] as const;
+const ALLOWED = ["products", "catalog", "markets", "shops", "banners"] as const;
 export type PublicTag = (typeof ALLOWED)[number];
 
 /**
@@ -12,7 +12,7 @@ export type PublicTag = (typeof ALLOWED)[number];
  * only a logged-in ADMIN may empty the cache.
  */
 export async function refreshPublic(tags: string[], token: string): Promise<boolean> {
-  if (!Array.isArray(tags) || tags.length > 4 || typeof token !== "string" || token.length < 20 || token.length > 4096) return false;
+  if (!Array.isArray(tags) || tags.length > 5 || typeof token !== "string" || token.length < 20 || token.length > 4096) return false;
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   if (!api) return false;

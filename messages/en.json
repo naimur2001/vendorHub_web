@@ -2314,5 +2314,17 @@
       "openShop": "Open your shop",
       "ownerArea": "Shop dashboard"
     }
+  },
+  "Banners": {
+    "label": "Featured",
+    "carousel": "carousel",
+    "slide": "slide",
+    "slideOf": "{n} of {total}",
+    "previous": "Previous banner",
+    "next": "Next banner",
+    "pause": "Pause slideshow",
+    "play": "Play slideshow",
+    "goTo": "Show banner {n}",
+    "open": "Learn more"
   }
 }

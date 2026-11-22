@@ -9,7 +9,8 @@ import { MarketDoor } from "@/components/shop/market-cards";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
-import { getLatestProducts, getMarkets } from "@/lib/api/catalog-cache";
+import { getBanners, getLatestProducts, getMarkets, type HomeBanner } from "@/lib/api/catalog-cache";
+import { BannerSlider } from "@/components/motion/banner-slider";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
 
@@ -18,6 +19,16 @@ type Props = { params: Promise<{ locale: string }> };
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 // pt-2: room for the doors to lift on hover/focus without being cut off by the scroll row.
 const DOORS = "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pt-2 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0";
+
+async function HomeBanners() {
+  let banners: HomeBanner[];
+  try {
+    banners = await getBanners();
+  } catch {
+    return null; // the rest of the home page still works
+  }
+  return banners.length > 0 ? <BannerSlider banners={banners} /> : null;
+}
 
 // The markets with the most shops, from the 10-minute market cache: 8 (two full rows on desktop)
 // when there are at least 8, otherwise up to 4. "All markets" above leads to the rest.
@@ -155,6 +166,10 @@ export default async function HomePage({ params }: Props) {
     <div className="flex flex-col gap-14 md:gap-20">
             {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
       <OwnerStrip />
+      {/* Admin banners (1-minute cache); nothing shows when there are none or the API is down */}
+      <Suspense fallback={<div className="aspect-5/2 skeleton rounded-md sm:aspect-4/1" aria-hidden />}>
+        <HomeBanners />
+      </Suspense>
       <section className="flex flex-col items-center gap-6 pt-4 text-center md:gap-8 md:pt-10">
         {/* Words rise in one by one (whole words only, so Bangla letters are never split) */}
         <h1 className="type-display no-wipe max-w-3xl text-ink">

@@ -2212,6 +2212,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/banners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live home page banners (no login)
+         * @description Active banners whose schedule includes now (startsAt null or <= now, endsAt null or > now),
+         *     ordered by sortOrder then createdAt, at most 10. Sent with `Cache-Control: public, max-age=60`.
+         */
+        get: operations["listBanners"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All banners, including inactive, scheduled and expired ones (admin) */
+        get: operations["adminListBanners"];
+        put?: never;
+        /**
+         * Create a banner (admin, multipart)
+         * @description Send the image in `media` (required) and an optional phone version in `mobileMedia`.
+         *     Recommended size 3:1, e.g. 1800 x 600 (at least 900 x 300; phone version at least 400 x 300).
+         *     A new banner goes to the end unless sortOrder is given. Writes an audit log entry.
+         */
+        post: operations["adminCreateBanner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banners/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Set the order of banners (admin)
+         * @description Sets sortOrder 0, 1, 2 ... in the given order; banners not listed keep theirs. Writes an audit log entry.
+         */
+        patch: operations["adminReorderBanners"];
+        trace?: never;
+    };
+    "/api/v1/admin/banners/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a banner and its files (admin)
+         * @description Writes an audit log entry.
+         */
+        delete: operations["adminDeleteBanner"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a banner's fields and/or replace its media (admin)
+         * @description JSON or multipart. In multipart, a new `media` or `mobileMedia` replaces the old file (the old
+         *     file is deleted). An empty string clears an optional field. `removeMobileMedia: true` removes
+         *     the phone version. Writes an audit log entry.
+         */
+        patch: operations["adminUpdateBanner"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3029,6 +3121,82 @@ export interface components {
         };
         CustomerOrderDetail: components["schemas"]["CustomerOrder"] & components["schemas"]["OrderStatusTimeline"];
         ShopOrderDetail: components["schemas"]["Order"] & components["schemas"]["OrderStatusTimeline"];
+        BannerMedia: {
+            /**
+             * Format: uri
+             * @description Processed WebP (animated for GIF banners).
+             */
+            url: string;
+            /**
+             * Format: uri
+             * @description Smaller still WebP (first frame for GIF banners).
+             */
+            thumbUrl: string;
+            width: number;
+            height: number;
+        };
+        Banner: {
+            /** Format: uuid */
+            id: string;
+            /** @description Also the alt text of the image. */
+            titleEn: string;
+            titleBn: string | null;
+            subtitleEn: string | null;
+            subtitleBn: string | null;
+            /**
+             * @description Only IMAGE and GIF are produced today; SVG and VIDEO are reserved.
+             * @enum {string}
+             */
+            mediaType: "IMAGE" | "GIF" | "SVG" | "VIDEO";
+            media: components["schemas"]["BannerMedia"];
+            /** @description Optional phone version; use media when null. */
+            mobileMedia: components["schemas"]["BannerMedia"] | null;
+            /** @description An internal path ("/markets/x") or an https URL. */
+            linkUrl: string | null;
+            ctaLabelEn: string | null;
+            ctaLabelBn: string | null;
+            sortOrder: number;
+        };
+        AdminBanner: components["schemas"]["Banner"] & {
+            isActive: boolean;
+            /** Format: date-time */
+            startsAt: string | null;
+            /** Format: date-time */
+            endsAt: string | null;
+            /** @description Active and inside its schedule right now (what GET /banners would show). */
+            liveNow: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminBannerResponse: {
+            success: boolean;
+            data: components["schemas"]["AdminBanner"];
+        };
+        BannerFields: {
+            titleEn?: string;
+            titleBn?: string | null;
+            subtitleEn?: string | null;
+            subtitleBn?: string | null;
+            /** @description Starts with "/" (not "//") or is an https:// URL. javascript:, data: and http: links are refused. */
+            linkUrl?: string | null;
+            ctaLabelEn?: string | null;
+            ctaLabelBn?: string | null;
+            sortOrder?: number;
+            isActive?: boolean;
+            /** Format: date-time */
+            startsAt?: string | null;
+            /**
+             * Format: date-time
+             * @description Must be after startsAt.
+             */
+            endsAt?: string | null;
+        };
+        BannerUpdateExtra: {
+            /** @description true removes the phone version. */
+            removeMobileMedia?: boolean;
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -7799,6 +7967,224 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    listBanners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The banners to show, in order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["Banner"][];
+                    };
+                };
+            };
+        };
+    };
+    adminListBanners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every banner, ordered by sortOrder then createdAt. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminBanner"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["BannerFields"] & {
+                    /** Format: binary */
+                    media: string;
+                    /** Format: binary */
+                    mobileMedia?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The new banner. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannerResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description A file is larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The image is too small. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminReorderBanners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    ids: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description All banners in the new order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminBanner"][];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminDeleteBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** @example Banner deleted */
+                            message: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdateBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BannerFields"] & components["schemas"]["BannerUpdateExtra"];
+                "multipart/form-data": components["schemas"]["BannerFields"] & components["schemas"]["BannerUpdateExtra"] & {
+                    /** Format: binary */
+                    media?: string;
+                    /** Format: binary */
+                    mobileMedia?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The updated banner. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannerResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description A file is larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The image is too small. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
         };
     };
 }
