@@ -2529,5 +2529,24 @@
     "heldUntil": "Held until {time}",
     "shopConfirmsBy": "Shop confirms by {time}",
     "confirmBy": "Confirm by {time} or it cancels"
+  },
+  "OrderChat": {
+    "titleCustomer": "Chat with the shop",
+    "titleShop": "Chat with the customer",
+    "empty": "No messages yet. Ask about stock, pickup time or delivery.",
+    "you": "You",
+    "shop": "Shop",
+    "customer": "Customer",
+    "seen": "Seen",
+    "label": "Message",
+    "placeholder": "Write a message…",
+    "send": "Send message",
+    "closed": "This chat is closed (the order ended more than 7 days ago).",
+    "closedError": "This chat is closed.",
+    "tooFast": "You're sending messages too fast. Wait a moment.",
+    "network": "No connection. Try again.",
+    "error": "Couldn't send. Try again.",
+    "loadError": "Messages couldn't load.",
+    "retry": "Try again"
   }
 }

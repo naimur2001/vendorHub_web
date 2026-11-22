@@ -11,6 +11,7 @@ import { Link } from "@/i18n/routing";
 import { getOrder, orderKeys, type OrderDetail, type OrderStatus } from "@/lib/api/checkout";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
+import { OrderChat } from "@/components/orders/order-chat";
 
 const DONE: OrderStatus[] = ["COMPLETED", "CANCELLED"];
 const REFRESH_MS = 30_000;
@@ -105,6 +106,8 @@ function TrackerView({ order, refreshing }: { order: OrderDetail; refreshing: bo
 
         <OrderTimeline order={order} />
       </section>
+
+      <OrderChat scope={{ kind: "customer", orderId: order.id }} />
 
       <Link href={`/checkout/${order.checkoutId}`} className={cn(buttonClass, "self-start")}>
         {t("viewDetails")}

@@ -25,6 +25,7 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { ReservationNote } from "@/components/orders/reservation-note";
+import { OrderChat } from "@/components/orders/order-chat";
 const PAGE_SIZE = 20;
 const FILTERS: OrderFilter[] = ["ALL", ...ORDER_STATUSES];
 
@@ -455,6 +456,8 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
           {message.text}
         </p>
       )}
+
+      <OrderChat scope={{ kind: "shop", shopId, orderId: o.id }} />
 
       {waitingForPayment && <p className="type-body rounded-md bg-highlight-soft p-3 text-highlight">{t("awaitingPayment")}</p>}
 
