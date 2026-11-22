@@ -15,7 +15,7 @@ const SLIDE_EASE = "motion-safe:transition-transform motion-safe:duration-700 mo
 const SWIPE_PX = 50;
 
 // Slim billboard: wide and low. Phones get a little more height so text still fits.
-export const BANNER_FRAME = "aspect-5/2 sm:aspect-4/1 xl:aspect-3/1";
+export const BANNER_FRAME = "aspect-5/2 sm:aspect-7/2 xl:aspect-5/2";
 
 const navButton =
   "flex size-11 items-center justify-center rounded-full border border-gold/70 bg-brand/80 text-primary-foreground backdrop-blur-sm hover:bg-brand focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none motion-safe:transition motion-safe:duration-200 motion-safe:hover:scale-105";
