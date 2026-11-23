@@ -165,7 +165,9 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
   );
   const [offers, setOffers] = useState(listing?.bargainEnabled ?? false);
   const [minOffer, setMinOffer] = useState(String(listing?.minOfferPercent ?? 92));
-  const [errors, setErrors] = useState<Partial<Record<"price" | "stock" | "minOffer" | "form", string>>>({});
+  // low-stock alert level (default 3 on the server); empty = no alert
+  const [lowAt, setLowAt] = useState(listing ? (listing.lowStockAt === null || listing.lowStockAt === undefined ? "" : String(listing.lowStockAt)) : "3");
+  const [errors, setErrors] = useState<Partial<Record<"price" | "stock" | "lowAt" | "minOffer" | "form", string>>>({});
 
   const save = useMutation({
     mutationFn: (input: ListingInput) => (listing ? updateListing(shopId, listing.id, input) : createListing(shopId, product.id, input)),
@@ -189,6 +191,8 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
     if (priceValue === null || priceValue < 1 || priceValue > MAX_PRICE) next.price = t("errors.price");
     const stockValue = parseAmount(stock);
     if (track && (stockValue === null || stockValue > MAX_STOCK)) next.stock = t("errors.stock");
+    const lowValue = lowAt.trim() === "" ? null : parseAmount(lowAt);
+    if (track && lowAt.trim() !== "" && (lowValue === null || lowValue > 10000)) next.lowAt = t("errors.lowAt");
     const minValue = parseAmount(minOffer);
     if (offers && (minValue === null || minValue < 50 || minValue > 100)) next.minOffer = t("errors.minOffer");
     setErrors(next);
@@ -197,6 +201,7 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
     save.mutate({
       price: priceValue,
       stockQty: track ? (stockValue ?? 0) : null,
+      ...(track && { lowStockAt: lowValue }),
       ...(!track && { availability: manual }),
       bargainEnabled: offers,
       minOfferPercent: offers ? (minValue ?? 92) : (listing?.minOfferPercent ?? 92),
@@ -265,6 +270,23 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
             className={inputClass}
           />
           {errors.stock && <p className="type-caption text-error">{errors.stock}</p>}
+          <label htmlFor={`${id}-low`} className="type-body-medium mt-2 text-ink">
+            {t("form.lowAt")}
+          </label>
+          <input
+            id={`${id}-low`}
+            type="text"
+            inputMode="numeric"
+            maxLength={5}
+            value={lowAt}
+            onChange={(e) => setLowAt(e.target.value.replace(/\D/g, ""))}
+            aria-invalid={errors.lowAt ? true : undefined}
+            aria-describedby={`${id}-low-hint`}
+            className={inputClass}
+          />
+          <p id={`${id}-low-hint`} className={errors.lowAt ? "type-caption text-error" : "type-caption text-ink-muted"}>
+            {errors.lowAt ?? t("form.lowAtHint")}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">

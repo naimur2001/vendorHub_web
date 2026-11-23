@@ -1079,7 +1079,8 @@
     "filters": {
       "ACTIVE": "On sale",
       "INACTIVE": "Switched off",
-      "ALL": "All"
+      "ALL": "All",
+      "LOW": "Low stock"
     },
     "findLabel": "Find in your listings",
     "findPlaceholder": "Product name",
@@ -1120,7 +1121,9 @@
       "save": "Save changes",
       "create": "Add to my shop",
       "saving": "Saving…",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "lowAt": "Low-stock alert at",
+      "lowAtHint": "We'll notify you when stock falls to this number. Leave empty for no alert."
     },
     "availability": {
       "AVAILABLE": "Available",
@@ -1135,7 +1138,8 @@
       "gone": "This product is no longer in the catalog.",
       "invalid": "Check the fields and try again.",
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
-      "generic": "That didn't work. Try again in a moment."
+      "generic": "That didn't work. Try again in a moment.",
+      "lowAt": "Enter a whole number from 0 to 10,000, or leave it empty."
     },
     "saved": "Saved.",
     "switchOff": "Switch off (stop selling)",
@@ -1150,7 +1154,12 @@
     "notTeamText": "Listings are managed by the shop's owner or staff.",
     "noShopTitle": "Set up your shop first",
     "noShopText": "Once your shop exists, you can add products here.",
-    "setup": "Go to shop setup"
+    "setup": "Go to shop setup",
+    "lowBadge": "Low stock",
+    "import": "Import CSV",
+    "importTitle": "Import listings from a CSV",
+    "importText": "Add or update many listings at once.",
+    "imported": "Import done: {created} added, {updated} updated."
   },
   "OwnerNav": {
     "label": "Shop sections",
@@ -2722,5 +2731,24 @@
     "topEmpty": "No views or sales in this period yet.",
     "topLine": "{views} views · {carts} added to cart · {sold} sold",
     "unknown": "Listing"
+  },
+  "OwnerCsv": {
+    "intro": "One row per product. Products must already be in the catalog (the file never creates new ones). Listings you already have are updated.",
+    "colProduct": "productSlug — or title and category instead",
+    "colPrice": "price — whole taka (required)",
+    "colStock": "stockQty — empty means you don't count stock",
+    "colAvailability": "availability — IN_STOCK, AVAILABLE, LIMITED or OUT_OF_STOCK (optional)",
+    "sample": "Download a sample file",
+    "choose": "Choose a CSV file",
+    "limits": "Up to 1 MB and 500 rows",
+    "upload": "Check and import",
+    "uploading": "Importing…",
+    "notCsv": "Choose a .csv file.",
+    "tooBig": "The file is larger than 1 MB or has more than 500 rows. Split it into smaller files.",
+    "tooMany": "Too many uploads. Wait a minute and try again.",
+    "rowsInvalid": "{count, plural, one {# row has a problem} other {# rows have problems}}. Nothing was saved. Fix them and upload again.",
+    "row": "Row {row}:",
+    "network": "No connection. Check your internet and try again.",
+    "generic": "The import failed. Try again."
   }
 }

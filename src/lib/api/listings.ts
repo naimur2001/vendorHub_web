@@ -18,6 +18,7 @@ export type OwnerListing = {
   stockQty: number | null;
   bargainEnabled: boolean;
   minOfferPercent: number;
+  lowStockAt?: number | null; // alert when stockQty falls to this or below; null = no alert
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -40,6 +41,7 @@ export type ListingInput = {
   availability?: ManualAvailability; // only when stock is not counted
   bargainEnabled: boolean;
   minOfferPercent: number;
+  lowStockAt?: number | null;
 };
 
 export const listingKeys = {

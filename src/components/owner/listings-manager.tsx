@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, LoaderCircle, PackagePlus, PackageSearch } from "lucide-react";
+import { CircleCheck, FileUp, LoaderCircle, PackagePlus, PackageSearch, TriangleAlert } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -20,14 +20,18 @@ import { cn } from "@/lib/utils";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { NewProductForm } from "@/components/owner/new-product-form";
 import { ListingPhotosButton } from "@/components/owner/listing-photos";
+import { CsvImport } from "@/components/owner/csv-import";
 
 
 
-type Filter = "ACTIVE" | "INACTIVE" | "ALL";
-const FILTERS: Filter[] = ["ACTIVE", "INACTIVE", "ALL"];
+type Filter = "ACTIVE" | "LOW" | "INACTIVE" | "ALL";
+const FILTERS: Filter[] = ["ACTIVE", "LOW", "INACTIVE", "ALL"];
+
+/** Active, stock counted, and at or below its alert level (the same rule as the backend alert). */
+const isLow = (l: OwnerListing) => l.isActive && l.stockQty !== null && l.lowStockAt !== null && l.lowStockAt !== undefined && l.stockQty <= l.lowStockAt;
 
 // What the side panel shows: adding (search, then form) or editing one listing.
-type Panel = { kind: "add"; product: CatalogPick | null } | { kind: "new" } | { kind: "edit"; listing: OwnerListing } | null;
+type Panel = { kind: "add"; product: CatalogPick | null } | { kind: "new" } | { kind: "edit"; listing: OwnerListing } | { kind: "import" } | null;
 
 const panelBox = "flex flex-col items-center gap-3 rounded-md border border-line bg-card px-6 py-12 text-center";
 const primaryButton =
@@ -79,7 +83,7 @@ export function ListingsManager() {
     const term = find.trim().toLowerCase();
     return all.filter(
       (l) =>
-        (filter === "ALL" || (filter === "ACTIVE" ? l.isActive : !l.isActive)) &&
+        (filter === "ALL" || (filter === "LOW" ? isLow(l) : filter === "ACTIVE" ? l.isActive : !l.isActive)) &&
         (!term || l.product.title.toLowerCase().includes(term)),
     );
   }, [all, filter, find]);
@@ -173,10 +177,20 @@ export function ListingsManager() {
         ) : (
           <span />
         )}
-        <button type="button" onClick={() => setPanel({ kind: "add", product: null })} className={primaryButton}>
-          <PackagePlus className="size-5" aria-hidden />
-          {t("add")}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setPanel({ kind: "import" })}
+            className="type-body-medium flex h-12 items-center justify-center gap-2 rounded-sm border border-brand px-5 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          >
+            <FileUp className="size-5" aria-hidden />
+            {t("import")}
+          </button>
+          <button type="button" onClick={() => setPanel({ kind: "add", product: null })} className={primaryButton}>
+            <PackagePlus className="size-5" aria-hidden />
+            {t("add")}
+          </button>
+        </div>
       </div>
 
       {notice && (
@@ -193,6 +207,9 @@ export function ListingsManager() {
               <li key={f}>
                 <button type="button" onClick={() => setFilter(f)} aria-pressed={filter === f} className={chipClass(filter === f)}>
                   {t(`filters.${f}`)}
+                  {f === "LOW" && all.some(isLow) && (
+                    <span className="type-caption ml-1.5 rounded-full bg-highlight-soft px-2 text-highlight">{all.filter(isLow).length}</span>
+                  )}
                 </button>
               </li>
             ))}
@@ -235,13 +252,24 @@ export function ListingsManager() {
       <Sheet open={panel !== null} onOpenChange={(isOpen) => !isOpen && setPanel(null)}>
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
           <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : panel?.kind === "new" ? tNew("title") : t("addTitle")}</SheetTitle>
-            <SheetDescription className="type-body text-ink-secondary">{panel?.kind === "edit" ? "" : t("addText")}</SheetDescription>
+            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : panel?.kind === "new" ? tNew("title") : panel?.kind === "import" ? t("importTitle") : t("addTitle")}</SheetTitle>
+            <SheetDescription className="type-body text-ink-secondary">{panel?.kind === "edit" ? "" : panel?.kind === "import" ? t("importText") : t("addText")}</SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-4 px-4">
           
             {panel?.kind === "add" && !panel.product && (
               <ProductPicker listedIds={listedIds} onPick={(product) => setPanel({ kind: "add", product })} onAddNew={() => setPanel({ kind: "new" })} />
+            )}
+            {panel?.kind === "import" && (
+              <CsvImport
+                shopId={shop.id}
+                onDone={(r) => {
+                  setPanel(null);
+                  setNotice(t("imported", { created: r.created, updated: r.updated }));
+                  void queryClient.invalidateQueries({ queryKey: listingKeys.mine(shop.id) });
+                  void queryClient.invalidateQueries({ queryKey: ["owner", "dashboard"] });
+                }}
+              />
             )}
             {panel?.kind === "new" && (
               <NewProductForm
@@ -334,6 +362,12 @@ function ListingRow({ listing: l, onEdit }: { listing: OwnerListing; onEdit: () 
           )}
           <span className="type-caption text-ink-muted">
             {l.stockQty !== null ? t("stock", { count: l.stockQty }) : t("stockUntracked")}
+            {isLow(l) && (
+              <span className="ml-2 inline-flex items-center gap-1 text-error">
+                <TriangleAlert className="size-3.5" aria-hidden />
+                {t("lowBadge")}
+              </span>
+            )}
           </span>
         </div>
         <p className="type-caption text-ink-secondary">
