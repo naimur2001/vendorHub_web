@@ -1190,7 +1190,8 @@
       "shops": "Shops",
       "reports": "Reports",
       "back": "Back to the marketplace",
-      "banners": "Banners"
+      "banners": "Banners",
+      "featured": "Featured"
     },
     "loading": "Loading…",
     "guestTitle": "Log in as an admin",
@@ -2750,5 +2751,60 @@
     "row": "Row {row}:",
     "network": "No connection. Check your internet and try again.",
     "generic": "The import failed. Try again."
+  },
+  "Featured": {
+    "productsTitle": "Featured picks",
+    "productsText": "Hand-picked by the Vendors Hub team.",
+    "shopsTitle": "Featured shops",
+    "shopsText": "Shops worth a visit, chosen by our team.",
+    "from": "From",
+    "shops": "{count, plural, one {# shop} other {# shops}}"
+  },
+  "AdminFeatured": {
+    "metaTitle": "Featured",
+    "title": "Featured on the home page",
+    "subtitle": "Pick up to 12 products and 12 shops. They show in this order; add dates to schedule them.",
+    "kindLabel": "What to feature",
+    "kinds": {
+      "PRODUCT": "Products",
+      "SHOP": "Shops"
+    },
+    "listTitle": "Featured now ({count} of {max})",
+    "empty": "Nothing featured yet. Search below to add one.",
+    "loadError": "Couldn't load this. Try again.",
+    "retry": "Try again",
+    "unnamed": "Not live now (id {id}…)",
+    "live": "Live",
+    "notLive": "Scheduled or ended",
+    "window": "{from} – {to}",
+    "now": "now",
+    "noEnd": "no end",
+    "up": "Move {name} up",
+    "down": "Move {name} down",
+    "remove": "Remove {name}",
+    "confirmRemove": "Remove this from the home page?",
+    "removed": "Removed. The home page updates within a minute.",
+    "reordered": "Order saved.",
+    "added": "Added to the home page.",
+    "full": "All 12 places are taken. Remove one to add another.",
+    "addProduct": "Feature a product",
+    "addShop": "Feature a shop",
+    "startsAt": "Starts (optional)",
+    "endsAt": "Ends (optional)",
+    "scheduleHint": "Empty start = now. Empty end = until you remove it.",
+    "searchLabel": "Search",
+    "searchProducts": "Search products by name",
+    "searchShops": "Search shops by name",
+    "search": "Search",
+    "noResults": "No matches. Only active, approved items can be featured.",
+    "feature": "Feature",
+    "errors": {
+      "limit": "All 12 places are taken. Remove one first.",
+      "duplicate": "This is already featured.",
+      "notFound": "This item isn't active or approved, so it can't be featured.",
+      "invalid": "Check the dates: the end must be after the start.",
+      "network": "No connection. Try again.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }

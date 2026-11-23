@@ -97,3 +97,20 @@ export async function getShelf(key: ShelfKey): Promise<ProductCardData[]> {
   const { data } = await listProducts(SHELVES[key], { fresh: false });
   return data;
 }
+
+export type FeaturedShop = { slotId: string; shop: { id: string; name: string; slug: string; logoUrl: string | null; verificationLevel: components["schemas"]["VerificationLevel"]; market: { name: string; slug: string } | null } };
+export type FeaturedProduct = { slotId: string; product: { id: string; slug: string; title: string; image: string | null; thumbnail: string | null; msrp: number | null; lowestPrice: number; shopCount: number } };
+
+/** Home page featured rows (admin-picked, live slots only, in the admin's order). 1-minute cache; admin changes refresh "featured". */
+export async function getFeaturedShops(): Promise<FeaturedShop[]> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 600 });
+  cacheTag("featured");
+  return (await publicGet<FeaturedShop[]>("/featured", { kind: "SHOP" }, { fresh: false })).data;
+}
+export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 600 });
+  cacheTag("featured");
+  return (await publicGet<FeaturedProduct[]>("/featured", { kind: "PRODUCT" }, { fresh: false })).data;
+}

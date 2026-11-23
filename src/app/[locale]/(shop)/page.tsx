@@ -19,6 +19,7 @@ import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
 import { FlashDeals } from "@/components/home/flash-deals";
 import { ProductShelves } from "@/components/home/product-shelves";
+import { FeaturedProducts, FeaturedShops } from "@/components/home/featured-rows";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -238,6 +239,11 @@ export default async function HomePage({ params }: Props) {
         <FlashDeals />
       </Suspense>
 
+      {/* Admin-picked products (1-minute cache); nothing when there are none */}
+      <Suspense>
+        <FeaturedProducts />
+      </Suspense>
+
       <section aria-labelledby="markets-title" className="flex flex-col gap-5">
         <SectionHeading
           id="markets-title"
@@ -250,6 +256,11 @@ export default async function HomePage({ params }: Props) {
           <MarketDoors />
         </Suspense>
       </section>
+
+      {/* Admin-picked shops */}
+      <Suspense>
+        <FeaturedShops />
+      </Suspense>
 
       {/* Asks for location only when the visitor taps the button */}
       <ShopsNearYou />
