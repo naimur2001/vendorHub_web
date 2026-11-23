@@ -111,6 +111,9 @@ function FilterForm({ state, markets, brands, onApplied }: FilterProps & { onApp
           <option value="newest">{t("sortNewest")}</option>
           <option value="price_asc">{t("sortPriceAsc")}</option>
           <option value="price_desc">{t("sortPriceDesc")}</option>
+          <option value="trending">{t("sortTrending")}</option>
+          <option value="popular">{t("sortPopular")}</option>
+          <option value="oldest">{t("sortOldest")}</option>
         </select>
       </div>
 

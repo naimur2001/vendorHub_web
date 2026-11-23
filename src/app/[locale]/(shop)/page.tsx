@@ -267,7 +267,7 @@ export default async function HomePage({ params }: Props) {
         </Suspense>
       </section>
 
-      {/* Tabs: best prices, premium picks, earlier arrivals (1-minute cache) */}
+      {/* Tabs: trending, best sellers, prices, bargains, premium, favourites (1-minute cache) */}
       <Suspense fallback={<LatestSkeleton />}>
         <ProductShelves />
       </Suspense>

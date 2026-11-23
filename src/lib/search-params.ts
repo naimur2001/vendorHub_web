@@ -20,7 +20,7 @@ export type SearchState = {
 
 type RawParams = Record<string, string | string[] | undefined>;
 
-const SORTS: ProductSort[] = ["newest", "price_asc", "price_desc"];
+const SORTS: ProductSort[] = ["newest", "price_asc", "price_desc", "trending", "popular", "oldest"];
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

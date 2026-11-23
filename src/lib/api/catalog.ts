@@ -31,7 +31,8 @@ export type ProductCardData = {
 /** A live flash deal on one listing: `price` on the listing is then already the deal price. */
 export type ListingDeal = components["schemas"]["ListingDeal"];
 
-export type ProductSort = "newest" | "price_asc" | "price_desc";
+// trending: units sold + add-to-carts in the last 7 days; popular: units sold all time; oldest: first added first
+export type ProductSort = "newest" | "price_asc" | "price_desc" | "trending" | "popular" | "oldest";
 
 export type ProductListQuery = {
   q?: string;
@@ -42,6 +43,7 @@ export type ProductListQuery = {
   marketId?: string;
   shopId?: string;
   availableOnly?: boolean;
+  bargain?: boolean; // only products with a shop that takes offers
   sort?: ProductSort;
   page?: number;
   limit?: number; // max 50

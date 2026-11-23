@@ -345,7 +345,10 @@
       "priceInvalid": "Use a whole taka amount, like 15000.",
       "priceTooHigh": "Use an amount up to ৳1,00,00,000.",
       "priceOrder": "The minimum is higher than the maximum."
-    }
+    },
+    "sortTrending": "Trending this week",
+    "sortPopular": "Best sellers",
+    "sortOldest": "Oldest first"
   },
   "Product": {
     "breadcrumb": "Breadcrumb",
@@ -2580,12 +2583,15 @@
   },
   "Shelves": {
     "title": "Explore the shelves",
-    "text": "Every kind of product from Dhaka's shops: bargains, premium picks and earlier arrivals.",
+    "text": "Every kind of product from Dhaka's shops: what's hot now, best sellers, bargains, premium picks and long-time favourites.",
     "tabsLabel": "Product shelves",
     "tabs": {
+      "trending": "Trending",
+      "popular": "Best sellers",
       "bestPrice": "Best prices",
+      "bargain": "Bargain-friendly",
       "premium": "Premium picks",
-      "earlier": "Earlier arrivals"
+      "classics": "Long-time favourites"
     }
   }
 }

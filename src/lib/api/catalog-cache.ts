@@ -77,11 +77,16 @@ export async function getDeals(): Promise<PublicDeal[]> {
   return (await publicGet<PublicDeal[]>("/deals", { limit: 12 }, { fresh: false })).data;
 }
 
-export type ShelfKey = "bestPrice" | "premium" | "earlier";
+export type ShelfKey = "trending" | "popular" | "bestPrice" | "bargain" | "premium" | "classics";
+// Tab order on the home page
+export const SHELF_KEYS: ShelfKey[] = ["trending", "popular", "bestPrice", "bargain", "premium", "classics"];
 const SHELVES: Record<ShelfKey, Parameters<typeof listProducts>[0]> = {
+  trending: { sort: "trending", availableOnly: true, limit: 8 }, // last 7 days
+  popular: { sort: "popular", availableOnly: true, limit: 8 }, // all time
   bestPrice: { sort: "price_asc", availableOnly: true, limit: 8 },
+  bargain: { sort: "trending", bargain: true, availableOnly: true, limit: 8 },
   premium: { sort: "price_desc", availableOnly: true, limit: 8 },
-  earlier: { sort: "newest", availableOnly: true, limit: 8, page: 2 }, // after the 8 in "New in Dhaka's shops"
+  classics: { sort: "oldest", availableOnly: true, limit: 8 }, // the longest on the site
 };
 
 /** Home page "Explore the shelves" tabs: 8 products each, cached like the latest products. */

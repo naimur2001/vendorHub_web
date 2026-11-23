@@ -1,6 +1,7 @@
 // Reading and writing the storefront URL (/shops/x?tab=reviews&reviews=trust&page=2).
 // Every value from the URL is checked; anything unexpected falls back to the default.
-import type { ProductSort } from "@/lib/api/catalog";
+// The shop page endpoint has only these three sorts (not trending/popular/oldest)
+type ProductSort = "newest" | "price_asc" | "price_desc";
 
 export type ShopTab = "products" | "bargains" | "reviews";
 export type ReviewFilter = "all" | "trust" | "product";

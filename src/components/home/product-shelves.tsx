@@ -2,12 +2,10 @@ import { getTranslations } from "next-intl/server";
 import { ProductCard } from "@/components/catalog/product-card";
 import { ShelfTabs } from "@/components/home/shelf-tabs";
 import type { ProductCardData } from "@/lib/api/catalog";
-import { getShelf, type ShelfKey } from "@/lib/api/catalog-cache";
-
-const KEYS: ShelfKey[] = ["bestPrice", "premium", "earlier"];
+import { getShelf, SHELF_KEYS as KEYS } from "@/lib/api/catalog-cache";
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
-/** Home page "Explore the shelves": tabs of products (best prices, premium, earlier arrivals). Empty tabs are left out. */
+/** Home page "Explore the shelves": tabs of products (trending, best sellers, best prices, bargain, premium, long-time favourites). Empty tabs are left out. */
 export async function ProductShelves() {
   const t = await getTranslations("Shelves");
   const lists = await Promise.all(KEYS.map((k) => getShelf(k).catch((): ProductCardData[] => [])));
