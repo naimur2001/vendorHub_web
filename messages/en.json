@@ -1162,7 +1162,8 @@
     "settings": "Settings",
     "returns": "Returns",
     "waiting": "{label}, {count} waiting",
-    "promotions": "Promotions"
+    "promotions": "Promotions",
+    "analytics": "Analytics"
   },
   "Admin": {
     "metaTitle": "Admin",
@@ -2690,5 +2691,36 @@
       "amount": "Enter an amount of 1 taka or more.",
       "minOrder": "Enter the minimum order in whole taka, or leave it empty."
     }
+  },
+  "OwnerAnalytics": {
+    "title": "Shop analytics",
+    "subtitle": "How people find and buy from your shop. Days are Dhaka days.",
+    "loading": "Loading your numbers…",
+    "guestTitle": "Log in to see your shop's numbers",
+    "logIn": "Log in",
+    "notTeam": "Only shop owners and staff can see analytics.",
+    "noShop": "You don't have a shop yet.",
+    "loadError": "Couldn't load your numbers. Check your connection and try again.",
+    "retry": "Try again",
+    "rangeLabel": "Period",
+    "range": {
+      "7d": "Last 7 days",
+      "30d": "Last 30 days"
+    },
+    "revenue": "Revenue",
+    "orders": "Orders",
+    "views": "Product views",
+    "addToCarts": "Added to cart",
+    "conversion": "Views to orders",
+    "bargainWin": "Offers accepted",
+    "bargainNote": "{offers, plural, one {# offer} other {# offers}} from customers, {accepted} accepted. Cancelled orders don't count.",
+    "metricLabel": "Show on the chart",
+    "perDay": "{metric} per day",
+    "dayDetail": "{day}: {value}",
+    "empty": "Nothing in this period yet.",
+    "topTitle": "Top listings",
+    "topEmpty": "No views or sales in this period yet.",
+    "topLine": "{views} views · {carts} added to cart · {sold} sold",
+    "unknown": "Listing"
   }
 }
