@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, LoaderCircle, Plus, Search, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
+import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import { searchCatalog } from "@/lib/api/listings";
 import { addFeatured, FEATURED_MAX, listFeatured, modKeys, removeFeatured, reorderFeatured, type FeaturedKind, type FeaturedSlot } from "@/lib/api/moderation";
@@ -12,6 +13,14 @@ import { refreshPublicPages } from "@/lib/refresh-public";
 import { cn } from "@/lib/utils";
 
 const KINDS: FeaturedKind[] = ["PRODUCT", "SHOP"];
+
+/** Why a slot can't show on the home page, if it can't. */
+function problem(s: FeaturedSlot): "deleted" | "inactive" | "PENDING" | "REJECTED" | null {
+  if (!s.target) return "deleted";
+  if (s.target.isActive === false) return "inactive";
+  if (s.target.moderationStatus && s.target.moderationStatus !== "APPROVED") return s.target.moderationStatus;
+  return null;
+}
 const field =
   "type-body h-11 w-full rounded-sm border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none";
 const iconButton =
@@ -118,11 +127,22 @@ export function FeaturedManager() {
               <li key={s.id} className="flex items-center gap-2 rounded-md border border-line bg-card p-3 shadow-card">
                 <span className="type-caption w-6 shrink-0 text-center text-ink-muted">{format.number(i + 1)}</span>
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="type-body-medium truncate text-ink">{s.target?.name ?? t("unnamed", { id: s.targetId.slice(0, 8) })}</p>
+                  {s.target ? (
+                    <Link href={`/${kind === "SHOP" ? "shops" : "products"}/${s.target.slug}`} className="type-body-medium truncate text-ink underline-offset-4 hover:text-brand hover:underline">
+                      {s.target.name}
+                    </Link>
+                  ) : (
+                    <p className="type-body-medium text-ink-muted italic">{t("deleted")}</p>
+                  )}
+                  {problem(s) && <p className="type-caption text-error">{t("hiddenHint")}</p>}
                   <p className="type-caption flex flex-wrap items-center gap-2 text-ink-muted">
-                    <span className={cn("rounded-full px-2 py-0.5", s.liveNow ? "bg-success-soft text-success-ink" : "bg-subtle text-ink-muted")}>
-                      {s.liveNow ? t("live") : t("notLive")}
-                    </span>
+                    {problem(s) ? (
+                      <span className="rounded-full bg-error-soft px-2 py-0.5 text-error">{t(`problem.${problem(s)}`)}</span>
+                    ) : (
+                      <span className={cn("rounded-full px-2 py-0.5", s.liveNow ? "bg-success-soft text-success-ink" : "bg-subtle text-ink-muted")}>
+                        {s.liveNow ? t("live") : t("notLive")}
+                      </span>
+                    )}
                     {(s.startsAt || s.endsAt) && <span>{t("window", { from: when(s.startsAt) ?? t("now"), to: when(s.endsAt) ?? t("noEnd") })}</span>}
                   </p>
                 </div>

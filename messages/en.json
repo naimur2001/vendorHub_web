@@ -2786,7 +2786,6 @@
     "empty": "Nothing featured yet. Search below to add one.",
     "loadError": "Couldn't load this. Try again.",
     "retry": "Try again",
-    "unnamed": "Not live now (id {id}…)",
     "live": "Live",
     "notLive": "Scheduled or ended",
     "window": "{from} – {to}",
@@ -2818,6 +2817,14 @@
       "invalid": "Check the dates: the end must be after the start.",
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
+    },
+    "deleted": "Deleted item",
+    "hiddenHint": "Not shown on the home page. Remove it to free the place.",
+    "problem": {
+      "deleted": "Deleted",
+      "inactive": "Inactive",
+      "PENDING": "Pending",
+      "REJECTED": "Rejected"
     }
   },
   "Report": {

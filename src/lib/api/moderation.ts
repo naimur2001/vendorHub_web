@@ -1,7 +1,6 @@
 import "client-only";
 import { api } from "./client";
 import type { ApiResult } from "./core";
-import { publicGet } from "./public";
 
 // ---------- featured slots (admin) ----------
 export type FeaturedKind = "SHOP" | "PRODUCT";
@@ -14,12 +13,10 @@ export type FeaturedSlot = {
   endsAt: string | null;
   liveNow: boolean;
   createdAt: string;
-  target?: { name: string; slug: string } | null; // when the backend sends it
+  // null = the shop or product was deleted
+  target: { name: string; slug: string; isActive?: boolean; moderationStatus?: "PENDING" | "APPROVED" | "REJECTED" } | null;
 };
 export const FEATURED_MAX = 12; // per kind (backend rule)
-
-// The public featured lists give names for the live slots
-type PublicFeatured = { slotId: string; shop?: { name: string; slug: string }; product?: { title: string; slug: string } };
 
 export const modKeys = {
   featured: (kind: FeaturedKind) => ["admin", "featured", kind] as const,
@@ -27,14 +24,8 @@ export const modKeys = {
   flags: (status: FlagStatus, page: number) => ["admin", "flags", status, page] as const,
 };
 
-export async function listFeatured(kind: FeaturedKind): Promise<FeaturedSlot[]> {
-  const [slots, live] = await Promise.all([
-    api.get<FeaturedSlot[]>("/admin/featured", { query: { kind } }),
-    publicGet<PublicFeatured[]>("/featured", { kind }).then((r) => r.data).catch(() => [] as PublicFeatured[]),
-  ]);
-  const names = new Map(live.map((p) => [p.slotId, p.shop ? { name: p.shop.name, slug: p.shop.slug } : p.product ? { name: p.product.title, slug: p.product.slug } : null]));
-  return slots.map((s) => ({ ...s, target: s.target ?? names.get(s.id) ?? null }));
-}
+// The backend sends each slot's target (name, slug, isActive, moderationStatus).
+export const listFeatured = (kind: FeaturedKind) => api.get<FeaturedSlot[]>("/admin/featured", { query: { kind } });
 export const addFeatured = (input: { kind: FeaturedKind; targetId: string; startsAt?: string | null; endsAt?: string | null }) =>
   api.post<FeaturedSlot>("/admin/featured", input);
 export const reorderFeatured = (ids: string[]) => api.patch<FeaturedSlot[]>("/admin/featured/reorder", { ids });

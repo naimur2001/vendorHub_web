@@ -1131,7 +1131,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Users, shops, orders and sales, queues, catalog counts, top shops and recent activity */
+        /**
+         * Users, shops, orders and sales, queues, catalog counts, top shops and recent activity
+         * @description Also ordersLate (orders late by the admin order monitor's rules, see GET /admin/orders?late=any) and ordersToday (orders placed since midnight, Asia/Dhaka).
+         */
         get: operations["adminDashboard"];
         put?: never;
         post?: never;
@@ -2975,6 +2978,127 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * All orders with filters, late flags and summary counts (newest first)
+         * @description meta.counts uses the same filters except status and late, so the summary cards stay put while one is selected. The audit entry stores which filters were used, never the search text.
+         */
+        get: operations["adminListOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        /** The full order with timeline, payments, returns, contacts and internal notes */
+        get: operations["adminGetOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{orderId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        /** The order chat, read only (hidden messages included and marked); audited as order.chat_viewed */
+        get: operations["adminGetOrderChat"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{orderId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel an open order (actorRole ADMIN; stock, deals, coupon and credit come back)
+         * @description A paid ONLINE order is refunded through the payment adapter (refundNeeded true in the answer). The customer and the shop team are notified. 409 ORDER_CLOSED for a COMPLETED or CANCELLED order.
+         */
+        post: operations["adminCancelOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{orderId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an internal note (never shown to the customer or the shop) */
+        post: operations["adminAddOrderNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{orderId}/remind-shop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Notify the shop team that the order is late (once per hour per order)
+         * @description Notification type ORDER_LATE_REMINDER. 409 ORDER_NOT_LATE when the order is not late; 429 REMINDER_TOO_SOON (error.details.retryAt) within an hour of the last reminder.
+         */
+        post: operations["adminRemindShop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3821,10 +3945,10 @@ export interface components {
             /** @description Short reason, e.g. the cancel reason. */
             note: string | null;
             /**
-             * @description Who made the change. SYSTEM for rows backfilled from older orders.
+             * @description Who made the change. ADMIN = a platform admin (also when an admin uses the shop order endpoints). SYSTEM = automatic (reservation deadlines) or rows backfilled from older orders.
              * @enum {string|null}
              */
-            actorRole: "CUSTOMER" | "SHOP" | "SYSTEM" | null;
+            actorRole: "CUSTOMER" | "SHOP" | "ADMIN" | "SYSTEM" | null;
             /** Format: date-time */
             createdAt: string;
         };
@@ -4196,6 +4320,15 @@ export interface components {
         /** @enum {string} */
         FlagReason: "SPAM" | "ABUSE" | "SCAM" | "PERSONAL_INFO" | "OFF_TOPIC" | "OTHER";
         FeaturedSlot: {
+            /** @description What the slot points at, also when it is scheduled, ended or inactive (so it can be removed). null = the shop or product was deleted. moderationStatus only for PRODUCT slots. */
+            target: {
+                /** @description The shop name, or the product title. */
+                name: string;
+                slug: string;
+                isActive: boolean;
+                /** @enum {string} */
+                moderationStatus?: "PENDING" | "APPROVED" | "REJECTED";
+            } | null;
             /** Format: uuid */
             id: string;
             kind: components["schemas"]["FeaturedKind"];
@@ -4316,6 +4449,165 @@ export interface components {
         };
         /** @description Referral credit (taka) spent on this order. */
         OrderCreditUsed: number;
+        /** @enum {string|null} */
+        LateReason: "unconfirmed" | "delivery" | "pickup" | null;
+        AdminOrderShop: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+        };
+        AdminOrderDelivery: {
+            /** @enum {string} */
+            method: "STORE_PICKUP" | "VENDOR_DELIVERY" | "RESERVE_PICKUP";
+            fee: number;
+            /** Format: date-time */
+            reservedUntil: string | null;
+            /** Format: date-time */
+            confirmBy: string | null;
+            /** @description Detail view only. */
+            address?: string | null;
+        };
+        AdminOrderPayment: {
+            /** @enum {string} */
+            method: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
+            /** @enum {string} */
+            status: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+        };
+        AdminOrderRow: {
+            /** Format: uuid */
+            id: string;
+            orderNumber: string;
+            shop: components["schemas"]["AdminOrderShop"];
+            customer: {
+                name: string;
+                phone: string | null;
+            };
+            status: components["schemas"]["OrderStatus"];
+            lateReason: components["schemas"]["LateReason"];
+            delivery: components["schemas"]["AdminOrderDelivery"];
+            payment: components["schemas"]["AdminOrderPayment"];
+            total: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastStatusAt: string;
+            openReturn: boolean;
+            messageCount: number;
+        };
+        AdminOrderNote: {
+            /** Format: uuid */
+            id: string;
+            body: string;
+            author: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            };
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminOrderDetail: {
+            /** Format: uuid */
+            id: string;
+            orderNumber: string;
+            status: components["schemas"]["OrderStatus"];
+            lateReason: components["schemas"]["LateReason"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastStatusAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+            /** Format: date-time */
+            shopRemindedAt: string | null;
+            delivery: components["schemas"]["AdminOrderDelivery"];
+            payment: components["schemas"]["AdminOrderPayment"];
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                listingId: string;
+                title: string;
+                unitPrice: number;
+                quantity: number;
+                lineTotal: number;
+                bargained: boolean;
+                flashDeal: boolean;
+            }[];
+            subtotal: number;
+            couponCode: string | null;
+            discount: number;
+            creditUsed: number;
+            total: number;
+            /** @description Only in the cancel answer. true = the order was paid ONLINE and is refunded. */
+            refundNeeded?: boolean;
+            statusEvents: {
+                status: components["schemas"]["OrderStatus"];
+                note: string | null;
+                /** @enum {string|null} */
+                actorRole: "CUSTOMER" | "SHOP" | "ADMIN" | "SYSTEM" | null;
+                /** @description Only for ADMIN rows (shop staff and customers stay anonymous). */
+                actorName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            payments: {
+                /** Format: uuid */
+                id: string;
+                provider: string;
+                providerRef: string | null;
+                amount: number;
+                /** @enum {string} */
+                status: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                callbackAt: string | null;
+            }[];
+            returns: {
+                /** Format: uuid */
+                id: string;
+                reason: string;
+                description: string;
+                /** @enum {string} */
+                status: "REQUESTED" | "REJECTED" | "ESCALATED" | "REFUNDED" | "CLOSED";
+                resolutionNote: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            openReturn: boolean;
+            messageCount: number;
+            shop: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+                phone: string | null;
+                whatsapp: string | null;
+                addressLine: string | null;
+                shopNumber: string | null;
+                market: {
+                    name: string;
+                    slug: string;
+                } | null;
+                owner: {
+                    name: string;
+                    email: string | null;
+                    phone: string | null;
+                };
+            };
+            customer: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string | null;
+                phone: string | null;
+            };
+            adminNotes: components["schemas"]["AdminOrderNote"][];
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -4572,6 +4864,18 @@ export interface components {
                 };
             };
         };
+        /** @description The order. */
+        AdminOrderDetail: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["AdminOrderDetail"];
+                };
+            };
+        };
     };
     parameters: {
         Page: number;
@@ -4597,6 +4901,7 @@ export interface components {
         /** @description A random id the web app keeps in localStorage (8-128 of A-Z a-z 0-9 _ -). Only a keyed hash is stored, for the self-referral check. */
         XDeviceId: string;
         ReviewIdParam: string;
+        AdminOrderId: string;
     };
     requestBodies: {
         PhotoUpload: {
@@ -5006,7 +5311,10 @@ export interface operations {
                 shopId?: string;
                 marketId?: string;
                 availableOnly?: "true" | "false";
-                sort?: "newest" | "price_asc" | "price_desc";
+                /** @description true = only products with at least one matching listing that has bargaining on (the card's prices then come from those listings). false = no filter, the same as leaving it out. */
+                bargain?: "true" | "false";
+                /** @description newest / oldest = when the product was added. trending = units sold (orders not cancelled) plus add-to-carts in the last 7 days. popular = units sold of all time (orders not cancelled). trending and popular count the matching listings only (with shopId, that shop's sales) and break ties by newest. Every sort ends with the product id, so paging is stable. */
+                sort?: "newest" | "oldest" | "price_asc" | "price_desc" | "trending" | "popular";
                 page?: components["parameters"]["Page"];
                 limit?: number;
             };
@@ -10818,6 +11126,217 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+        };
+    };
+    adminListOrders: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["OrderStatus"];
+                shopId?: string;
+                deliveryMethod?: "STORE_PICKUP" | "VENDOR_DELIVERY" | "RESERVE_PICKUP";
+                paymentMethod?: "ONLINE" | "PAY_AT_STORE" | "CASH_ON_DELIVERY";
+                paymentStatus?: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+                /** @description Part of the order number, the customer's phone or email (2-100 characters). */
+                q?: string;
+                /** @description First day (YYYY-MM-DD, Asia/Dhaka), inclusive. */
+                from?: string;
+                /** @description Last day (YYYY-MM-DD, Asia/Dhaka), inclusive. Not before from (else 400). */
+                to?: string;
+                late?: "unconfirmed" | "delivery" | "pickup" | "any";
+                page?: components["parameters"]["Page"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of orders. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminOrderRow"][];
+                        meta: {
+                            counts: {
+                                byStatus: {
+                                    [key: string]: number;
+                                };
+                                byLate: {
+                                    [key: string]: number;
+                                };
+                            };
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminOrderDetail"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminGetOrderChat: {
+        parameters: {
+            query?: {
+                /** @description Only messages after this message id (oldest first, at most 100). */
+                after?: string;
+            };
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The messages. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            readOnly: boolean;
+                            messages: {
+                                /** Format: uuid */
+                                id: string;
+                                /** @enum {string} */
+                                senderRole: "CUSTOMER" | "SHOP";
+                                body: string;
+                                hidden: boolean;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                readAt: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminCancelOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminOrderDetail"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminAddOrderNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The note. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminOrderNote"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminRemindShop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sent. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            reminded: boolean;
+                            lateReason: components["schemas"]["LateReason"];
+                            recipients: number;
+                            /** Format: date-time */
+                            nextReminderAt: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
 }
