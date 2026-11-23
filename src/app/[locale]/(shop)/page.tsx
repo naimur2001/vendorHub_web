@@ -59,6 +59,21 @@ async function HomeBanners() {
         <BannerLeft categories={topCategories} markets={topMarkets} />
       </div>
       <BannerSlider banners={banners} />
+      {/* Phones and tablets: the advert and the shop-to-let card as a small row under the slider */}
+      {right && (
+        <div className={cn("mt-3 grid gap-3 xl:hidden", ad && toLet[0] ? "grid-cols-2" : "grid-cols-1")}>
+          {ad && (
+            <div className="h-36 sm:h-44">
+              <SideAd ad={ad} />
+            </div>
+          )}
+          {toLet[0] && (
+            <div className="h-36 sm:h-44">
+              <ToLetAd listing={toLet[0]} count={toLet.length} tall />
+            </div>
+          )}
+        </div>
+      )}
       {right && (
         // The advert keeps the full banner height; the shop-to-let card hangs just below it,
         // in the empty space beside the centred hero (it never covers the page text).
