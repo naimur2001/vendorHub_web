@@ -38,6 +38,7 @@ export function SiteFooter() {
   const shop: FooterLink[] = [
     { href: "/search", key: "search" },
     { href: "/markets", key: "markets" },
+    { href: "/to-let", key: "toLet" },
     { href: "/cart", key: "cart" },
   ];
   const account: FooterLink[] = loggedIn
