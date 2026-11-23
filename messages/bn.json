@@ -2505,5 +2505,34 @@
       "network": "সংযোগ নেই। আবার চেষ্টা করুন।",
       "generic": "কিছু একটা ভুল হয়েছে। আবার চেষ্টা করুন।"
     }
+  },
+  "AdminOverview": {
+    "title": "ড্যাশবোর্ড",
+    "subtitle": "পুরো মার্কেটপ্লেস এক নজরে।",
+    "users": "ব্যবহারকারী",
+    "usersNew": "এই সপ্তাহে {count} জন নতুন · {blocked} জন ব্লক",
+    "shops": "দোকান",
+    "shopsActive": "{active}টি চালু · এই সপ্তাহে {count}টি নতুন",
+    "orders": "অর্ডার",
+    "verification": "যাচাইয়ের তালিকা",
+    "pending": "{count}টি অপেক্ষমাণ · {flagged}টি ফ্ল্যাগ · {waiting}টি মালিকের অপেক্ষায়",
+    "liveOffers": "চলমান অফার",
+    "catalog": "ক্যাটালগ",
+    "catalogText": "{products}টি পণ্য · {listings}টি লিস্টিং · {reviews}টি রিভিউ",
+    "sales": "বিক্রি",
+    "last24h": "২৪ ঘণ্টা",
+    "last7d": "৭ দিন",
+    "last30d": "৩০ দিন",
+    "ordersCount": "{count, plural, one {#টি অর্ডার} other {#টি অর্ডার}}",
+    "topShops": "সেরা দোকান (৩০ দিন)",
+    "activity": "সাম্প্রতিক কার্যকলাপ",
+    "loading": "ড্যাশবোর্ড লোড হচ্ছে…",
+    "loadError": "ড্যাশবোর্ড লোড হয়নি। আবার চেষ্টা করুন।",
+    "retry": "আবার চেষ্টা করুন",
+    "ordersToday": "আজকের অর্ডার",
+    "ordersTodayText": "মধ্যরাত থেকে (ঢাকা)",
+    "ordersLate": "দেরি হওয়া অর্ডার",
+    "ordersLateText": "দেখা দরকার: অর্ডার খুলুন",
+    "ordersLateNone": "এখন কিছুই দেরিতে নেই"
   }
 }

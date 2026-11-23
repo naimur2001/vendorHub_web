@@ -20,6 +20,8 @@ export type AdminDashboard = {
   users: { total: number; blocked: number; newLast7d: number };
   shops: { total: number; active: number; newLast7d: number };
   orders: { total: number; sales: { last24h: Sales; last7d: Sales; last30d: Sales } };
+  ordersLate?: number; // open orders past the late rules (see Admin → Orders)
+  ordersToday?: number; // placed today (Dhaka day)
   verification: { pendingReview: number; autoFlagged: number; waitingForOwner: number; approvedThisWeek: number };
   bargains: { live: number };
   catalog: { products: number; activeListings: number; reviews: number };

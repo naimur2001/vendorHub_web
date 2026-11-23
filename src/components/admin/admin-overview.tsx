@@ -93,6 +93,8 @@ export function AdminOverview() {
         <Card title={t("shops")} value={x.shops.total} text={t("shopsActive", { active: x.shops.active, count: x.shops.newLast7d })} href="/admin/shops" />
         <Card title={t("verification")} value={v.pendingReview + v.autoFlagged} text={t("pending", { count: v.pendingReview, flagged: v.autoFlagged, waiting: v.waitingForOwner })} href="/admin" />
         <Card title={t("liveOffers")} value={x.bargains.live} />
+        <Card title={t("ordersToday")} value={x.ordersToday ?? 0} text={t("ordersTodayText")} href="/admin/orders" />
+        <Card title={t("ordersLate")} value={x.ordersLate ?? 0} text={(x.ordersLate ?? 0) > 0 ? t("ordersLateText") : t("ordersLateNone")} href="/admin/orders" />
       </div>
 
       {/* Revenue per day, last 30 days: a row of arches that builds itself */}

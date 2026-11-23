@@ -2065,7 +2065,12 @@
     "activity": "Latest activity",
     "loading": "Loading the dashboard…",
     "loadError": "The dashboard couldn't load. Try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "ordersToday": "Orders today",
+    "ordersTodayText": "Placed since midnight (Dhaka)",
+    "ordersLate": "Late orders",
+    "ordersLateText": "Need a look: open Orders",
+    "ordersLateNone": "Nothing late right now"
   },
   "ShopPhotos": {
     "title": "Shop photos",
