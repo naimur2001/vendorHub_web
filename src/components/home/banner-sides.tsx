@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, MapPin, Store } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { ArrowRight, ChevronRight, KeyRound, MapPin, Store } from "lucide-react";
+import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { useSyncExternalStore } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link } from "@/i18n/routing";
@@ -10,6 +11,9 @@ import type { Category } from "@/lib/api/catalog";
 import { listOrders } from "@/lib/api/checkout";
 import type { Market } from "@/lib/api/shops";
 import { cn } from "@/lib/utils";
+import type { HomeToLet } from "@/lib/api/catalog-cache";
+import { safeMediaUrl } from "@/lib/api/storefront";
+import { formatTaka } from "@/lib/format";
 
 // Same height as the banner: a card that fills its grid cell.
 const PANEL = "flex h-full min-h-0 flex-col gap-3 overflow-hidden rounded-3xl border border-line bg-card p-4 shadow-card";
@@ -93,6 +97,39 @@ function Personal({ name }: { name: string }) {
         </Link>
       )}
     </section>
+  );
+}
+
+/** Right column, under the admin advert: advert card for the newest shop to let: photo behind, gold "To let" pill, rent, and a link to all of them. */
+export function ToLetAd({ listing: l, count, tall = false }: { listing: HomeToLet; count: number; tall?: boolean }) {
+  const t = useTranslations("ToLetHome");
+  const tL = useTranslations("ToLet");
+  const locale = useLocale();
+  const cover = safeMediaUrl(l.cover?.url) ?? safeMediaUrl(l.cover?.thumbUrl);
+  return (
+    <Link
+      href={count > 1 ? "/to-let" : `/to-let/${l.slug}`}
+      className={cn(
+        "group relative isolate flex shrink-0 flex-col justify-end overflow-hidden rounded-3xl shadow-card",
+        tall ? "h-full" : "h-40",
+        "bg-brand p-3 text-primary-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none",
+      )}
+    >
+      {cover ? (
+        <Image src={cover} alt="" fill unoptimized sizes="224px" className="-z-10 object-cover transition-transform duration-300 motion-safe:group-hover:scale-105" />
+      ) : (
+        <KeyRound className="absolute top-3 right-3 -z-10 size-16 text-gold/40" strokeWidth={1} aria-hidden />
+      )}
+      <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-brand via-brand/70 to-transparent" />
+      <span className="type-caption absolute top-3 left-3 rounded-full bg-gold px-2 py-0.5 font-medium text-ink">{tL("badge")}</span>
+      <span className="type-caption text-primary-foreground/80">{t("adLabel")}</span>
+      <span className="type-body-medium line-clamp-2">{l.marketName ?? l.title}</span>
+      <span className="type-caption font-medium text-gold">{tL("perMonth", { rent: formatTaka(l.monthlyRent, locale) })}</span>
+      <span className="type-caption mt-1 inline-flex items-center gap-1 underline-offset-4 group-hover:underline">
+        {count > 1 ? t("adMore", { count }) : t("adOne")}
+        <ArrowRight className="size-3.5 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:translate-x-0.5" aria-hidden />
+      </span>
+    </Link>
   );
 }
 

@@ -3401,6 +3401,9 @@
     "title": "Looking for a shop to rent?",
     "text": "Verified shop spaces in Dhaka's markets. Tell us what you need and we'll connect you with the owner.",
     "seeAll": "See all shops to let",
-    "listYours": "List your shop"
+    "listYours": "List your shop",
+    "adLabel": "Shop for rent",
+    "adOne": "See this shop",
+    "adMore": "See all {count} shops to let"
   }
 }

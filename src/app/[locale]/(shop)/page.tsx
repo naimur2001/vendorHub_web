@@ -9,9 +9,9 @@ import { MarketDoor } from "@/components/shop/market-cards";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
-import { getBanners, getCategories, getLatestProducts, getMarkets, getSideAds, type HomeBanner } from "@/lib/api/catalog-cache";
+import { getBanners, getCategories, getHomeToLet, getLatestProducts, getMarkets, getSideAds, type HomeBanner } from "@/lib/api/catalog-cache";
 import { BannerSlider } from "@/components/motion/banner-slider";
-import { BannerLeft } from "@/components/home/banner-sides";
+import { BannerLeft, ToLetAd } from "@/components/home/banner-sides";
 import { SideAd } from "@/components/home/side-ad";
 import { ShopsNearYou } from "@/components/shop/shops-near-you";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
@@ -37,12 +37,14 @@ async function HomeBanners() {
   }
   if (banners.length === 0) return null;
   // Side panels need lists too; if those fail, the banner still shows alone.
-  const [categories, markets, sideAds] = await Promise.all([
+  const [categories, markets, sideAds, toLet] = await Promise.all([
     getCategories().catch(() => []),
     getMarkets().catch(() => []),
     getSideAds().catch(() => []),
+    getHomeToLet().catch(() => []),
   ]);
   const ad = sideAds[0];
+  const right = Boolean(ad || toLet[0]); // the right column: the advert, and a shop-to-let card under it
   const topCategories = [...categories].filter((c) => !c.parentId).sort((a, b) => b.productCount - a.productCount).slice(0, 3);
   const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 3);
   return (
@@ -50,16 +52,21 @@ async function HomeBanners() {
     <div
       className={cn(
         "-mb-2 md:mb-0 xl:-ml-6 xl:grid xl:gap-10 2xl:-ml-24",
-        ad ? "xl:-mr-6 xl:grid-cols-[14rem_minmax(0,1fr)_13rem] 2xl:-mr-24" : "xl:grid-cols-[14rem_minmax(0,1fr)] xl:pr-10 2xl:pr-20",
+        right ? "xl:-mr-6 xl:grid-cols-[14rem_minmax(0,1fr)_13rem] 2xl:-mr-24" : "xl:grid-cols-[14rem_minmax(0,1fr)] xl:pr-10 2xl:pr-20",
       )}
     >
       <div className="hidden xl:block">
         <BannerLeft categories={topCategories} markets={topMarkets} />
       </div>
       <BannerSlider banners={banners} />
-      {ad && (
-        <div className="hidden xl:block">
-          <SideAd ad={ad} />
+      {right && (
+        <div className="hidden min-h-0 xl:flex xl:flex-col xl:gap-3">
+          {ad && (
+            <div className="min-h-0 flex-1">
+              <SideAd ad={ad} />
+            </div>
+          )}
+          {toLet[0] && <ToLetAd listing={toLet[0]} count={toLet.length} tall={!ad} />}
         </div>
       )}
     </div>
