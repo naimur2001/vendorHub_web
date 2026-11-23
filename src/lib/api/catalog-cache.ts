@@ -63,3 +63,16 @@ export async function getSideAds(): Promise<HomeBanner[]> {
   cacheTag("banners");
   return (await publicGet<HomeBanner[]>("/banners", { placement: "SIDE_AD" }, { fresh: false })).data;
 }
+
+export type PublicDeal = components["schemas"]["PublicDeal"];
+
+/**
+ * Home page "Flash deals" row: active deals, ending soonest first (prices from the server).
+ * Cached 30 seconds, like the API's own Cache-Control, so an ended deal leaves the row quickly.
+ */
+export async function getDeals(): Promise<PublicDeal[]> {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 30, expire: 300 });
+  cacheTag("deals");
+  return (await publicGet<PublicDeal[]>("/deals", { limit: 12 }, { fresh: false })).data;
+}

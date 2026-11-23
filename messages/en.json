@@ -2549,5 +2549,14 @@
     "loadError": "Messages couldn't load.",
     "retry": "Try again",
     "unread": "{count, plural, one {# new message} other {# new messages}}"
+  },
+  "Deals": {
+    "title": "Flash deals",
+    "text": "Real shop prices, cut for a short time. Grab them before the clock runs out.",
+    "off": "{percent}% off",
+    "ended": "Deal ended",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "endsInSr": "Deal ends in {days, plural, =0 {} one {# day} other {# days}} {hours} h {minutes} min",
+    "left": "Only {count} left"
   }
 }

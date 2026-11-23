@@ -17,6 +17,7 @@ import { ShopsNearYou } from "@/components/shop/shops-near-you";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
+import { FlashDeals } from "@/components/home/flash-deals";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -230,6 +231,11 @@ export default async function HomePage({ params }: Props) {
           </Suspense>
         </div>
       </section>
+
+      {/* Live flash deals (30-second cache); nothing shows when there are none */}
+      <Suspense>
+        <FlashDeals />
+      </Suspense>
 
       <section aria-labelledby="markets-title" className="flex flex-col gap-5">
         <SectionHeading

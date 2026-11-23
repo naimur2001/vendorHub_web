@@ -2571,6 +2571,410 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active flash deals for the home page row (no login), ending soonest first */
+        get: operations["listDeals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+            };
+            cookie?: never;
+        };
+        /** The shop's flash deals (scheduled, active, sold out and ended) */
+        get: operations["listShopDeals"];
+        put?: never;
+        /**
+         * Create a flash deal on one of the shop's listings
+         * @description dealPrice must be lower than the listing price. At most one deal per listing at any time
+         *     (overlapping windows: 409 DEAL_OVERLAP). At most 30 days long. startsAt defaults to now.
+         *     Audited as deal.created.
+         */
+        post: operations["createShopDeal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/deals/{dealId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+                dealId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** End a deal now (a deal that has not started is deleted) */
+        delete: operations["endShopDeal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+            };
+            cookie?: never;
+        };
+        /** The shop's coupons with their use counts */
+        get: operations["listShopCoupons"];
+        put?: never;
+        /**
+         * Create a coupon (exactly one of percentOff or amountOff)
+         * @description The code is stored upper case and is unique over all shops (409 COUPON_CODE_TAKEN). Audited as coupon.created.
+         */
+        post: operations["createShopCoupon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/coupons/{couponId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+                couponId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Switch a coupon off or on, or change its end or use limit */
+        patch: operations["updateShopCoupon"];
+        trace?: never;
+    };
+    "/api/v1/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live featured shops or products, in order (no login) */
+        get: operations["listFeatured"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All featured slots (admin), with liveNow */
+        get: operations["adminListFeatured"];
+        put?: never;
+        /** Feature a shop or a product (goes to the end; 409 FEATURED_LIMIT at 12, FEATURED_DUPLICATE) */
+        post: operations["adminCreateFeatured"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/featured/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set the order of one kind's featured slots (mixed kinds -> 400) */
+        patch: operations["adminReorderFeatured"];
+        trace?: never;
+    };
+    "/api/v1/admin/featured/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a featured slot */
+        delete: operations["adminDeleteFeatured"];
+        options?: never;
+        head?: never;
+        /** Change a featured slot's schedule */
+        patch: operations["adminUpdateFeatured"];
+        trace?: never;
+    };
+    "/api/v1/admin/moderation/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products by moderation status (default PENDING), oldest first */
+        get: operations["adminModerationProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/moderation/products/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve a product (it becomes public; the shop is notified) */
+        post: operations["adminApproveProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/moderation/products/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject a product with a reason (hidden from the public; the shop is notified) */
+        post: operations["adminRejectProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a review or an order-chat message (any logged-in user, max 10 per day)
+         * @description 201 for a new report, 200 when this user already reported it. A chat message can only be reported by the order's customer or shop team (else 404); your own content cannot be reported (400). 429 FLAG_LIMIT after 10 reports in 24 hours.
+         */
+        post: operations["reportContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reports by status (default OPEN), oldest first, with the reported content */
+        get: operations["adminListFlags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/flags/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hide or keep the reported content (resolves every open flag of it) */
+        post: operations["adminResolveFlag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/{id}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ReviewIdParam"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a photo to my review (verified buyers only, at most 3) */
+        post: operations["addReviewPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/{id}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ReviewIdParam"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a photo of my review (or any, as an admin) */
+        delete: operations["removeReviewPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My credit balance, history (latest 50) and referral code (customers) */
+        get: operations["myCredit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{orderId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start (or resume) paying one of my ONLINE orders
+         * @description Idempotent while the payment is pending (the same paymentId and providerRef come back). Open redirectUrl to pay.
+         */
+        post: operations["createOrderPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/callback/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The gateway's server-to-server callback (no login; the signature is the proof)
+         * @description Only the active provider is accepted (else 404). mock: header X-Mock-Signature =
+         *     HMAC-SHA256(PAYMENT_MOCK_SECRET, "paymentId|providerRef|status|amount") in hex.
+         *     A bad signature is 401, a wrong amount 400. A repeated callback changes nothing
+         *     (duplicate true) and answers with the current status.
+         */
+        post: operations["paymentCallback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/message-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The latest outgoing SMS / WhatsApp messages (phones masked) and the adapter modes */
+        get: operations["adminMessageLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2605,6 +3009,8 @@ export interface components {
         /** @enum {string} */
         Role: "CUSTOMER" | "SHOP_OWNER" | "SHOP_STAFF" | "ADMIN";
         User: {
+            /** @description true = no order status SMS / WhatsApp (PATCH /users/me). */
+            smsOptOut: boolean;
             /** Format: uuid */
             id: string;
             name: string;
@@ -2659,6 +3065,7 @@ export interface components {
             slug?: string;
         };
         ProductCard: {
+            deal: components["schemas"]["CardDeal"];
             /**
              * Format: uuid
              * @description The listing the card's wishlist heart saves: the cheapest IN_STOCK listing (among the listings
@@ -2711,6 +3118,7 @@ export interface components {
             bargainEnabled?: boolean;
             discountPercent?: number | null;
             shop?: components["schemas"]["ListingShop"];
+            deal?: components["schemas"]["ListingDeal"];
             /**
              * @description Only when the request has ?lat=&lng=: kilometres (rounded to 0.1) from that point to the shop's
              *     market; null when the market has no coordinates.
@@ -2983,6 +3391,9 @@ export interface components {
             reservedUntil?: components["schemas"]["ReservedUntil"];
             confirmBy?: components["schemas"]["ConfirmBy"];
             unreadCount?: components["schemas"]["UnreadCount"];
+            discount?: components["schemas"]["OrderDiscount"];
+            couponCode?: components["schemas"]["OrderCouponCode"];
+            creditUsed?: components["schemas"]["OrderCreditUsed"];
             items?: {
                 [key: string]: unknown;
             }[];
@@ -3300,6 +3711,13 @@ export interface components {
             createdByShopId: string | null;
             /** Format: date-time */
             lockedAt: string | null;
+            /**
+             * @description A new shop product is PENDING (not public) until an admin approves it; editing a REJECTED one sends it back to PENDING.
+             * @enum {string}
+             */
+            moderationStatus?: "PENDING" | "APPROVED" | "REJECTED";
+            /** @description The rejection reason. */
+            moderationNote?: string | null;
             isActive: boolean;
             /** Format: date-time */
             createdAt: string;
@@ -3349,6 +3767,9 @@ export interface components {
             reservedUntil?: components["schemas"]["ReservedUntil"];
             confirmBy?: components["schemas"]["ConfirmBy"];
             unreadCount?: components["schemas"]["UnreadCount"];
+            discount?: components["schemas"]["OrderDiscount"];
+            couponCode?: components["schemas"]["OrderCouponCode"];
+            creditUsed?: components["schemas"]["OrderCreditUsed"];
             shop: {
                 /** Format: uuid */
                 id: string;
@@ -3540,8 +3961,9 @@ export interface components {
             priceAtSave: number;
             /** @description The current price (taka). */
             price: number;
-            /** @description price < priceAtSave */
+            /** @description price < priceAtSave (an active flash deal counts) */
             priceDropped: boolean;
+            deal?: components["schemas"]["ListingDeal"];
             availability: components["schemas"]["Availability"];
             product: {
                 /** Format: uuid */
@@ -3621,13 +4043,15 @@ export interface components {
          */
         ConfirmBy: string | null;
         OrderMessage: {
+            /** @description true = hidden by an admin after a report (body is then null). */
+            hidden: boolean;
             /** Format: uuid */
             id: string;
             /** @enum {string} */
             senderRole: "CUSTOMER" | "SHOP";
             /** @description true when the reader's side wrote it. */
             mine: boolean;
-            body: string;
+            body: string | null;
             /** Format: date-time */
             createdAt: string;
             /**
@@ -3688,6 +4112,210 @@ export interface components {
                 revenue: number;
             }[];
         };
+        /** @description The lowest active flash deal among the product's listings, or null. */
+        CardDeal: {
+            price: number;
+            /** Format: date-time */
+            endsAt: string;
+        } | null;
+        /** @description The active flash deal on this listing (price is then the deal price), or null. */
+        ListingDeal: {
+            price: number;
+            originalPrice: number;
+            /** Format: date-time */
+            endsAt: string;
+            /** @description Units left at the deal price; null = no limit. */
+            remaining: number | null;
+        } | null;
+        PublicDeal: {
+            /** Format: uuid */
+            dealId: string;
+            /** Format: uuid */
+            listingId: string;
+            price: number;
+            originalPrice: number;
+            percentOff: number;
+            /** Format: date-time */
+            endsAt: string;
+            remaining: number | null;
+            availability: components["schemas"]["Availability"];
+            product: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                image: string | null;
+                thumbUrl: string | null;
+            };
+            shop: components["schemas"]["IdNameSlug"];
+        };
+        ShopDeal: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            listingId: string;
+            productTitle: string | null;
+            listPrice: number | null;
+            dealPrice: number;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            maxQty: number | null;
+            soldQty: number;
+            /** @enum {string} */
+            status: "SCHEDULED" | "ACTIVE" | "SOLD_OUT" | "ENDED";
+        };
+        Coupon: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            percentOff: number | null;
+            amountOff: number | null;
+            minOrder: number;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            maxUses: number | null;
+            usedCount: number;
+            perCustomer: number;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /** @description Coupon discount (taka) on the items; total = subtotal - discount + deliveryFee. */
+        OrderDiscount: number;
+        OrderCouponCode: string | null;
+        /** @enum {string} */
+        FeaturedKind: "SHOP" | "PRODUCT";
+        /** @enum {string} */
+        ModerationStatus: "PENDING" | "APPROVED" | "REJECTED";
+        /** @enum {string} */
+        FlagTarget: "REVIEW" | "ORDER_MESSAGE" | "REVIEW_PHOTO";
+        /** @enum {string} */
+        FlagReason: "SPAM" | "ABUSE" | "SCAM" | "PERSONAL_INFO" | "OFF_TOPIC" | "OTHER";
+        FeaturedSlot: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["FeaturedKind"];
+            /** Format: uuid */
+            targetId: string;
+            sortOrder: number;
+            /** Format: date-time */
+            startsAt: string | null;
+            /** Format: date-time */
+            endsAt: string | null;
+            liveNow: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        FeaturedItem: {
+            /** Format: uuid */
+            slotId: string;
+            /** @description kind SHOP only. */
+            shop?: {
+                /** Format: uuid */
+                id?: string;
+                name?: string;
+                slug?: string;
+                logoUrl?: string | null;
+                verificationLevel?: components["schemas"]["VerificationLevel"];
+                market?: {
+                    name?: string;
+                    slug?: string;
+                } | null;
+            };
+            /** @description kind PRODUCT only. */
+            product?: {
+                /** Format: uuid */
+                id?: string;
+                slug?: string;
+                title?: string;
+                image?: string | null;
+                thumbnail?: string | null;
+                msrp?: number | null;
+                lowestPrice?: number;
+                shopCount?: number;
+            };
+        };
+        ModerationProduct: {
+            /** Format: uuid */
+            id?: string;
+            slug?: string;
+            title?: string;
+            description?: string | null;
+            msrp?: number | null;
+            images?: string[];
+            category?: components["schemas"]["IdNameSlug"];
+            brand?: Record<string, never> | null;
+            source?: string;
+            shop?: components["schemas"]["IdNameSlug"] | null;
+            moderationStatus?: components["schemas"]["ModerationStatus"];
+            moderationNote?: string | null;
+            /** Format: date-time */
+            moderatedAt?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        AdminFlag: {
+            /** Format: uuid */
+            id: string;
+            targetType: components["schemas"]["FlagTarget"];
+            /** Format: uuid */
+            targetId: string;
+            reason: components["schemas"]["FlagReason"];
+            note?: string | null;
+            /** @description true = flagged automatically (links, phone numbers, repeated text). */
+            auto: boolean;
+            /** @enum {string} */
+            status: "OPEN" | "HIDDEN" | "KEPT";
+            reportsOnTarget: number;
+            /** @description The review (rating, comment, isHidden) or message (senderRole, body, isHidden); null if deleted. */
+            target: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            resolvedAt?: string | null;
+            resolutionNote?: string | null;
+        };
+        ReviewPhoto: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            thumbUrl: string;
+            width: number;
+            height: number;
+        };
+        MyCredit: {
+            /** @description Taka. */
+            balance: number;
+            /** @example K7MQ2XPA */
+            referralCode: string;
+            /** @example 100 */
+            rewardPerReferral: number;
+            /** @example 0.2 */
+            maxSharePerOrder: number;
+            referrals: {
+                invited: number;
+                rewarded: number;
+            };
+            history: {
+                /** @description Positive = received, negative = spent. */
+                amount: number;
+                /** @enum {string} */
+                kind: "REFERRAL_REWARD" | "CHECKOUT_SPEND" | "CHECKOUT_REFUND";
+                note: string | null;
+                /** Format: uuid */
+                orderId: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        /** @description Referral credit (taka) spent on this order. */
+        OrderCreditUsed: number;
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -3886,6 +4514,64 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        /** @description Featured slots. */
+        FeaturedSlots: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["FeaturedSlot"][];
+                };
+            };
+        };
+        /** @description The featured slot. */
+        FeaturedSlotOne: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["FeaturedSlot"];
+                };
+            };
+        };
+        /** @description The new status. */
+        ModerationDecision: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        /** Format: uuid */
+                        id: string;
+                        moderationStatus: components["schemas"]["ModerationStatus"];
+                        moderationNote: string | null;
+                    };
+                };
+            };
+        };
+        /** @description The report. */
+        FlagCreated: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "OPEN" | "HIDDEN" | "KEPT";
+                    };
+                };
+            };
+        };
     };
     parameters: {
         Page: number;
@@ -3904,6 +4590,13 @@ export interface components {
         /** @description Only messages after this message id (polling). Without it, the latest 100. */
         ChatAfter: string;
         ToolsShopId: string;
+        PromoShopId: string;
+        ModId: string;
+        ModPage: number;
+        ModLimit: number;
+        /** @description A random id the web app keeps in localStorage (8-128 of A-Z a-z 0-9 _ -). Only a keyed hash is stored, for the self-referral check. */
+        XDeviceId: string;
+        ReviewIdParam: string;
     };
     requestBodies: {
         PhotoUpload: {
@@ -3999,6 +4692,8 @@ export interface operations {
             header?: {
                 /** @description Send "cookie" from the website to keep the refresh token in an httpOnly cookie. */
                 "X-Auth-Mode"?: components["parameters"]["XAuthMode"];
+                /** @description A random id the web app keeps in localStorage (8-128 of A-Z a-z 0-9 _ -). Only a keyed hash is stored, for the self-referral check. */
+                "X-Device-Id"?: components["parameters"]["XDeviceId"];
             };
             path?: never;
             cookie?: never;
@@ -4006,6 +4701,8 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    /** @description A friend's code (customers). A wrong or self-referral code never blocks the signup; it just earns nothing. */
+                    referralCode?: string;
                     name: string;
                     /** Format: email */
                     email: string;
@@ -5119,6 +5816,11 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    /**
+                     * @description Pay part of each shop order with referral credit (at most 20% of its items after a coupon). See creditUsed on the orders.
+                     * @default false
+                     */
+                    useCredit?: boolean;
                     shops: {
                         /** Format: uuid */
                         shopId: string;
@@ -5129,6 +5831,13 @@ export interface operations {
                         deliveryAddress?: string;
                         /** Format: uuid */
                         addressId?: string;
+                        /**
+                         * @description A coupon of THIS shop. The server checks it and computes the discount on the items
+                         *     (not the delivery fee). Errors are 400 with error.details.code COUPON_INVALID,
+                         *     COUPON_NOT_STARTED, COUPON_EXPIRED, COUPON_MIN_ORDER, COUPON_USED_UP or COUPON_ALREADY_USED.
+                         *     A limited flash deal that sold out meanwhile gives 409 DEAL_SOLD_OUT.
+                         */
+                        couponCode?: string;
                     }[];
                 };
             };
@@ -6788,6 +7497,8 @@ export interface operations {
                     phone?: string | null;
                     /** Format: uri */
                     avatarUrl?: string | null;
+                    /** @description true = no order status SMS / WhatsApp. */
+                    smsOptOut?: boolean;
                 };
             };
         };
@@ -9280,6 +9991,833 @@ export interface operations {
                 };
             };
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    listDeals: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active deals (cached 30 s). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["PublicDeal"][];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    listShopDeals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopDeal"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createShopDeal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    listingId: string;
+                    dealPrice: number;
+                    /** Format: date-time */
+                    startsAt?: string;
+                    /** Format: date-time */
+                    endsAt: string;
+                    /** @description Units sold at the deal price; null = no limit. */
+                    maxQty?: number | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The new deal. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopDeal"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    endShopDeal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+                dealId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ended. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listShopCoupons: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["Coupon"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createShopCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code: string;
+                    percentOff?: number;
+                    amountOff?: number;
+                    /**
+                     * @description The items' subtotal at this shop must reach this (taka).
+                     * @default 0
+                     */
+                    minOrder?: number;
+                    /** Format: date-time */
+                    startsAt?: string;
+                    /** Format: date-time */
+                    endsAt: string;
+                    maxUses?: number | null;
+                    /** @default 1 */
+                    perCustomer?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The new coupon. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["Coupon"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    updateShopCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["PromoShopId"];
+                couponId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    isActive?: boolean;
+                    /** Format: date-time */
+                    endsAt?: string;
+                    maxUses?: number | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The coupon. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["Coupon"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listFeatured: {
+        parameters: {
+            query: {
+                kind: components["schemas"]["FeaturedKind"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SHOP items carry `shop`, PRODUCT items carry `product` (effective lowestPrice). Cached 60 s. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["FeaturedItem"][];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    adminListFeatured: {
+        parameters: {
+            query?: {
+                kind?: components["schemas"]["FeaturedKind"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["FeaturedSlots"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateFeatured: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    kind: components["schemas"]["FeaturedKind"];
+                    /** Format: uuid */
+                    targetId: string;
+                    /** Format: date-time */
+                    startsAt?: string | null;
+                    /** Format: date-time */
+                    endsAt?: string | null;
+                };
+            };
+        };
+        responses: {
+            201: components["responses"]["FeaturedSlotOne"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminReorderFeatured: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    ids: string[];
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["FeaturedSlots"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminDeleteFeatured: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdateFeatured: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    startsAt?: string | null;
+                    /** Format: date-time */
+                    endsAt?: string | null;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["FeaturedSlotOne"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminModerationProducts: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "APPROVED" | "REJECTED";
+                page?: components["parameters"]["ModPage"];
+                limit?: components["parameters"]["ModLimit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ModerationProduct"][];
+                        meta: {
+                            pagination?: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminApproveProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ModerationDecision"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRejectProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["ModerationDecision"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    reportContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    targetType: components["schemas"]["FlagTarget"];
+                    /** Format: uuid */
+                    targetId: string;
+                    reason: components["schemas"]["FlagReason"];
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["FlagCreated"];
+            201: components["responses"]["FlagCreated"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminListFlags: {
+        parameters: {
+            query?: {
+                status?: "OPEN" | "HIDDEN" | "KEPT";
+                targetType?: components["schemas"]["FlagTarget"];
+                page?: components["parameters"]["ModPage"];
+                limit?: components["parameters"]["ModLimit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. Reporter identities are never shown. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminFlag"][];
+                        meta: {
+                            pagination?: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminResolveFlag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ModId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    action: "HIDE" | "KEEP";
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Resolved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** @enum {string} */
+                            status: "HIDDEN" | "KEPT";
+                            resolvedFlags: number;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    addReviewPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ReviewIdParam"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    image: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The photo. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ReviewPhoto"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Not a verified buyer (error.details.code NOT_VERIFIED_BUYER). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            /** @description Already 3 photos (error.details.code REVIEW_PHOTO_LIMIT). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The photo is too small (at least 300 x 300). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    removeReviewPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ReviewIdParam"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed (the files too). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    myCredit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The credit. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["MyCredit"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createOrderPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The payment to complete. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            paymentId: string;
+                            /** @enum {string} */
+                            provider: "mock" | "bkash" | "nagad";
+                            amount: number;
+                            providerRef: string;
+                            redirectUrl: string | null;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description The configured provider is not connected yet. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    paymentCallback: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Mock-Signature"?: string;
+            };
+            path: {
+                provider: "mock" | "bkash" | "nagad";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    paymentId: string;
+                    providerRef: string;
+                    /** @enum {string} */
+                    status: "PAID" | "FAILED";
+                    amount: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Received. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            received: boolean;
+                            duplicate: boolean;
+                            status: components["schemas"]["PaymentStatus"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminMessageLog: {
+        parameters: {
+            query?: {
+                limit?: number;
+                orderId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            channel: "SMS" | "WHATSAPP";
+                            provider: string;
+                            /** @example 017******78 */
+                            toMasked: string;
+                            /** @example ORDER_CONFIRMED */
+                            template: string;
+                            body: string;
+                            /** @enum {string} */
+                            status: "SENT" | "FAILED";
+                            error: string | null;
+                            /** Format: uuid */
+                            subOrderId: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                        }[];
+                        meta: {
+                            /** @enum {string} */
+                            messagingMode: "mock" | "sslwireless" | "twilio-whatsapp";
+                            /** @enum {string} */
+                            paymentMode: "mock" | "bkash" | "nagad";
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
 }

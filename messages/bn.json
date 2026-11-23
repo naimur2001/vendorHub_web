@@ -2003,5 +2003,14 @@
     "loadError": "মেসেজ লোড হয়নি।",
     "retry": "আবার চেষ্টা করুন",
     "unread": "{count, plural, other {#টি নতুন মেসেজ}}"
+  },
+  "Deals": {
+    "title": "ফ্ল্যাশ ডিল",
+    "text": "দোকানের আসল দাম, অল্প সময়ের জন্য কমানো। সময় শেষ হওয়ার আগেই নিন।",
+    "off": "{percent}% ছাড়",
+    "ended": "ডিল শেষ",
+    "days": "{count, plural, one {# দিন} other {# দিন}}",
+    "endsInSr": "ডিল শেষ হবে {days, plural, =0 {} one {# দিন} other {# দিন}} {hours} ঘণ্টা {minutes} মিনিট পরে",
+    "left": "মাত্র {count}টি বাকি"
   }
 }
