@@ -1,21 +1,27 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CircleCheck, LoaderCircle, MailCheck } from "lucide-react";
+import { CircleCheck, ImagePlus, LoaderCircle, MailCheck, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import { getMarkets, shopKeys } from "@/lib/api/shops";
-import { createToLet, updateToLet, type OwnerAuth, type ToLetInput, type ToLetOwnerView } from "@/lib/api/to-let";
+import { listCategories } from "@/lib/api/catalog";
+import { addToLetPhoto, createToLet, updateToLet, type OwnerAuth, type ToLetInput, type ToLetOwnerView } from "@/lib/api/to-let";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
+import { cn } from "@/lib/utils";
 
 const field = "type-body h-11 w-full rounded-sm border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none";
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const num = (v: string) => (/^\d{1,9}$/.test(v.trim()) ? Number(v.trim()) : NaN);
 const digits = (v: string) => v.replace(/\D/g, "").slice(0, 9);
+const MAX_TYPES = 10; // backend limit
+const MAX_PHOTOS = 6;
+const IMG = ["image/jpeg", "image/png", "image/webp"];
+const FIVE_MB = 5 * 1024 * 1024;
 
 function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: ReactNode }) {
   return (
@@ -39,6 +45,13 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
   const id = useId();
   const { user } = useSession();
   const markets = useQuery({ queryKey: shopKeys.markets, queryFn: getMarkets, staleTime: 10 * 60_000 });
+  // business types = the top-level product categories
+  const categories = useQuery({ queryKey: ["catalog", "categories"], queryFn: listCategories, staleTime: 10 * 60_000 });
+  const types = (categories.data ?? []).filter((c) => !c.parentId);
+  const [suitable, setSuitable] = useState<string[]>(existing?.suitableFor.map((c) => c.id) ?? []);
+  const [files, setFiles] = useState<File[]>([]);
+  const [photoNote, setPhotoNote] = useState<string | null>(null);
+  const [uploaded, setUploaded] = useState(0);
   const [v, setV] = useState({
     marketId: existing?.marketId ?? "",
     marketName: existing && !existing.marketId ? (existing.marketName ?? "") : "",
@@ -62,9 +75,21 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
   const save = useMutation({
     mutationFn: (input: ToLetInput) => (existing ? updateToLet(existing.id, input, auth) : createToLet(input)),
     onMutate: () => setFormError(null),
-    onSuccess: (l) => {
-      if (existing) onSaved?.(l);
-      else setCreated(l as ToLetOwnerView & { emailConfirmationRequired: boolean });
+    onSuccess: async (l) => {
+      if (existing) return onSaved?.(l);
+      const made = l as ToLetOwnerView & { emailConfirmationRequired: boolean };
+      // logged in (no email step): the chosen photos go up now, one by one
+      if (!made.emailConfirmationRequired) {
+        for (const f of files) {
+          try {
+            await addToLetPhoto(made.id, f, {});
+            setUploaded((n) => n + 1);
+          } catch {
+            /* the rest can be added on the manage page */
+          }
+        }
+      }
+      setCreated(made);
     },
     onError: (err) => {
       if (err instanceof ApiError && err.status === 429) return setFormError(t("errors.tooMany"));
@@ -103,6 +128,7 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
       contactName: v.contactName.trim(),
       contactPhone: normalizePhone(v.contactPhone),
       ...(!existing && { contactEmail: v.contactEmail.trim().toLowerCase() }),
+      suitableFor: suitable,
     });
   }
 
@@ -116,6 +142,11 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
         <p className="type-body text-ink-secondary">
           {created.emailConfirmationRequired ? t("checkEmailText", { email: created.contactEmail }) : t("submittedText")}
         </p>
+        {files.length > 0 && (
+          <p className="type-caption text-ink-secondary">
+            {created.emailConfirmationRequired ? t("photosAfterConfirm") : t("photosUploaded", { done: uploaded, total: files.length })}
+          </p>
+        )}
         {!created.emailConfirmationRequired && (
           <Link href="/me/to-let" className="type-body-medium inline-flex h-11 items-center rounded-sm bg-action px-5 text-primary-foreground hover:bg-action-hover">{t("goManage")}</Link>
         )}
@@ -170,6 +201,34 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
           <Field id={`${id}-d`} label={t("availableFrom")} error={errors.availableFrom}>
             <input id={`${id}-d`} type="date" value={v.availableFrom} onChange={set("availableFrom")} className={field} />
           </Field>
+          <fieldset className="flex flex-col gap-2 sm:col-span-2">
+            <legend className="type-body-medium mb-1 text-ink">{t("suitableFor")}</legend>
+            <p className="type-caption -mt-1 text-ink-muted">{t("suitableHint", { max: MAX_TYPES })}</p>
+            {categories.isPending ? (
+              <div className="h-11 skeleton rounded-full" aria-hidden />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {types.map((c) => {
+                  const on = suitable.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      aria-pressed={on}
+                      disabled={!on && suitable.length >= MAX_TYPES}
+                      onClick={() => setSuitable((s) => (on ? s.filter((x) => x !== c.id) : [...s, c.id]))}
+                      className={cn(
+                        "type-body h-11 rounded-full border px-4 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:opacity-50",
+                        on ? "border-brand bg-brand text-primary-foreground" : "border-line-strong bg-card text-ink hover:border-brand",
+                      )}
+                    >
+                      {c.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </fieldset>
           <div className="sm:col-span-2">
             <Field id={`${id}-de`} label={t("description")} hint={t("descriptionHint")} error={errors.description}>
               <textarea id={`${id}-de`} value={v.description} maxLength={1500} rows={5} onChange={set("description")} className="type-body rounded-sm border border-input bg-card px-3 py-2 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none" />
@@ -177,6 +236,47 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
           </div>
         </div>
       </fieldset>
+
+      {!existing && (
+        <fieldset disabled={save.isPending} className="flex flex-col gap-3 rounded-md border border-line bg-card p-4 shadow-card md:p-5">
+          <legend className="type-h3 px-1 text-ink">{t("photosTitle", { count: files.length, max: MAX_PHOTOS })}</legend>
+          <p className="type-caption -mt-1 text-ink-muted">{t("photosHint")}</p>
+          {files.length > 0 && (
+            <ul className="flex flex-col gap-1">
+              {files.map((f, i) => (
+                <li key={`${f.name}-${i}`} className="type-body flex items-center justify-between gap-2 rounded-sm bg-subtle px-3 text-ink-secondary">
+                  <span className="truncate">{f.name}</span>
+                  <button type="button" onClick={() => setFiles((fs) => fs.filter((_, j) => j !== i))} aria-label={t("removePhoto", { name: f.name })} className="flex size-11 shrink-0 items-center justify-center rounded-full text-ink-muted hover:text-error focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
+                    <X className="size-4" aria-hidden />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {files.length < MAX_PHOTOS && (
+            <label htmlFor={`${id}-ph`} className="type-body-medium inline-flex h-11 cursor-pointer items-center gap-2 self-start rounded-sm border border-brand px-4 text-brand hover:bg-subtle has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand">
+              <ImagePlus className="size-4" aria-hidden />
+              {t("addPhotos")}
+              <input
+                id={`${id}-ph`}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => {
+                  const picked = Array.from(e.target.files ?? []);
+                  e.target.value = "";
+                  const ok = picked.filter((f) => IMG.includes(f.type) && f.size <= FIVE_MB);
+                  setPhotoNote(ok.length < picked.length ? t("photosSkipped") : null);
+                  setFiles((fs) => [...fs, ...ok].slice(0, MAX_PHOTOS));
+                }}
+              />
+            </label>
+          )}
+          {photoNote && <p role="alert" className="type-caption text-error">{photoNote}</p>}
+          {!user && files.length > 0 && <p className="type-caption text-ink-muted">{t("photosGuest")}</p>}
+        </fieldset>
+      )}
 
       <fieldset disabled={save.isPending} className="flex flex-col gap-4 rounded-md border border-gold bg-card p-4 shadow-card md:p-5">
         <legend className="type-h3 px-1 text-ink">{t("contactTitle")}</legend>

@@ -3,7 +3,7 @@
 import { updateTag } from "next/cache";
 
 // The only cache labels the public pages use. Anything else is ignored.
-const ALLOWED = ["products", "catalog", "markets", "shops", "banners", "featured"] as const;
+const ALLOWED = ["products", "catalog", "markets", "shops", "banners", "featured", "to-let"] as const;
 export type PublicTag = (typeof ALLOWED)[number];
 
 /**

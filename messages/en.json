@@ -3248,7 +3248,17 @@
       "check": "Some details aren't right. Check the form.",
       "network": "No connection. Try again.",
       "generic": "Couldn't save. Try again."
-    }
+    },
+    "suitableFor": "Suits which businesses? (optional)",
+    "suitableHint": "Pick up to {max}.",
+    "photosTitle": "Photos ({count} of {max})",
+    "photosHint": "Bright photos of the inside and the front sell faster. JPEG, PNG or WebP, up to 5 MB each.",
+    "addPhotos": "Choose photos",
+    "removePhoto": "Remove {name}",
+    "photosSkipped": "Some files were skipped: use JPEG, PNG or WebP up to 5 MB.",
+    "photosGuest": "As a guest, you'll add these after confirming your email (from your private link).",
+    "photosAfterConfirm": "Add your photos from the private link after you confirm your email.",
+    "photosUploaded": "{done} of {total} photos uploaded. Add more any time."
   },
   "ToLetManage": {
     "title": "Manage your shop to let",
@@ -3386,5 +3396,11 @@
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "ToLetHome": {
+    "title": "Looking for a shop to rent?",
+    "text": "Verified shop spaces in Dhaka's markets. Tell us what you need and we'll connect you with the owner.",
+    "seeAll": "See all shops to let",
+    "listYours": "List your shop"
   }
 }

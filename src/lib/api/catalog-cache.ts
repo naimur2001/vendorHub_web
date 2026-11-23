@@ -114,3 +114,16 @@ export async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   cacheTag("featured");
   return (await publicGet<FeaturedProduct[]>("/featured", { kind: "PRODUCT" }, { fresh: false })).data;
 }
+
+export type HomeToLet = {
+  id: string; slug: string; title: string; marketName: string | null; addressLine: string; sizeSqft: number; monthlyRent: number;
+  availableFrom: string | null; cover: { url: string; thumbUrl: string } | null;
+};
+
+/** Home page "Shops to let" row: the newest published listings (5-minute cache; contacts are never in this data). */
+export async function getHomeToLet(): Promise<HomeToLet[]> {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 300, expire: 1800 });
+  cacheTag("to-let");
+  return (await publicGet<HomeToLet[]>("/to-let", { limit: 8, sort: "newest" }, { fresh: false })).data;
+}

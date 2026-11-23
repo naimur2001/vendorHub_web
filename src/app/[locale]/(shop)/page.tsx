@@ -18,6 +18,7 @@ import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
 import { FlashDeals } from "@/components/home/flash-deals";
+import { ToLetRow } from "@/components/home/to-let-row";
 import { ProductShelves } from "@/components/home/product-shelves";
 import { FeaturedProducts, FeaturedShops } from "@/components/home/featured-rows";
 
@@ -260,6 +261,11 @@ export default async function HomePage({ params }: Props) {
       {/* Admin-picked shops */}
       <Suspense>
         <FeaturedShops />
+      </Suspense>
+
+      {/* Shops to let: an advert for people looking to rent (5-minute cache) */}
+      <Suspense>
+        <ToLetRow />
       </Suspense>
 
       {/* Asks for location only when the visitor taps the button */}

@@ -31,6 +31,7 @@ import {
 } from "@/lib/api/to-let";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { refreshPublicPages } from "@/lib/refresh-public";
 
 const STATUSES: ToLetStatus[] = ["SUBMITTED", "NEEDS_INFO", "PUBLISHED", "PENDING_EMAIL", "RENTED", "REJECTED", "EXPIRED", "WITHDRAWN"];
 const INQ: AdminInquiry["status"][] = ["NEW", "IN_TALKS", "CONNECTED", "CLOSED"];
@@ -135,6 +136,7 @@ function Detail({ id }: { id: string }) {
 
   const q = useQuery({ queryKey: adminToLetKeys.detail(id), queryFn: () => getAdminToLet(id) });
   const refresh = () => {
+    refreshPublicPages(["to-let"]);
     void queryClient.invalidateQueries({ queryKey: adminToLetKeys.detail(id) });
     void queryClient.invalidateQueries({ queryKey: ["admin", "to-let"] });
   };
