@@ -178,11 +178,16 @@ export { ApiError };
 
 // ---------- Private files (verification documents) ----------
 
-/** True only for files served by our own API at /api/v1/files/... */
+const UUID_PART = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const TOLET_DOC = new RegExp(`^/admin/to-let/${UUID_PART}/documents/${UUID_PART}$`, "i");
+
+/** True only for private files served by our own API (verification files, To-Let documents). */
 export function isPrivateFileUrl(fileUrl: string): boolean {
   try {
     const url = new URL(fileUrl, API_URL);
-    return url.origin === new URL(API_URL).origin && url.pathname.startsWith(`${API_PREFIX}/files/`);
+    if (url.origin !== new URL(API_URL).origin || url.search) return false;
+    // verification files, or a To-Let ownership document (admin only; exact shape, nothing else)
+    return url.pathname.startsWith(`${API_PREFIX}/files/`) || TOLET_DOC.test(url.pathname.slice(API_PREFIX.length));
   } catch {
     return false;
   }

@@ -143,7 +143,7 @@ export type AdminInquiry = {
   createdAt: string;
   messages: ToLetMessage[];
 };
-export type AdminToLetDetail = ToLetOwnerView & {
+export type AdminToLetDetail = Omit<ToLetOwnerView, "documents"> & {
   submitter: { id: string; name: string; email?: string } | null;
   guest: boolean;
   documents: (ToLetDocument & { url: string })[];
