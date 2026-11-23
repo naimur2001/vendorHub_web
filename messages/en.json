@@ -635,10 +635,21 @@
       "empty": "Your cart is empty.",
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "Your orders couldn't be placed. Nothing was charged. Try again in a moment.",
-      "reservationLimit": "You already have 3 open reservations. Pick one up or cancel it first."
+      "reservationLimit": "You already have 3 open reservations. Pick one up or cancel it first.",
+      "couponInvalid": "A coupon code isn't valid for its shop. Check it or remove it.",
+      "couponNotStarted": "A coupon isn't active yet. Remove it or try later.",
+      "couponExpired": "A coupon has expired. Remove it to continue.",
+      "couponMinOrder": "A coupon needs a bigger order from its shop. Add items or remove the coupon.",
+      "couponUsedUp": "A coupon has been used up. Remove it to continue.",
+      "couponAlreadyUsed": "You've already used a coupon you entered. Remove it to continue.",
+      "dealSoldOut": "A flash deal in your cart just sold out. Check your cart and try again."
     },
     "reserve": "Reserve, pick up within 2 hours",
-    "reserveHint": "The shop holds it for you. Pay at the store. The shop confirms within 30 minutes."
+    "reserveHint": "The shop holds it for you. Pay at the store. The shop confirms within 30 minutes.",
+    "couponLabel": "Coupon code (optional)",
+    "couponPlaceholder": "e.g. EID20",
+    "couponHint": "For this shop only. The discount is checked and applied when you place the order.",
+    "couponFormat": "A coupon code is 4–16 letters or numbers."
   },
   "Order": {
     "metaTitle": "Order confirmation",
@@ -710,7 +721,9 @@
       "pickupTitle": "Shop location",
       "note": "Map by Google Maps",
       "openInMaps": "Open in Google Maps"
-    }
+    },
+    "couponLine": "Coupon {code}",
+    "creditLine": "Credit used"
   },
   "MyOrders": {
     "metaTitle": "My orders",
@@ -1049,7 +1062,9 @@
     "pagination": "Pages",
     "previous": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {total}"
+    "pageOf": "Page {page} of {total}",
+    "couponLine": "Coupon {code}",
+    "creditLine": "Customer credit"
   },
   "OwnerListings": {
     "metaTitle": "Your listings",

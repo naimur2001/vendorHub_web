@@ -39,6 +39,9 @@ export type Order = {
   confirmBy?: string | null; // RESERVE_PICKUP: the shop must confirm by then
   unreadCount?: number; // order lists only: chat messages from the shop not read yet
   subtotal: number;
+  discount?: number; // coupon discount on the items (computed by the server)
+  couponCode?: string | null;
+  creditUsed?: number; // referral credit spent on this order
   total: number;
   createdAt: string;
   shop: {
@@ -64,6 +67,7 @@ export type ShopChoice = {
   deliveryMethod: DeliveryMethod;
   paymentMethod: PaymentMethod;
   deliveryAddress?: string;
+  couponCode?: string; // the server checks it and computes the discount
 };
 
 export const checkoutKeys = {

@@ -438,6 +438,18 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
             <dt>{t("subtotal")}</dt>
             <dd className="type-price">{money(o.subtotal)}</dd>
           </div>
+          {(o.discount ?? 0) > 0 && (
+            <div className="type-body flex justify-between text-success-ink">
+              <dt>{t("couponLine", { code: o.couponCode ?? "" })}</dt>
+              <dd className="type-price">−{money(o.discount ?? 0)}</dd>
+            </div>
+          )}
+          {(o.creditUsed ?? 0) > 0 && (
+            <div className="type-body flex justify-between text-success-ink">
+              <dt>{t("creditLine")}</dt>
+              <dd className="type-price">−{money(o.creditUsed ?? 0)}</dd>
+            </div>
+          )}
           <div className="type-body flex justify-between text-ink-secondary">
             <dt>{t("deliveryFee")}</dt>
             <dd className="type-price">{o.deliveryFee > 0 ? money(o.deliveryFee) : t("free")}</dd>

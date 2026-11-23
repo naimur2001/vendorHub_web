@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Circle, CircleAlert, CircleCheck, Info, LoaderCircle, MapPin, ShoppingCart, TriangleAlert } from "lucide-react";
+import { Circle, CircleAlert, CircleCheck, Info, LoaderCircle, MapPin, ShoppingCart, TriangleAlert, TicketPercent } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
@@ -43,6 +43,18 @@ function defaultChoice(group: CartGroup): Choice {
   return { delivery, payment: PAYMENTS[delivery][0] };
 }
 
+// A shop coupon: 4-16 letters or digits (the backend rule). Only the format is checked here.
+const COUPON = /^[A-Z0-9]{4,16}$/;
+const COUPON_ERRORS: Record<string, string> = {
+  COUPON_INVALID: "errors.couponInvalid",
+  COUPON_NOT_STARTED: "errors.couponNotStarted",
+  COUPON_EXPIRED: "errors.couponExpired",
+  COUPON_MIN_ORDER: "errors.couponMinOrder",
+  COUPON_USED_UP: "errors.couponUsedUp",
+  COUPON_ALREADY_USED: "errors.couponAlreadyUsed",
+  DEAL_SOLD_OUT: "errors.dealSoldOut",
+};
+
 // Same format the backend uses for saved addresses: "line1, area, city. Phone: 01…"
 function composeAddress(a: Address): string {
   return `${a.line1.trim()}${a.area.trim() ? `, ${a.area.trim()}` : ""}, ${a.city.trim()}. Phone: ${normalizePhone(a.phone)}`;
@@ -63,6 +75,8 @@ function checkAddress(a: Address, t: (key: string) => string): AddressErrors {
 function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
         if (isEmailNotVerified(err)) return "errors.verifyEmail";
+    const code = (err.details as { code?: string } | undefined)?.code;
+    if (code && COUPON_ERRORS[code]) return COUPON_ERRORS[code];
     if (err.status === 409 && /already being placed/i.test(err.message)) return "errors.inProgress";
     if (err.status === 409 && (err.details as { code?: string } | undefined)?.code === "RESERVATION_LIMIT") return "errors.reservationLimit";
     if (err.status === 409) return Array.isArray(err.details) ? "errors.problems" : "errors.stock";
@@ -86,6 +100,8 @@ export function CheckoutView() {
   const cart = useQuery({ queryKey: cartKeys.cart, queryFn: getCart, enabled: status === "authenticated" });
   const saved = useQuery({ queryKey: addressKeys.all, queryFn: listAddresses, enabled: status === "authenticated" });
   const [choices, setChoices] = useState<Record<string, Choice>>({});
+  const [coupons, setCoupons] = useState<Record<string, string>>({});
+  const [couponErrors, setCouponErrors] = useState<Record<string, boolean>>({});
   const [address, setAddress] = useState<Address>({ line1: "", area: "", city: "Dhaka", phone: "" });
   const [addressErrors, setAddressErrors] = useState<AddressErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -226,6 +242,11 @@ export function CheckoutView() {
       if (Object.keys(errors).length > 0) return;
     }
 
+    // coupon codes: format only; the server decides if they apply
+    const badCoupons = Object.fromEntries(shops.map((g) => [g.shop.id, Boolean(coupons[g.shop.id]) && !COUPON.test(coupons[g.shop.id])]));
+    setCouponErrors(badCoupons);
+    if (Object.values(badCoupons).some(Boolean)) return;
+
     const deliveryAddress = deliveringCount > 0 ? composeAddress(filled) : undefined;
     const payload: ShopChoice[] = shops.map((group) => {
       const choice = choiceFor(group);
@@ -234,6 +255,7 @@ export function CheckoutView() {
         deliveryMethod: choice.delivery,
         paymentMethod: choice.payment,
         ...(choice.delivery === "VENDOR_DELIVERY" && { deliveryAddress }),
+        ...(coupons[group.shop.id] && { couponCode: coupons[group.shop.id] }),
       };
     });
     const payloadText = JSON.stringify(payload);
@@ -261,6 +283,13 @@ export function CheckoutView() {
             locale={locale}
             disabled={place.isPending}
             onChange={(next) => setChoice(group, next)}
+            coupon={coupons[group.shop.id] ?? ""}
+            couponError={couponErrors[group.shop.id] ?? false}
+            onCoupon={(code) => {
+              setCoupons((prev) => ({ ...prev, [group.shop.id]: code }));
+              setCouponErrors((prev) => ({ ...prev, [group.shop.id]: false }));
+              setFormError(null);
+            }}
           />
         ))}
 
@@ -399,10 +428,13 @@ type CardProps = {
   locale: string;
   disabled: boolean;
   onChange: (next: Partial<Choice>) => void;
+  coupon: string;
+  couponError: boolean;
+  onCoupon: (code: string) => void;
 };
 
 /** One shop's order (spec: SubOrderCard): delivery and payment choice, its own total. */
-function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange }: CardProps) {
+function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange, coupon, couponError, onCoupon }: CardProps) {
   const t = useTranslations("Checkout");
   const { shop } = group;
   const fee = choice.delivery === "VENDOR_DELIVERY" ? DELIVERY_FEE : 0;
@@ -476,6 +508,32 @@ function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange
           ))}
         </div>
       </fieldset>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={`coupon-${shop.id}`} className="type-body-medium flex items-center gap-1.5 text-ink">
+          <TicketPercent className="size-4 text-highlight" aria-hidden />
+          {t("couponLabel")}
+        </label>
+        <input
+          id={`coupon-${shop.id}`}
+          value={coupon}
+          onChange={(e) => onCoupon(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 16))}
+          disabled={disabled}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          placeholder={t("couponPlaceholder")}
+          aria-invalid={couponError || undefined}
+          aria-describedby={`coupon-${shop.id}-hint`}
+          className={cn(
+            "type-body h-11 rounded-sm border bg-card px-3 tracking-[0.12em] text-ink uppercase placeholder:tracking-normal placeholder:normal-case focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none sm:max-w-64",
+            couponError ? "border-error" : "border-input",
+          )}
+        />
+        <p id={`coupon-${shop.id}-hint`} className={cn("type-caption", couponError ? "text-error" : "text-ink-muted")}>
+          {couponError ? t("couponFormat") : t("couponHint")}
+        </p>
+      </div>
 
       <dl className="flex flex-col gap-1 border-t border-line pt-3">
         <div className="type-body flex justify-between text-ink-secondary">

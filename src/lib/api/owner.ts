@@ -88,6 +88,9 @@ export type ShopOrder = {
   confirmBy?: string | null; // RESERVE_PICKUP only: confirm by then or it is cancelled
   unreadCount?: number; // order lists only: chat messages from the customer not read yet
   subtotal: number;
+  discount?: number; // coupon discount on the items (computed by the server)
+  couponCode?: string | null;
+  creditUsed?: number; // referral credit spent on this order
   total: number;
   createdAt: string;
   customer: { name: string; phone: string | null };

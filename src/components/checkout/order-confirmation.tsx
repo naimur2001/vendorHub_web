@@ -351,6 +351,18 @@ function OrderCard({ order, checkoutId }: { order: Order; checkoutId: string }) 
           <dt>{t("subtotal")}</dt>
           <dd className="type-price">{formatTaka(order.subtotal, locale)}</dd>
         </div>
+        {(order.discount ?? 0) > 0 && (
+          <div className="type-body flex justify-between text-success-ink">
+            <dt>{t("couponLine", { code: order.couponCode ?? "" })}</dt>
+            <dd className="type-price">−{formatTaka(order.discount ?? 0, locale)}</dd>
+          </div>
+        )}
+        {(order.creditUsed ?? 0) > 0 && (
+          <div className="type-body flex justify-between text-success-ink">
+            <dt>{t("creditLine")}</dt>
+            <dd className="type-price">−{formatTaka(order.creditUsed ?? 0, locale)}</dd>
+          </div>
+        )}
         <div className="type-body flex justify-between text-ink-secondary">
           <dt>{t("deliveryFee")}</dt>
           <dd className="type-price">{order.deliveryFee > 0 ? formatTaka(order.deliveryFee, locale) : t("free")}</dd>
