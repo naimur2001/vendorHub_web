@@ -18,6 +18,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
 import { ProductHeart } from "@/components/wishlist/heart-button";
+import { Zap } from "lucide-react";
 
 type CategoryKind = "phone" | "tablet" | "laptop" | "watch" | "audio" | "accessory" | "fashion" | "other";
 
@@ -82,6 +83,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-highlight">
             <CategoryIcon categorySlug={product.category.slug} className="size-10" strokeWidth={1.25} aria-hidden />
             <span className="type-caption text-ink-muted">{t("noPhoto")}</span>
+          </span>
+        )}
+        {product.deal && (
+          <span className="type-caption absolute top-2 left-2 flex items-center gap-1 rounded-full bg-gold px-2 py-0.5 font-medium text-ink">
+            <Zap className="size-3.5" aria-hidden />
+            {t("flashDeal")}
           </span>
         )}
         {product.bargainAvailable && (

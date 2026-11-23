@@ -391,6 +391,11 @@ function ItemRow({ item, locale, busy, removing, error, onQuantity, onRemove }: 
             <p className={cn("type-price", item.problem ? "text-ink-muted line-through" : "text-ink")}>
               <FlipNumber value={formatTaka(item.lineTotal, locale)} />
             </p>
+            {item.deal && (
+              <p className="type-caption text-highlight">
+                {t("dealPrice")} <del className="text-ink-muted">{formatTaka(item.deal.originalPrice * item.quantity, locale)}</del>
+              </p>
+            )}
             {item.quantity > 1 && (
               <p className="type-caption text-ink-muted">{t("each", { price: formatTaka(item.unitPrice, locale) })}</p>
             )}

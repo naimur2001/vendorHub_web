@@ -25,7 +25,11 @@ export type ProductCardData = {
   bargainAvailable: boolean;
   createdAt: string;
   bestListingId?: string | null; // the offer a product-card heart saves (cheapest in stock)
+  deal?: { price: number; endsAt: string } | null; // the lowest live flash deal among its shops (lowestPrice already counts it)
 };
+
+/** A live flash deal on one listing: `price` on the listing is then already the deal price. */
+export type ListingDeal = components["schemas"]["ListingDeal"];
 
 export type ProductSort = "newest" | "price_asc" | "price_desc";
 
@@ -67,6 +71,7 @@ export type Listing = {
   availability: Availability;
   bargainEnabled: boolean;
   discountPercent: number | null;
+  deal?: ListingDeal;
   shop: ListingShop;
 };
 

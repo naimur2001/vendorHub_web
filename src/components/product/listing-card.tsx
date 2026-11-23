@@ -1,4 +1,4 @@
-import { ChevronRight, MapPin, Store, Truck } from "lucide-react";
+import { ChevronRight, MapPin, Store, Truck, Zap } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { PriceTicket } from "@/components/brand/price-ticket";
 import { VerificationSeal } from "@/components/brand/verification-seal";
@@ -9,6 +9,7 @@ import { Link } from "@/i18n/routing";
 import type { Listing, ListingShop } from "@/lib/api/catalog";
 import { cn } from "@/lib/utils";
 import { HeartButton } from "@/components/wishlist/heart-button";
+import { DealCountdown } from "@/components/motion/deal-countdown";
 
 /** "Level 3 · Shop 42 · Jamuna Future Park" (adds "Shop" to a bare number). */
 export function shopLocation(shop: ListingShop): string {
@@ -102,11 +103,24 @@ export function SelectedListingCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <PriceTicket amount={listing.price} msrp={null} size="lg" />
+        <PriceTicket amount={listing.price} msrp={listing.deal?.originalPrice ?? null} size="lg" />
+        {listing.deal && (
+          <span className="type-caption flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 font-medium text-ink">
+            <Zap className="size-3.5" aria-hidden />
+            {t("flashDeal")}
+          </span>
+        )}
         {listing.discountPercent !== null && listing.discountPercent > 0 && (
           <span className="type-caption text-success-ink">{t("saveVsMsrp", { percent: listing.discountPercent })}</span>
         )}
       </div>
+
+      {listing.deal && (
+        <div className="flex flex-wrap items-center gap-2">
+          <DealCountdown endsAt={listing.deal.endsAt} />
+          {listing.deal.remaining !== null && <span className="type-caption text-error">{t("dealLeft", { count: listing.deal.remaining })}</span>}
+        </div>
+      )}
 
       <AvailabilityBadge value={listing.availability} className="self-start" />
 
@@ -177,7 +191,15 @@ export function OtherShopRow({
           )}
         </div>
       </div>
-      <PriceTicket amount={listing.price} />
+      <span className="flex shrink-0 flex-col items-end gap-1">
+        <PriceTicket amount={listing.price} msrp={listing.deal?.originalPrice ?? null} />
+        {listing.deal && (
+          <span className="type-caption flex items-center gap-0.5 text-highlight">
+            <Zap className="size-3" aria-hidden />
+            {t("flashDeal")}
+          </span>
+        )}
+      </span>
       <ChevronRight className="size-5 shrink-0 text-ink-muted" aria-hidden />
     </Link>
   );

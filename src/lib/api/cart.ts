@@ -20,6 +20,7 @@ export type CartItem = {
   lineTotal: number;
   availability: Availability;
   bargainApplied: boolean;
+  deal?: components["schemas"]["ListingDeal"]; // a live flash deal lowered unitPrice
   problem: CartProblem | null; // shown, but not counted in the subtotal
 };
 
