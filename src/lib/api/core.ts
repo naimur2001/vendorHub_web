@@ -18,7 +18,11 @@ export type SessionUser = {
   emailVerified?: boolean;
   deletionScheduledFor?: string | null;
   smsOptOut?: boolean; // order status SMS / WhatsApp switched off
+  birthYear?: number | null; // optional and private (only the user sees it)
+  gender?: Gender | null; // optional and private
 };
+
+export type Gender = "FEMALE" | "MALE" | "OTHER" | "PREFER_NOT_TO_SAY";
 
 // What login, register and refresh return in cookie mode (no refreshToken in the JSON).
 export type Session = {

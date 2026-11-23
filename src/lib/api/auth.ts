@@ -1,6 +1,6 @@
 import "client-only";
 import { api, refreshSession, setSession } from "./client";
-import { ApiError, type Role, type Session, type SessionUser } from "./core";
+import { ApiError, type Gender, type Role, type Session, type SessionUser } from "./core";
 
 // Inputs match the backend's auth.schema.js
 export type LoginInput = { email: string; password: string };
@@ -81,7 +81,7 @@ export function isEmailNotVerified(err: unknown): boolean {
 
 // ---------- Profile ----------
 
-export function updateProfile(patch: { name?: string; phone?: string | null; smsOptOut?: boolean }): Promise<unknown> {
+export function updateProfile(patch: { name?: string; phone?: string | null; smsOptOut?: boolean; birthYear?: number | null; gender?: Gender | null }): Promise<unknown> {
   return api.patch<unknown>("/users/me", patch);
 }
 

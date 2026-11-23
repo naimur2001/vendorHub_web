@@ -22,6 +22,8 @@ export type AdminDashboard = {
   orders: { total: number; sales: { last24h: Sales; last7d: Sales; last30d: Sales } };
   ordersLate?: number; // open orders past the late rules (see Admin → Orders)
   ordersToday?: number; // placed today (Dhaka day)
+  // anonymous totals only; a group under 5 people comes as "<5" so nobody can be singled out
+  demographics?: { ageGroups: Record<string, number | string>; gender: Record<string, number | string> };
   verification: { pendingReview: number; autoFlagged: number; waitingForOwner: number; approvedThisWeek: number };
   bargains: { live: number };
   catalog: { products: number; activeListings: number; reviews: number };

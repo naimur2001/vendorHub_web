@@ -5,6 +5,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useSession } from "@/components/app-providers";
 import { Link } from "@/i18n/routing";
 import { getCustomerDashboard } from "@/lib/api/dashboards";
+import { AboutYou } from "@/components/account/about-you";
 import { formatTaka } from "@/lib/format";
 
 function Stat({ label, value, href }: { label: string; value: string | number; href?: string }) {
@@ -33,6 +34,8 @@ export function CustomerOverview() {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="type-h2 text-ink">{t("title")}</h2>
+      {/* one-time, optional: hides when filled in or closed */}
+      <AboutYou variant="prompt" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Stat label={t("orders")} value={x.orders.total} href="/account/orders" />
         <Stat label={t("spent")} value={formatTaka(x.orders.totalSpent, locale)} />

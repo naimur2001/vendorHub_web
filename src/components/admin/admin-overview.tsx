@@ -132,6 +132,34 @@ export function AdminOverview() {
         </section>
       </Reveal>
 
+      {x.demographics && (
+        <Reveal>
+          <section className="grid gap-6 rounded-md border border-line bg-card p-4 shadow-card md:grid-cols-2">
+            {(["ageGroups", "gender"] as const).map((group) => {
+              const rows = Object.entries(x.demographics![group]);
+              const top = Math.max(1, ...rows.map(([, v]) => (typeof v === "number" ? v : 0)));
+              return (
+                <div key={group} className="flex flex-col gap-2">
+                  <h2 className="type-h3 text-ink">{t(`demo.${group}`)}</h2>
+                  <ul className="flex flex-col gap-2">
+                    {rows.map(([k, v]) => (
+                      <li key={k} className="flex flex-col gap-1">
+                        <div className="type-body flex justify-between gap-2 text-ink">
+                          <span>{t.has(`demo.keys.${k}`) ? t(`demo.keys.${k}`) : k}</span>
+                          <span className="type-caption text-ink-secondary">{typeof v === "number" ? format.number(v) : t("demo.few")}</span>
+                        </div>
+                        <RankBar value={typeof v === "number" ? v : 0} max={top} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+            <p className="type-caption text-ink-muted md:col-span-2">{t("demo.note")}</p>
+          </section>
+        </Reveal>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>
           <section className="flex h-full flex-col gap-2 rounded-md border border-line bg-card p-4 shadow-card">

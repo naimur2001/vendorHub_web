@@ -2070,7 +2070,26 @@
     "ordersTodayText": "Placed since midnight (Dhaka)",
     "ordersLate": "Late orders",
     "ordersLateText": "Need a look: open Orders",
-    "ordersLateNone": "Nothing late right now"
+    "ordersLateNone": "Nothing late right now",
+    "demo": {
+      "ageGroups": "Customers by age",
+      "gender": "Customers by gender",
+      "few": "fewer than 5",
+      "note": "Anonymous totals from customers who chose to share. Groups under 5 people are hidden so nobody can be identified.",
+      "keys": {
+        "under18": "Under 18",
+        "18-24": "18–24",
+        "25-34": "25–34",
+        "35-44": "35–44",
+        "45-54": "45–54",
+        "55plus": "55 and over",
+        "unknown": "Not shared",
+        "FEMALE": "Female",
+        "MALE": "Male",
+        "OTHER": "Other",
+        "PREFER_NOT_TO_SAY": "Prefer not to say"
+      }
+    }
   },
   "ShopPhotos": {
     "title": "Shop photos",
@@ -3063,5 +3082,27 @@
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "AboutYou": {
+    "title": "About you",
+    "promptTitle": "Tell us a little about you (optional)",
+    "text": "Helps us understand who shops on Vendors Hub, so we can show better offers.",
+    "birthYear": "Year of birth",
+    "notSaying": "Prefer not to say",
+    "gender": "Gender",
+    "genders": {
+      "FEMALE": "Female",
+      "MALE": "Male",
+      "OTHER": "Other",
+      "PREFER_NOT_TO_SAY": "Prefer not to say"
+    },
+    "privacy": "Private: never shown on your reviews, orders or chats. Our team only sees totals, never your details.",
+    "save": "Save",
+    "saved": "Saved.",
+    "thanks": "Thanks! You can change this any time in your profile.",
+    "dismiss": "Not now",
+    "tooYoung": "You must be at least {age} to use Vendors Hub.",
+    "network": "No connection. Try again.",
+    "error": "Couldn't save. Try again."
   }
 }
