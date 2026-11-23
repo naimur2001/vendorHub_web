@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
 import { isEmailNotVerified } from "@/lib/api/auth";
 import { addressKeys, listAddresses } from "@/lib/api/addresses";
+import { creditKey, getMyCredit } from "@/components/account/credit-view";
 
 
 
@@ -101,6 +102,9 @@ export function CheckoutView() {
   const saved = useQuery({ queryKey: addressKeys.all, queryFn: listAddresses, enabled: status === "authenticated" });
   const [choices, setChoices] = useState<Record<string, Choice>>({});
   const [coupons, setCoupons] = useState<Record<string, string>>({});
+  const [useCredit, setUseCredit] = useState(false);
+  const credit = useQuery({ queryKey: creditKey, queryFn: getMyCredit, enabled: status === "authenticated" && user?.role === "CUSTOMER", staleTime: 60_000 });
+  const creditBalance = credit.data?.balance ?? 0;
   const [couponErrors, setCouponErrors] = useState<Record<string, boolean>>({});
   const [address, setAddress] = useState<Address>({ line1: "", area: "", city: "Dhaka", phone: "" });
   const [addressErrors, setAddressErrors] = useState<AddressErrors>({});
@@ -258,11 +262,11 @@ export function CheckoutView() {
         ...(coupons[group.shop.id] && { couponCode: coupons[group.shop.id] }),
       };
     });
-    const payloadText = JSON.stringify(payload);
+    const payloadText = JSON.stringify({ payload, useCredit });
     const key = idem?.payload === payloadText ? idem.key : crypto.randomUUID();
     setIdem({ key, payload: payloadText });
     setSubmitted({ count: shops.length, total });
-    place.mutate({ shops: payload, key });
+    place.mutate({ shops: payload, key, useCredit: useCredit && creditBalance > 0 });
   }
 
   return (
@@ -292,6 +296,16 @@ export function CheckoutView() {
             }}
           />
         ))}
+
+        {creditBalance > 0 && (
+          <label className="flex min-h-14 cursor-pointer items-start gap-3 rounded-md border border-gold bg-card p-4 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand">
+            <input type="checkbox" checked={useCredit} onChange={(e) => setUseCredit(e.target.checked)} disabled={place.isPending} className="mt-1 size-4 accent-brand" />
+            <span className="flex flex-col">
+              <span className="type-body-medium text-ink">{t("useCredit", { amount: formatTaka(creditBalance, locale) })}</span>
+              <span className="type-caption text-ink-muted">{t("useCreditHint")}</span>
+            </span>
+          </label>
+        )}
 
         {deliveringCount > 0 && (
           <fieldset className="flex flex-col gap-4 rounded-md border border-line bg-card p-4 md:p-5" disabled={place.isPending}>

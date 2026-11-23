@@ -59,6 +59,9 @@ export function RegisterForm({ role }: { role: AccountRole }) {
   const [formError, setFormError] = useState<string | null>(null);
 
   const isOwner = role === "SHOP_OWNER";
+  // ?ref=CODE from a friend's invite link: checked, uppercased; anything else is dropped
+  const refParam = (searchParams.get("ref") ?? "").toUpperCase();
+  const [referral, setReferral] = useState(/^[A-Z0-9]{6,12}$/.test(refParam) ? refParam : "");
 
   const nextParam = searchParams.get("next");
   const target = useMemo(() => {
@@ -91,6 +94,7 @@ export function RegisterForm({ role }: { role: AccountRole }) {
         phone: normalizePhone(values.phone),
         password: values.password,
         role,
+        ...(!isOwner && /^[A-Z0-9]{6,12}$/.test(referral) && { referralCode: referral }),
       });
       router.replace(isOwner ? OWNER_SETUP : target);
     } catch (err) {
@@ -153,6 +157,23 @@ export function RegisterForm({ role }: { role: AccountRole }) {
         error={errors.password?.message}
         {...register("password")}
       />
+
+      {!isOwner && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="register-referral" className="type-body-medium text-ink">
+            {t("referral")}
+          </label>
+          <input
+            id="register-referral"
+            value={referral}
+            onChange={(e) => setReferral(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12))}
+            autoComplete="off"
+            spellCheck={false}
+            className="type-body h-12 rounded-md border border-input bg-card px-3 tracking-[0.12em] text-ink uppercase focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none"
+          />
+          <p className="type-caption text-ink-muted">{t("referralHint")}</p>
+        </div>
+      )}
 
       <button
         type="submit"

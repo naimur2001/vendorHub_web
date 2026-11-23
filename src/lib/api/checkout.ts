@@ -76,8 +76,9 @@ export const checkoutKeys = {
 };
 
 // The key makes a retry return the first result instead of creating the orders twice.
-export function placeOrders({ shops, key }: { shops: ShopChoice[]; key: string }): Promise<CheckoutResult> {
-  return api.post<CheckoutResult>("/checkout", { shops }, { headers: { "Idempotency-Key": key } });
+export function placeOrders({ shops, key, useCredit = false }: { shops: ShopChoice[]; key: string; useCredit?: boolean }): Promise<CheckoutResult> {
+  // useCredit: the server spends referral credit, at most 20% of each order's items after a coupon
+  return api.post<CheckoutResult>("/checkout", { shops, useCredit }, { headers: { "Idempotency-Key": key } });
 }
 
 export function getCheckout(checkoutId: string): Promise<CheckoutResult> {

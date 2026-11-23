@@ -122,7 +122,9 @@
     "errors": {
       "alreadyRegistered": "We couldn't create an account with these details. If you already have an account, log in or reset your password.",
       "tooManyAttempts": "Too many sign-ups from this connection. Wait a while, then try again."
-    }
+    },
+    "referral": "Invite code (optional)",
+    "referralHint": "Got a code from a friend? Enter it here."
   },
   "Forgot": {
     "metaTitle": "Forgot password",
@@ -270,7 +272,8 @@
     "addresses": "Saved addresses",
     "logOut": "Log out",
     "loggingOut": "Logging out…",
-    "saved": "Saved items"
+    "saved": "Saved items",
+    "credit": "Credit & invites"
   },
   "Catalog": {
     "availability": {
@@ -652,7 +655,9 @@
     "couponLabel": "Coupon code (optional)",
     "couponPlaceholder": "e.g. EID20",
     "couponHint": "For this shop only. The discount is checked and applied when you place the order.",
-    "couponFormat": "A coupon code is 4–16 letters or numbers."
+    "couponFormat": "A coupon code is 4–16 letters or numbers.",
+    "useCredit": "Use my credit ({amount} available)",
+    "useCreditHint": "Up to 20% of each order's items, after any coupon. The rest you pay as chosen."
   },
   "Order": {
     "metaTitle": "Order confirmation",
@@ -2903,6 +2908,35 @@
       "network": "No connection. Try again.",
       "changed": "Someone already handled this. Refreshing.",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "Credit": {
+    "title": "Credit and invites",
+    "subtitle": "Invite friends to Vendors Hub and get credit to spend on your orders.",
+    "loading": "Loading your credit…",
+    "guestTitle": "Log in to see your credit",
+    "logIn": "Log in",
+    "customersOnly": "Credit is for customer accounts.",
+    "loadError": "Couldn't load your credit. Try again.",
+    "retry": "Try again",
+    "balance": "Your credit",
+    "rule": "Use it at checkout: up to {percent}% of each order's items.",
+    "inviteTitle": "Give a friend the app, get {reward}",
+    "inviteText": "Share your code. When a friend signs up with it and their first order is completed, you get {reward} credit.",
+    "copyCode": "Copy code",
+    "share": "Share invite link",
+    "shareTitle": "Join me on Vendors Hub",
+    "shareText": "Shop Dhaka's real markets online. Sign up with my link:",
+    "codeCopied": "Code copied.",
+    "linkCopied": "Invite link copied.",
+    "copyFailed": "Couldn't copy. Select it and copy by hand.",
+    "stats": "{invited, plural, one {# friend} other {# friends}} signed up · {rewarded} rewarded",
+    "history": "History",
+    "historyEmpty": "No credit yet. Invite a friend to earn some.",
+    "kinds": {
+      "REFERRAL_REWARD": "Invite reward",
+      "CHECKOUT_SPEND": "Used at checkout",
+      "CHECKOUT_REFUND": "Returned (order cancelled)"
     }
   }
 }

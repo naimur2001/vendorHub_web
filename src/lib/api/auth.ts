@@ -11,6 +11,7 @@ export type RegisterInput = {
   password: string;
   phone?: string; // 01XXXXXXXXX
   role?: Extract<Role, "CUSTOMER" | "SHOP_OWNER">; // ADMIN can never self-register
+  referralCode?: string; // a friend's invite code (customers only); a wrong code is ignored by the server
 };
 
 export type ResetPasswordInput = { token: string; newPassword: string };
