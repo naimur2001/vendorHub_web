@@ -12,3 +12,12 @@ export function createReview(input: ReviewInput): Promise<{ id: string }> {
 export function updateReview(id: string, patch: { rating: number; comment: string | null }): Promise<{ id: string }> {
   return api.patch<{ id: string }>(`/reviews/${encodeURIComponent(id)}`, patch);
 }
+// Review photos (verified buyers only; at most 3; 5 MB; field "image"). The server converts them to WebP.
+export function addReviewPhoto(reviewId: string, file: File): Promise<import("./product-reviews").ReviewPhoto> {
+  const body = new FormData();
+  body.append("image", file);
+  return api.post(`/reviews/${encodeURIComponent(reviewId)}/photos`, body);
+}
+export function removeReviewPhoto(reviewId: string, photoId: string): Promise<unknown> {
+  return api.delete(`/reviews/${encodeURIComponent(reviewId)}/photos/${encodeURIComponent(photoId)}`);
+}

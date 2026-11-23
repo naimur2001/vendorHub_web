@@ -2831,7 +2831,20 @@
   "ReviewPhotos": {
     "open": "Open photo {n} of {total}",
     "close": "Close photo",
-    "dialog": "Customer photo"
+    "dialog": "Customer photo",
+    "addHint": "Add up to {max} photos of what you bought (verified buyers only).",
+    "add": "Add photo",
+    "uploading": "Uploading…",
+    "yourPhoto": "Your photo {n}",
+    "remove": "Remove photo {n}",
+    "notBuyer": "Only customers who bought this can add photos.",
+    "limit": "You can add up to 3 photos.",
+    "tooBig": "The photo is larger than 5 MB.",
+    "wrongType": "Use a JPEG, PNG or WebP photo.",
+    "tooMany": "Too many uploads. Wait a minute.",
+    "network": "No connection. Try again.",
+    "uploadError": "Couldn't upload. Try again.",
+    "removeError": "Couldn't remove. Try again."
   },
   "AdminModeration": {
     "metaTitle": "Moderation",

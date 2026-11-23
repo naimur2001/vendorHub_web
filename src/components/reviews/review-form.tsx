@@ -7,6 +7,7 @@ import { useId, useState, type FormEvent } from "react";
 import { ApiError } from "@/lib/api/core";
 import { createReview, updateReview, type ReviewType } from "@/lib/api/reviews";
 import { cn } from "@/lib/utils";
+import { ReviewPhotoUpload } from "@/components/reviews/review-photo-upload";
 
 type Props = { orderId: string; type: ReviewType; productId?: string; title: string };
 
@@ -86,6 +87,8 @@ export function ReviewForm({ orderId, type, productId, title }: Props) {
           {message.text}
         </p>
       )}
+      {/* photos can be added once the review exists */}
+      {existingId && type === "PRODUCT" && <ReviewPhotoUpload reviewId={existingId} />}
     </form>
   );
 }
