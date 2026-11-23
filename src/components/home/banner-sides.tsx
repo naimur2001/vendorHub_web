@@ -111,7 +111,7 @@ export function ToLetAd({ listing: l, count, tall = false }: { listing: HomeToLe
       href={count > 1 ? "/to-let" : `/to-let/${l.slug}`}
       className={cn(
         "group relative isolate flex shrink-0 flex-col justify-end overflow-hidden rounded-3xl shadow-card",
-        tall ? "h-full" : "h-40",
+        tall ? "h-full" : "h-52",
         "bg-brand p-3 text-primary-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none",
       )}
     >

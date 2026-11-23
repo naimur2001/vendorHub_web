@@ -60,13 +60,15 @@ async function HomeBanners() {
       </div>
       <BannerSlider banners={banners} />
       {right && (
-        <div className="hidden min-h-0 xl:flex xl:flex-col xl:gap-3">
-          {ad && (
-            <div className="min-h-0 flex-1">
-              <SideAd ad={ad} />
+        // The advert keeps the full banner height; the shop-to-let card hangs just below it,
+        // in the empty space beside the centred hero (it never covers the page text).
+        <div className="relative hidden xl:block">
+          {ad && <SideAd ad={ad} />}
+          {toLet[0] && (
+            <div className={ad ? "absolute inset-x-0 top-full z-10 mt-4" : "h-full"}>
+              <ToLetAd listing={toLet[0]} count={toLet.length} tall={!ad} />
             </div>
           )}
-          {toLet[0] && <ToLetAd listing={toLet[0]} count={toLet.length} tall={!ad} />}
         </div>
       )}
     </div>
