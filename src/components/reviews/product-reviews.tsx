@@ -1,6 +1,8 @@
 import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { ReportButton } from "@/components/moderation/report-button";
+import { ReviewPhotos } from "@/components/reviews/review-photos";
 import { Link } from "@/i18n/routing";
 import { getProductReviews, type ReviewSummary } from "@/lib/api/product-reviews";
 import { shortName } from "@/lib/api/storefront";
@@ -76,6 +78,7 @@ export async function ProductReviews({ slug }: { slug: string }) {
                 </div>
                 {/* Customer text: plain text, React escapes it */}
                 {r.comment && <p className="type-body whitespace-pre-line text-ink">{r.comment}</p>}
+                {r.photos && r.photos.length > 0 && <ReviewPhotos photos={r.photos} />}
                 <p className="type-caption text-ink-secondary">
                   — {r.reviewer ? shortName(r.reviewer) : ""}
                   {r.shop && (
@@ -85,6 +88,9 @@ export async function ProductReviews({ slug }: { slug: string }) {
                     </>
                   )}
                 </p>
+                <div className="-mt-2 flex justify-end">
+                  <ReportButton targetType="REVIEW" targetId={r.id} />
+                </div>
               </li>
             ))}
           </ul>

@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent 
 import { chatKeys, getChat, markChatRead, sendChatMessage, type ChatScope, type ChatState } from "@/lib/api/chat";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
+import { ReportButton } from "@/components/moderation/report-button";
 
 const POLL_MS = 10_000;
 const MAX = 1000;
@@ -108,6 +109,7 @@ export function OrderChat({ scope }: { scope: ChatScope }) {
                 </p>
                 <span className="type-caption flex items-center gap-1 text-ink-muted">
                   {format.dateTime(new Date(m.createdAt), { hour: "numeric", minute: "2-digit", day: "numeric", month: "short" })}
+                  {!m.mine && <ReportButton targetType="ORDER_MESSAGE" targetId={m.id} className="-my-3" />}
                   {m.mine && m.readAt && (
                     <>
                       <CheckCheck className="size-3.5 text-success-ink" aria-hidden />

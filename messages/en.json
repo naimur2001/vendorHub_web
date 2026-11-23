@@ -1191,7 +1191,8 @@
       "reports": "Reports",
       "back": "Back to the marketplace",
       "banners": "Banners",
-      "featured": "Featured"
+      "featured": "Featured",
+      "moderation": "Moderation"
     },
     "loading": "Loading…",
     "guestTitle": "Log in as an admin",
@@ -2804,6 +2805,90 @@
       "notFound": "This item isn't active or approved, so it can't be featured.",
       "invalid": "Check the dates: the end must be after the start.",
       "network": "No connection. Try again.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "Report": {
+    "label": "Report this",
+    "short": "Report",
+    "title": "What's wrong with it?",
+    "reasonLabel": "Reason",
+    "noteLabel": "Anything to add? (optional)",
+    "send": "Send report",
+    "thanks": "Thanks. Our team will look at it.",
+    "tooMany": "You've sent many reports today. Try again tomorrow.",
+    "network": "No connection. Try again.",
+    "error": "Couldn't send. Try again.",
+    "reasons": {
+      "SPAM": "Spam or advert",
+      "ABUSE": "Abusive or hateful",
+      "SCAM": "Scam or fraud",
+      "PERSONAL_INFO": "Shares personal information",
+      "OFF_TOPIC": "Off topic",
+      "OTHER": "Something else"
+    }
+  },
+  "ReviewPhotos": {
+    "open": "Open photo {n} of {total}",
+    "close": "Close photo",
+    "dialog": "Customer photo"
+  },
+  "AdminModeration": {
+    "metaTitle": "Moderation",
+    "title": "Moderation",
+    "subtitle": "Check new products from shops, and reports about reviews, photos and chat messages.",
+    "tabsLabel": "Queues",
+    "tabProducts": "New products",
+    "tabFlags": "Reports",
+    "statusLabel": "Status",
+    "productStatus": {
+      "PENDING": "Waiting",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "flagStatus": {
+      "OPEN": "Open",
+      "HIDDEN": "Hidden",
+      "KEPT": "Kept"
+    },
+    "loadError": "Couldn't load this. Try again.",
+    "retry": "Try again",
+    "productsClear": "All caught up. No products waiting.",
+    "productsEmpty": "Nothing here.",
+    "flagsClear": "No open reports.",
+    "flagsEmpty": "Nothing here.",
+    "msrp": "MSRP {price}",
+    "addedBy": "Added by",
+    "note": "Note: {note}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectReason": "Why is it rejected?",
+    "rejectHint": "The shop sees this. 3–300 characters.",
+    "confirmReject": "Reject product",
+    "cancel": "Cancel",
+    "target": {
+      "REVIEW": "Review",
+      "ORDER_MESSAGE": "Chat message",
+      "REVIEW_PHOTO": "Review photo"
+    },
+    "auto": "Auto-flagged",
+    "reports": "{count} reports",
+    "targetGone": "This was deleted.",
+    "reportedPhoto": "Reported photo",
+    "stars": "{count} stars",
+    "noText": "(no text)",
+    "isHidden": "Hidden from the public",
+    "reporterNote": "Reporter says: {note}",
+    "resolution": "Admin note: {note}",
+    "hide": "Hide it",
+    "keep": "Keep it",
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}",
+    "errors": {
+      "network": "No connection. Try again.",
+      "changed": "Someone already handled this. Refreshing.",
       "generic": "Something went wrong. Try again."
     }
   }

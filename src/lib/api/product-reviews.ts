@@ -2,7 +2,10 @@
 import type { ApiResult } from "./core";
 import { publicGet } from "./public";
 
+export type ReviewPhoto = { id: string; url: string; thumbUrl: string; width?: number | null; height?: number | null };
+
 export type ProductReview = {
+  photos?: ReviewPhoto[]; // up to 3, verified buyers only
   id: string;
   rating: number;
   comment: string | null;
