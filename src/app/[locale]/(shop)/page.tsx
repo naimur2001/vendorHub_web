@@ -18,6 +18,7 @@ import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
 import { OwnerStrip } from "@/components/owner/owner-strip";
 import { FlashDeals } from "@/components/home/flash-deals";
+import { ProductShelves } from "@/components/home/product-shelves";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -265,6 +266,11 @@ export default async function HomePage({ params }: Props) {
           <LatestProducts />
         </Suspense>
       </section>
+
+      {/* Tabs: best prices, premium picks, earlier arrivals (1-minute cache) */}
+      <Suspense fallback={<LatestSkeleton />}>
+        <ProductShelves />
+      </Suspense>
 
       {/* Products opened during this visit (shows from the second one) */}
       <RecentlyViewed />

@@ -2577,5 +2577,15 @@
     "days": "{count, plural, one {# day} other {# days}}",
     "endsInSr": "Deal ends in {days, plural, =0 {} one {# day} other {# days}} {hours} h {minutes} min",
     "left": "Only {count} left"
+  },
+  "Shelves": {
+    "title": "Explore the shelves",
+    "text": "Every kind of product from Dhaka's shops: bargains, premium picks and earlier arrivals.",
+    "tabsLabel": "Product shelves",
+    "tabs": {
+      "bestPrice": "Best prices",
+      "premium": "Premium picks",
+      "earlier": "Earlier arrivals"
+    }
   }
 }

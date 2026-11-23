@@ -2031,5 +2031,15 @@
     "days": "{count, plural, one {# দিন} other {# দিন}}",
     "endsInSr": "ডিল শেষ হবে {days, plural, =0 {} one {# দিন} other {# দিন}} {hours} ঘণ্টা {minutes} মিনিট পরে",
     "left": "মাত্র {count}টি বাকি"
+  },
+  "Shelves": {
+    "title": "তাক ঘুরে দেখুন",
+    "text": "ঢাকার দোকানের সব ধরনের পণ্য: কম দাম, প্রিমিয়াম বাছাই আর আগের আসা পণ্য।",
+    "tabsLabel": "পণ্যের তাক",
+    "tabs": {
+      "bestPrice": "সেরা দাম",
+      "premium": "প্রিমিয়াম বাছাই",
+      "earlier": "আগে আসা পণ্য"
+    }
   }
 }

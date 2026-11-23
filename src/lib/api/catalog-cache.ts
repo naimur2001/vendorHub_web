@@ -76,3 +76,19 @@ export async function getDeals(): Promise<PublicDeal[]> {
   cacheTag("deals");
   return (await publicGet<PublicDeal[]>("/deals", { limit: 12 }, { fresh: false })).data;
 }
+
+export type ShelfKey = "bestPrice" | "premium" | "earlier";
+const SHELVES: Record<ShelfKey, Parameters<typeof listProducts>[0]> = {
+  bestPrice: { sort: "price_asc", availableOnly: true, limit: 8 },
+  premium: { sort: "price_desc", availableOnly: true, limit: 8 },
+  earlier: { sort: "newest", availableOnly: true, limit: 8, page: 2 }, // after the 8 in "New in Dhaka's shops"
+};
+
+/** Home page "Explore the shelves" tabs: 8 products each, cached like the latest products. */
+export async function getShelf(key: ShelfKey): Promise<ProductCardData[]> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 600 });
+  cacheTag("products");
+  const { data } = await listProducts(SHELVES[key], { fresh: false });
+  return data;
+}
