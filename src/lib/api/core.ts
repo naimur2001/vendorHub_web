@@ -17,6 +17,7 @@ export type SessionUser = {
   avatarUrl: string | null;
   emailVerified?: boolean;
   deletionScheduledFor?: string | null;
+  smsOptOut?: boolean; // order status SMS / WhatsApp switched off
 };
 
 // What login, register and refresh return in cookie mode (no refreshToken in the JSON).

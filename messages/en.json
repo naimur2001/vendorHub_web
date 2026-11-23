@@ -1197,7 +1197,8 @@
       "back": "Back to the marketplace",
       "banners": "Banners",
       "featured": "Featured",
-      "moderation": "Moderation"
+      "moderation": "Moderation",
+      "messages": "Messages & payments"
     },
     "loading": "Loading…",
     "guestTitle": "Log in as an admin",
@@ -2938,5 +2939,27 @@
       "CHECKOUT_SPEND": "Used at checkout",
       "CHECKOUT_REFUND": "Returned (order cancelled)"
     }
+  },
+  "SmsPref": {
+    "title": "Order updates by SMS / WhatsApp",
+    "text": "A short message when your order is confirmed, ready for pickup, out for delivery or completed.",
+    "note": "You still see every update in the app. We never send adverts by SMS.",
+    "onSaved": "SMS updates are on.",
+    "offSaved": "SMS updates are off.",
+    "network": "No connection. Try again.",
+    "error": "Couldn't save. Try again."
+  },
+  "AdminMessages": {
+    "title": "Messages and payments",
+    "subtitle": "Which SMS/WhatsApp and payment providers are active, and the last 50 messages sent. Phone numbers are masked.",
+    "messaging": "SMS / WhatsApp",
+    "payments": "Online payments",
+    "testMode": "Test mode",
+    "mockNote": "Test mode: nothing is really sent or charged. Real bKash, Nagad, SMS and WhatsApp need provider accounts set on the server.",
+    "latest": "Latest messages",
+    "refresh": "Refresh",
+    "empty": "No messages sent yet.",
+    "loadError": "Couldn't load this. Try again.",
+    "retry": "Try again"
   }
 }

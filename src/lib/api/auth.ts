@@ -81,7 +81,7 @@ export function isEmailNotVerified(err: unknown): boolean {
 
 // ---------- Profile ----------
 
-export function updateProfile(patch: { name?: string; phone?: string | null }): Promise<unknown> {
+export function updateProfile(patch: { name?: string; phone?: string | null; smsOptOut?: boolean }): Promise<unknown> {
   return api.patch<unknown>("/users/me", patch);
 }
 

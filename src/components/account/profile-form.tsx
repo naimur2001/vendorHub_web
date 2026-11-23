@@ -11,6 +11,7 @@ import { changePassword, refreshSession, updateProfile } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
+import { SmsPreference } from "@/components/account/sms-preference";
 import { DeleteAccount } from "@/components/account/delete-account";
 function Note({ kind, text }: { kind: "ok" | "error"; text: string }) {
   return (
@@ -71,6 +72,7 @@ export function ProfileForm() {
 
   return (
     <div className="flex flex-col gap-6">
+      <SmsPreference />
       <form onSubmit={onDetails} noValidate className={box}>
         <h2 className="type-h3 text-ink">{t("detailsTitle")}</h2>
         <TextField label={t("name")} autoComplete="name" maxLength={80} value={nameValue} onChange={(e) => setName(e.target.value)} />
