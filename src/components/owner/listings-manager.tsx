@@ -21,6 +21,7 @@ import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { NewProductForm } from "@/components/owner/new-product-form";
 import { ListingPhotosButton } from "@/components/owner/listing-photos";
 import { CsvImport } from "@/components/owner/csv-import";
+import { DeletionRequestBox, DeletionRequestsSummary } from "@/components/owner/deletion-request";
 
 
 
@@ -200,6 +201,8 @@ export function ListingsManager() {
         </p>
       )}
 
+      {shop.membership === "OWNER" && <DeletionRequestsSummary shopId={shop.id} />}
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <nav aria-label={t("filterLabel")} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
           <ul className="flex w-max gap-2 pb-1">
@@ -317,6 +320,7 @@ export function ListingsManager() {
                   </button>
                   {panel.listing.isActive && <p className="type-caption text-ink-muted">{t("switchOffNote")}</p>}
                 </div>
+                {shop.membership === "OWNER" && <DeletionRequestBox shopId={shop.id} productId={panel.listing.productId} />}
               </>
             )}
 

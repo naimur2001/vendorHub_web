@@ -29,6 +29,8 @@ const id = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
   if (n.type === "ORDER_NEW" || n.type === "ORDER_CANCELLED") return "/owner/orders";
   if (n.type.startsWith("BARGAIN")) return isTeam ? "/owner/bargains" : "/bargains";
   if (n.type.startsWith("VERIFICATION")) return "/owner/setup";
+  if (n.type === "PRODUCT_DELETION_REQUESTED") return isAdmin ? "/admin/deletion-requests" : "/";
+  if (n.type.startsWith("PRODUCT_DELETION")) return "/owner/listings";
   return "/";
 }
 

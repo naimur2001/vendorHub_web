@@ -3456,5 +3456,42 @@
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "OwnerDeletion": {
+    "boxTitle": "Delete this product",
+    "boxText": "Only for products your shop added. It is hidden at once and deleted after 12 hours, unless Vendors Hub rejects it. A product with orders is only switched off.",
+    "request": "Request deletion",
+    "confirmText": "The product will be hidden now and deleted in 12 hours. You can cancel until then.",
+    "reasonLabel": "Reason (optional)",
+    "send": "Request deletion",
+    "sending": "Sending…",
+    "keep": "Keep it",
+    "pendingText": "Deletion requested. The product is hidden from customers.",
+    "autoIn": "Deletes {when}",
+    "autoSoon": "Deleting now…",
+    "cancel": "Cancel request",
+    "summaryTitle": "Deletion requests",
+    "rejectNote": "Vendors Hub: {note}",
+    "loadError": "Deletion requests couldn't load.",
+    "status": {
+      "PENDING": "Waiting",
+      "DONE": "Done",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "outcome": {
+      "DELETED": "Deleted",
+      "DEACTIVATED": "Switched off (has orders)"
+    },
+    "errors": {
+      "NOT_CREATED_BY_SHOP": "This is a shared catalog product. Remove your listing instead (switch it off).",
+      "PRODUCT_LOCKED": "Vendors Hub has locked this product, so it can't be deleted.",
+      "SHARED_PRODUCT": "Another shop sells this product, so it can't be deleted. Switch off your listing instead.",
+      "ALREADY_PENDING": "A deletion request for this product is already waiting.",
+      "NOT_PENDING": "This request was already decided.",
+      "ownerOnly": "Only the shop owner can do this.",
+      "network": "No connection. Try again.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }
