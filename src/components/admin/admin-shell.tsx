@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet"; icon: LucideIcon }[] = [
+const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion"; icon: LucideIcon }[] = [
   { href: "/admin", key: "queue", icon: ShieldCheck },
   { href: "/admin/orders", key: "orders", icon: PackageCheck },
   { href: "/admin/to-let", key: "toLet", icon: KeyRound },
@@ -19,6 +19,7 @@ const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "ca
   { href: "/admin/moderation", key: "moderation", icon: Flag },
   { href: "/admin/messages", key: "messages", icon: MessageSquareText },
   { href: "/admin/products", key: "products", icon: Package },
+  { href: "/admin/deletion-requests", key: "deletion", icon: Trash2 },
   { href: "/admin/audit", key: "audit", icon: ScrollText },
   { href: "/admin/catalog", key: "catalog", icon: Tags },
     { href: "/admin/disputes", key: "disputes", icon: Scale },

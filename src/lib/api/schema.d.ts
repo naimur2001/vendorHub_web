@@ -1133,7 +1133,7 @@ export interface paths {
         };
         /**
          * Users, shops, orders and sales, queues, catalog counts, top shops and recent activity
-         * @description Also ordersLate (orders late by the admin order monitor's rules, see GET /admin/orders?late=any) and ordersToday (orders placed since midnight, Asia/Dhaka).
+         * @description Also ordersLate (orders late by the admin order monitor's rules, see GET /admin/orders?late=any), ordersToday (orders placed since midnight, Asia/Dhaka) and demographics: counts of active accounts only, never a list of users. demographics.ageGroups has under18, 18-24, 25-34, 35-44, 45-54, 55plus and unknown; demographics.gender has FEMALE, MALE, OTHER, PREFER_NOT_TO_SAY and unknown. Every group of fewer than 5 people is the string "<5" instead of a number.
          */
         get: operations["adminDashboard"];
         put?: never;
@@ -1381,7 +1381,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Edit my name, phone or avatar */
+        /** Edit my name, phone, avatar, SMS setting, birth year or gender */
         patch: operations["updateMyProfile"];
         trace?: never;
     };
@@ -3099,6 +3099,674 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/to-let": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published shop spaces for rent (not expired), no contact details */
+        get: operations["listToLet"];
+        put?: never;
+        /**
+         * Offer a shop space (login optional)
+         * @description A guest gives contactName, contactPhone and contactEmail and gets PENDING_EMAIL plus a confirmation email (24 hours). A logged-in user with a verified email (and that same contact email) goes straight to SUBMITTED; missing contact fields come from the profile. At most 3 open listings per phone or email (409 TOLET_LIMIT). Rate limited per IP.
+         */
+        post: operations["createToLet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/confirm-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the email (PENDING_EMAIL -> SUBMITTED); a guest then gets the private manage link by email */
+        post: operations["confirmToLetEmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/manage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A guest's own listing by the private manage token */
+        get: operations["getManagedToLet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/to-let": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My own listings (latest 50, any status) */
+        get: operations["listMyToLet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A published listing (photos, market, terms); no contact details, no documents */
+        get: operations["getToLet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit my listing (a PUBLISHED or NEEDS_INFO listing goes back to SUBMITTED)
+         * @description The contact email cannot change. 409 TOLET_CLOSED for RENTED, REJECTED, EXPIRED or WITHDRAWN.
+         */
+        patch: operations["updateToLet"];
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw my open listing (its enquiries are closed) */
+        post: operations["withdrawToLet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}/photos": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a public photo (JPG/PNG/WebP, 5 MB, at least 480 x 270, re-encoded WebP; at most 6)
+         * @description On a PUBLISHED listing the photo sends it back to SUBMITTED. 409 TOLET_PHOTO_LIMIT.
+         */
+        post: operations["addToLetPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a photo (the files too) */
+        delete: operations["removeToLetPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a private ownership proof (PDF, JPG or PNG by content, 5 MB, at most 3; admins only can open it) */
+        post: operations["addToLetDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        /** My thread with the admin (oldest first; marks the admin's messages read) */
+        get: operations["getToLetOwnerMessages"];
+        put?: never;
+        /** Write to the admin about my listing */
+        post: operations["sendToLetOwnerMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/{id}/inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask about a published listing (login optional; the admins are notified)
+         * @description At most 3 enquiries per phone per day (429 INQUIRY_LIMIT) and one open enquiry per phone per listing (409 INQUIRY_EXISTS). A guest gets followToken ONCE; keep it to read the answers.
+         */
+        post: operations["createToLetInquiry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/to-let/inquiries/{id}/messages": {
+        parameters: {
+            query?: {
+                /** @description A guest's follow token (or send it as header X-Follow-Token). */
+                token?: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        /** My enquiry thread with the admin (oldest first) */
+        get: operations["getToLetInquiryMessages"];
+        put?: never;
+        /** Write to the admin about my enquiry (409 INQUIRY_CLOSED when closed) */
+        post: operations["sendToLetInquiryMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All listings with counts per status (recently changed first) */
+        get: operations["adminListToLet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        /** Everything about a listing (contacts, documents, threads, enquiries, notes); marks messages read */
+        get: operations["adminGetToLet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/documents/{docId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+                docId: string;
+            };
+            cookie?: never;
+        };
+        /** Download an ownership document (PDF as attachment, never cached) */
+        get: operations["adminGetToLetDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a SUBMITTED or NEEDS_INFO listing for 60 days (409 TOLET_WRONG_STATUS otherwise) */
+        post: operations["adminPublishToLet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/request-info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask the owner for more information (posts the message in the owner thread; NEEDS_INFO) */
+        post: operations["adminRequestToLetInfo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject with a reason (its enquiries are closed) */
+        post: operations["adminRejectToLet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/mark-rented": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a PUBLISHED or EXPIRED listing as rented (its enquiries are closed) */
+        post: operations["adminMarkToLetRented"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extend a PUBLISHED or EXPIRED listing by 60 days (from its end, or from now if it has ended) */
+        post: operations["adminRenewToLet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an internal note (never shown to the owner or renters) */
+        post: operations["adminAddToLetNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reply in the owner thread (the owner is notified) */
+        post: operations["adminReplyToLetOwner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/inquiries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set an enquiry's status */
+        patch: operations["adminSetToLetInquiryStatus"];
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/inquiries/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reply to an enquirer (the first answer moves NEW to IN_TALKS) */
+        post: operations["adminReplyToLetInquiry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/to-let/inquiries/{id}/share-contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send each side the other's name and phone by SMS (only on this click; CONNECTED; audited) */
+        post: operations["adminShareToLetContacts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/products/{productId}/deletion-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeletionShopId"];
+                productId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask to delete a product your shop created (shop owner only)
+         * @description The product is hidden from public pages at once (as if deactivated) and every admin is notified. It is deleted automatically at autoDeleteAt (12 hours later) unless an admin rejects the request. Staff and admins get 403. 404 when the shop neither created nor lists the product. 409 with error.details.code: NOT_CREATED_BY_SHOP (a shared catalog product: remove your listing instead), PRODUCT_LOCKED (Vendors Hub locked it), SHARED_PRODUCT (another shop lists it), ALREADY_PENDING (one pending request per product).
+         */
+        post: operations["requestProductDeletion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/deletion-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeletionShopId"];
+            };
+            cookie?: never;
+        };
+        /** The shop's deletion requests, newest first (shop owner only) */
+        get: operations["listShopDeletionRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/deletion-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeletionShopId"];
+                id: components["parameters"]["DeletionRequestId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancel a pending request (shop owner only); the product is visible again
+         * @description 409 NOT_PENDING when the request was already decided.
+         */
+        delete: operations["cancelProductDeletion"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/deletion-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All deletion requests (ADMIN). status=PENDING is ordered by autoDeleteAt, the rest newest first */
+        get: operations["adminListDeletionRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/deletion-requests/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeletionRequestId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a pending request (ADMIN); the product is visible again and the owner is notified
+         * @description 409 NOT_PENDING when the request was already decided.
+         */
+        post: operations["adminRejectDeletionRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/deletion-requests/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeletionRequestId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a pending request (ADMIN); the product is deleted now (or deactivated if it has orders)
+         * @description The request becomes DONE with its outcome; the owner is notified. 409 NOT_PENDING when already decided.
+         */
+        post: operations["adminApproveDeletionRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/permanent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete any product at once (ADMIN); a product with orders is deactivated instead
+         * @description Removes every shop's listing of it. A pending deletion request for the product is closed as DONE with the same outcome and its owner is notified. (DELETE /admin/products/{id} still only deactivates.)
+         */
+        delete: operations["adminDeleteProductPermanently"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3132,7 +3800,15 @@ export interface components {
         VerificationLevel: "UNVERIFIED" | "DOCUMENTS_VERIFIED" | "BUSINESS_VERIFIED" | "PHYSICAL_SHOP_VERIFIED" | "TRUSTED_VENDOR";
         /** @enum {string} */
         Role: "CUSTOMER" | "SHOP_OWNER" | "SHOP_STAFF" | "ADMIN";
+        /** @description The user's OWN account (session, /auth/me, PATCH /users/me). birthYear and gender appear only here. */
         User: {
+            /** @description Private; cleared when the account is deleted. */
+            birthYear: number | null;
+            /**
+             * @description Private; cleared when the account is deleted.
+             * @enum {string|null}
+             */
+            gender: "FEMALE" | "MALE" | "OTHER" | "PREFER_NOT_TO_SAY" | null;
             /** @description true = no order status SMS / WhatsApp (PATCH /users/me). */
             smsOptOut: boolean;
             /** Format: uuid */
@@ -4608,6 +5284,235 @@ export interface components {
             };
             adminNotes: components["schemas"]["AdminOrderNote"][];
         };
+        /** @enum {string} */
+        ToLetStatus: "PENDING_EMAIL" | "SUBMITTED" | "NEEDS_INFO" | "PUBLISHED" | "RENTED" | "REJECTED" | "EXPIRED" | "WITHDRAWN";
+        /** @enum {string} */
+        ToLetInquiryStatus: "NEW" | "IN_TALKS" | "CONNECTED" | "CLOSED";
+        ToLetMarket: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+        } | null;
+        ToLetPhoto: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            thumbUrl: string;
+            width: number;
+            height: number;
+        };
+        /** @description marketId or marketName is required. */
+        ToLetInput: {
+            /** Format: uuid */
+            marketId?: string | null;
+            marketName?: string | null;
+            levelFloor?: string | null;
+            shopNumber?: string | null;
+            addressLine: string;
+            sizeSqft: number;
+            /** @description Whole taka. */
+            monthlyRent: number;
+            /** @description Whole taka. */
+            advance: number;
+            /** Format: date */
+            availableFrom: string;
+            /** @description Category ids. */
+            suitableFor?: string[];
+            /** @description Plain text. */
+            description: string;
+            /** @description Private. Required for guests. */
+            contactName?: string;
+            /** @description Private. Required for guests (and for users without a phone). */
+            contactPhone?: string;
+            /**
+             * Format: email
+             * @description Private. Required for guests.
+             */
+            contactEmail?: string;
+        };
+        ToLetUpdate: {
+            /** Format: uuid */
+            marketId?: string | null;
+            marketName?: string | null;
+            levelFloor?: string | null;
+            shopNumber?: string | null;
+            addressLine?: string;
+            sizeSqft?: number;
+            monthlyRent?: number;
+            advance?: number;
+            /** Format: date */
+            availableFrom?: string;
+            suitableFor?: string[];
+            description?: string;
+            contactName?: string;
+            contactPhone?: string;
+        };
+        ToLetCard: {
+            /** Format: uuid */
+            id: string;
+            slug: string | null;
+            title: string;
+            market: components["schemas"]["ToLetMarket"];
+            marketName: string | null;
+            levelFloor: string | null;
+            addressLine: string;
+            sizeSqft: number;
+            monthlyRent: number;
+            advance: number;
+            /** Format: date */
+            availableFrom: string;
+            cover: components["schemas"]["ToLetPhoto"] | null;
+            photoCount: number;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** Format: date-time */
+            expiresAt: string | null;
+        };
+        ToLetPublic: components["schemas"]["ToLetCard"] & {
+            shopNumber: string | null;
+            suitableFor: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+            }[];
+            description: string;
+            photos: components["schemas"]["ToLetPhoto"][];
+        };
+        ToLetDocumentMeta: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            mimeType: "application/pdf" | "image/jpeg" | "image/png";
+            size: number;
+            originalName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Admin view only (GET /admin/to-let/{id}/documents/{docId}). */
+            url?: string;
+        };
+        ToLetOwnerView: components["schemas"]["ToLetPublic"] & {
+            /** Format: uuid */
+            marketId: string | null;
+            status: components["schemas"]["ToLetStatus"];
+            rejectReason: string | null;
+            contactName: string;
+            contactPhone: string;
+            contactEmail: string;
+            documents: components["schemas"]["ToLetDocumentMeta"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ToLetMessage: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            senderRole: "OWNER" | "RENTER" | "ADMIN";
+            mine: boolean;
+            /** @description Plain text. */
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            readAt: string | null;
+        };
+        ToLetNote: {
+            /** Format: uuid */
+            id: string;
+            body: string;
+            author: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            };
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ToLetAdminView: components["schemas"]["ToLetOwnerView"] & {
+            submitter: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string | null;
+                phone: string | null;
+            } | null;
+            guest: boolean;
+            ownerThread: {
+                messages: components["schemas"]["ToLetMessage"][];
+            };
+            inquiries: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                phone: string;
+                email: string | null;
+                message: string;
+                status: components["schemas"]["ToLetInquiryStatus"];
+                guest: boolean;
+                /** Format: date-time */
+                contactsSharedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+                messages: components["schemas"]["ToLetMessage"][];
+            }[];
+            notes: components["schemas"]["ToLetNote"][];
+        };
+        /** @enum {string} */
+        ProductDeletionStatus: "PENDING" | "REJECTED" | "CANCELLED" | "DONE";
+        /** @enum {string} */
+        ProductDeletionOutcome: "DELETED" | "DEACTIVATED";
+        ProductDeletionRequest: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            productId: string;
+            /** @description The title when the request was made (kept after the product is deleted). */
+            productTitle: string;
+            /** Format: uuid */
+            shopId: string;
+            reason: string | null;
+            status: components["schemas"]["ProductDeletionStatus"];
+            /** @description null until DONE. */
+            outcome: components["schemas"]["ProductDeletionOutcome"] | null;
+            /**
+             * Format: date-time
+             * @description createdAt + 12 hours; the job carries the request out then.
+             */
+            autoDeleteAt: string;
+            rejectNote: string | null;
+            /** Format: date-time */
+            decidedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminProductDeletionRequest: components["schemas"]["ProductDeletionRequest"] & {
+            /** Format: uuid */
+            requestedById: string;
+            /**
+             * Format: uuid
+             * @description The admin who approved or rejected; null when the job or the owner decided.
+             */
+            decidedById: string | null;
+            shop: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+            };
+            /** @description The product now; null once it has been deleted. */
+            product: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                isActive: boolean;
+            } | null;
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -4876,6 +5781,72 @@ export interface components {
                 };
             };
         };
+        /** @description The listing (owner view). */
+        ToLetOwner: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["ToLetOwnerView"];
+                };
+            };
+        };
+        /** @description The new status. */
+        ToLetStatusChange: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        /** Format: uuid */
+                        id: string;
+                        status: components["schemas"]["ToLetStatus"];
+                    };
+                };
+            };
+        };
+        /** @description The messages. */
+        ToLetThread: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        messages: components["schemas"]["ToLetMessage"][];
+                    };
+                };
+            };
+        };
+        /** @description The message. */
+        ToLetMessageSent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["ToLetMessage"];
+                };
+            };
+        };
+        /** @description The request. */
+        DeletionRequestResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["ProductDeletionRequest"];
+                };
+            };
+        };
     };
     parameters: {
         Page: number;
@@ -4902,6 +5873,14 @@ export interface components {
         XDeviceId: string;
         ReviewIdParam: string;
         AdminOrderId: string;
+        ToLetId: string;
+        ToLetInquiryId: string;
+        /** @description A guest owner's private manage token (logged-in owners do not need it). */
+        ManageToken: string;
+        DeletionShopId: string;
+        DeletionRequestId: string;
+        DeletionStatus: components["schemas"]["ProductDeletionStatus"];
+        DeletionLimit: number;
     };
     requestBodies: {
         PhotoUpload: {
@@ -4919,6 +5898,14 @@ export interface components {
             content: {
                 "application/json": {
                     /** @description Plain text (control characters are removed; shown as text, never as HTML). */
+                    body: string;
+                };
+            };
+        };
+        ToLetMessageBody: {
+            content: {
+                "application/json": {
+                    /** @description Plain text. */
                     body: string;
                 };
             };
@@ -5006,6 +5993,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    /** @description Optional and private. From (this year - 100) to (this year - 13); younger -> 400 with error.details.code TOO_YOUNG. */
+                    birthYear?: number | null;
+                    /**
+                     * @description Optional and private.
+                     * @enum {string|null}
+                     */
+                    gender?: "FEMALE" | "MALE" | "OTHER" | "PREFER_NOT_TO_SAY" | null;
                     /** @description A friend's code (customers). A wrong or self-referral code never blocks the signup; it just earns nothing. */
                     referralCode?: string;
                     name: string;
@@ -7807,6 +8801,13 @@ export interface operations {
                     avatarUrl?: string | null;
                     /** @description true = no order status SMS / WhatsApp. */
                     smsOptOut?: boolean;
+                    /** @description Optional and private. From (this year - 100) to (this year - 13); younger -> 400 with error.details.code TOO_YOUNG. */
+                    birthYear?: number | null;
+                    /**
+                     * @description Optional and private.
+                     * @enum {string|null}
+                     */
+                    gender?: "FEMALE" | "MALE" | "OTHER" | "PREFER_NOT_TO_SAY" | null;
                 };
             };
         };
@@ -11337,6 +12338,1043 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    listToLet: {
+        parameters: {
+            query?: {
+                marketId?: string;
+                minRent?: number;
+                maxRent?: number;
+                /** @description Square feet. */
+                minSize?: number;
+                maxSize?: number;
+                /** @description Text in the description, address, floor or market name (2-100 characters). */
+                q?: string;
+                sort?: "newest" | "rent_asc" | "rent_desc";
+                page?: components["parameters"]["Page"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of cards. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetCard"][];
+                        meta: {
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    createToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToLetInput"];
+            };
+        };
+        responses: {
+            /** @description The listing (the owner's own view). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetOwnerView"] & {
+                            emailConfirmationRequired: boolean;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    confirmToLetEmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Confirmed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            listingId: string;
+                            /** @enum {string} */
+                            status: "SUBMITTED";
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    getManagedToLet: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listMyToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The listings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetOwnerView"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The listing. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetPublic"];
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateToLet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToLetUpdate"];
+            };
+        };
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    withdrawToLet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ToLetStatusChange"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    addToLetPhoto: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    image: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The photo. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetPhoto"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The photo is too small. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    removeToLetPhoto: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    addToLetDocument: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The document (metadata only). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetDocumentMeta"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getToLetOwnerMessages: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ToLetThread"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    sendToLetOwnerMessage: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description A guest owner's private manage token (logged-in owners do not need it). */
+                "X-Manage-Token"?: components["parameters"]["ManageToken"];
+            };
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["ToLetMessageBody"];
+        responses: {
+            201: components["responses"]["ToLetMessageSent"];
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    createToLetInquiry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    phone: string;
+                    /** Format: email */
+                    email?: string;
+                    message: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The enquiry. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            inquiryId: string;
+                            status: components["schemas"]["ToLetInquiryStatus"];
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** @description Guests only, shown once. */
+                            followToken?: string;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    getToLetInquiryMessages: {
+        parameters: {
+            query?: {
+                /** @description A guest's follow token (or send it as header X-Follow-Token). */
+                token?: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The thread. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            inquiryId: string;
+                            status: components["schemas"]["ToLetInquiryStatus"];
+                            messages: components["schemas"]["ToLetMessage"][];
+                        };
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    sendToLetInquiryMessage: {
+        parameters: {
+            query?: {
+                /** @description A guest's follow token (or send it as header X-Follow-Token). */
+                token?: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["ToLetMessageBody"];
+        responses: {
+            201: components["responses"]["ToLetMessageSent"];
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminListToLet: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ToLetStatus"];
+                page?: components["parameters"]["Page"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            id: string;
+                            slug: string | null;
+                            title: string;
+                            status: components["schemas"]["ToLetStatus"];
+                            market: components["schemas"]["ToLetMarket"];
+                            marketName: string | null;
+                            monthlyRent: number;
+                            sizeSqft: number;
+                            contactName: string;
+                            contactPhone: string;
+                            guest: boolean;
+                            photoCount: number;
+                            documentCount: number;
+                            inquiryCount: number;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: date-time */
+                            publishedAt: string | null;
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                        }[];
+                        meta: {
+                            /** @description Every status, also 0. */
+                            counts: {
+                                [key: string]: number;
+                            };
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The listing. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetAdminView"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminGetToLetDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+                docId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                    "image/jpeg": string;
+                    "image/png": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminPublishToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRequestToLetInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    message: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRejectToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminMarkToLetRented: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRenewToLet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["ToLetOwner"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminAddToLetNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The note. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ToLetNote"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminReplyToLetOwner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["ToLetMessageBody"];
+        responses: {
+            201: components["responses"]["ToLetMessageSent"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminSetToLetInquiryStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    status: components["schemas"]["ToLetInquiryStatus"];
+                };
+            };
+        };
+        responses: {
+            /** @description Changed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            id: string;
+                            status: components["schemas"]["ToLetInquiryStatus"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminReplyToLetInquiry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["ToLetMessageBody"];
+        responses: {
+            201: components["responses"]["ToLetMessageSent"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminShareToLetContacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ToLetInquiryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sent. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            id: string;
+                            status: components["schemas"]["ToLetInquiryStatus"];
+                            /** Format: date-time */
+                            contactsSharedAt: string;
+                            sentTo: ("RENTER" | "OWNER")[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    requestProductDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeletionShopId"];
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    reason?: string;
+                };
+            };
+        };
+        responses: {
+            201: components["responses"]["DeletionRequestResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listShopDeletionRequests: {
+        parameters: {
+            query?: {
+                status?: components["parameters"]["DeletionStatus"];
+                page?: components["parameters"]["Page"];
+                limit?: components["parameters"]["DeletionLimit"];
+            };
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeletionShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of requests. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ProductDeletionRequest"][];
+                        meta: {
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    cancelProductDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeletionShopId"];
+                id: components["parameters"]["DeletionRequestId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeletionRequestResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminListDeletionRequests: {
+        parameters: {
+            query?: {
+                status?: components["parameters"]["DeletionStatus"];
+                page?: components["parameters"]["Page"];
+                limit?: components["parameters"]["DeletionLimit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of requests. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminProductDeletionRequest"][];
+                        meta: {
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminRejectDeletionRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeletionRequestId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    note: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["DeletionRequestResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminApproveDeletionRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeletionRequestId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeletionRequestResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminDeleteProductPermanently: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What happened. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            productId: string;
+                            outcome: components["schemas"]["ProductDeletionOutcome"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

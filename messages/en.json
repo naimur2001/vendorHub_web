@@ -1201,7 +1201,8 @@
       "moderation": "Moderation",
       "messages": "Messages & payments",
       "orders": "Orders",
-      "toLet": "Shops to let"
+      "toLet": "Shops to let",
+      "deletion": "Deletion requests"
     },
     "loading": "Loading…",
     "guestTitle": "Log in as an admin",
@@ -1542,7 +1543,15 @@
       "invalid": "Check the fields and try again.",
       "network": "Can't reach Vendors Hub. Check your connection.",
       "generic": "That didn't work. Try again in a moment."
-    }
+    },
+    "delete": "Delete permanently",
+    "deleteConfirm": "Delete for good? This can't be undone.",
+    "deleteYes": "Yes, delete",
+    "deleteNo": "Cancel",
+    "deleting": "Deleting…",
+    "deleted": "Product deleted.",
+    "deletedKept": "This product has orders, so it was switched off instead of deleted.",
+    "deleteError": "The product couldn't be deleted. Try again."
   },
   "OwnerNewProduct": {
     "addNew": "Can't find it? Add a new product",
@@ -3407,5 +3416,45 @@
     "adOne": "See this shop",
     "adMore": "See all {count} shops to let",
     "empty": "No shops to let right now. Have one to rent out? List it free."
+  },
+  "AdminDeletion": {
+    "title": "Product deletion requests",
+    "subtitle": "Shop owners ask to delete their products. Each one is deleted automatically after 12 hours unless you reject it. Products with orders are only switched off, so order history stays.",
+    "statusLabel": "Filter by status",
+    "status": {
+      "PENDING": "Waiting",
+      "DONE": "Done",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "outcome": {
+      "DELETED": "Deleted",
+      "DEACTIVATED": "Switched off (has orders)"
+    },
+    "empty": "No requests here.",
+    "loadError": "Requests couldn't load.",
+    "retry": "Try again",
+    "byShop": "From {shop}",
+    "reason": "Reason: {reason}",
+    "rejectNote": "Your note: {note}",
+    "autoIn": "Deletes automatically {when}",
+    "autoSoon": "Deleting now…",
+    "approve": "Delete now",
+    "approveConfirm": "Delete this product now? This can't be undone. If it has orders it is only switched off.",
+    "approveYes": "Yes, delete",
+    "reject": "Reject",
+    "noteLabel": "Why are you rejecting? The shop owner sees this (3–500 characters).",
+    "rejectSend": "Reject request",
+    "cancel": "Cancel",
+    "working": "Working…",
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}",
+    "errors": {
+      "state": "This request was already decided. The list has been refreshed.",
+      "network": "No connection. Try again.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }

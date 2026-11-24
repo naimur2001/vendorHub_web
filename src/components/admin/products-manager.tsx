@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, GitMerge, LoaderCircle, Pencil, Plus, Search, X,Image as ImageIcon } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, GitMerge, LoaderCircle, Pencil, Plus, Search, X,Image as ImageIcon, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { ProductPhotos } from "@/components/admin/product-photos";
 
 import { refreshPublicPages } from "@/lib/refresh-public";
+import { deleteProductPermanently } from "@/lib/api/product-deletion";
 
 type Filter = "ACTIVE" | "INACTIVE" | "ALL";
 type Panel = { kind: "add" } | { kind: "edit"; product: AdminProduct } | { kind: "merge"; product: AdminProduct } | { kind: "photos"; product: AdminProduct } | null;
@@ -264,6 +265,7 @@ export function ProductsManager() {
   const [query, setQuery] = useState<ProductQuery>({ isActive: true, page: 1, limit: 20 });
   const [panel, setPanel] = useState<Panel>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const products = useQuery({ queryKey: productKeys.list(query), queryFn: () => listAdminProducts(query), placeholderData: keepPreviousData });
   const categoriesQ = useQuery({ queryKey: productKeys.categories, queryFn: listCategories, staleTime: 5 * 60_000 });
@@ -280,6 +282,14 @@ export function ProductsManager() {
   const toggle = useMutation({
     mutationFn: (p: AdminProduct) => updateProduct(p.id, { isActive: !p.isActive }),
     onSuccess: () => refresh(t("saved")),
+  });
+  const purge = useMutation({
+    mutationFn: (id: string) => deleteProductPermanently(id),
+    onSuccess: (r) => {
+      setConfirmDelete(null);
+      refresh(r?.outcome === "DEACTIVATED" ? t("deletedKept") : t("deleted"));
+    },
+    onError: () => setNotice(t("deleteError")),
   });
   const review = useMutation({
     mutationFn: (id: string) => reviewProduct(id),
@@ -453,6 +463,22 @@ export function ProductsManager() {
                   >
                     {p.isActive ? t("switchOff") : t("switchOn")}
                   </button>
+                  {confirmDelete === p.id ? (
+                    <span className="flex flex-wrap items-center gap-2 rounded-sm bg-error-soft p-2">
+                      <span className="type-body text-ink">{t("deleteConfirm")}</span>
+                      <button type="button" onClick={() => purge.mutate(p.id)} disabled={purge.isPending} className="type-body-medium flex h-11 items-center rounded-sm bg-error px-3 text-primary-foreground hover:opacity-90 focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60">
+                        {purge.isPending ? t("deleting") : t("deleteYes")}
+                      </button>
+                      <button type="button" onClick={() => setConfirmDelete(null)} disabled={purge.isPending} className="type-body-medium flex h-11 items-center rounded-sm px-3 text-ink-secondary hover:bg-subtle">
+                        {t("deleteNo")}
+                      </button>
+                    </span>
+                  ) : (
+                    <button type="button" onClick={() => { setNotice(null); setConfirmDelete(p.id); }} className="type-body-medium flex h-11 items-center gap-1.5 rounded-sm px-3 text-error hover:bg-error-soft focus-visible:ring-2 focus-visible:ring-error focus-visible:outline-none">
+                      <Trash2 className="size-4" aria-hidden />
+                      {t("delete")}
+                    </button>
+                  )}
                 </div>
               </li>
             ))}
