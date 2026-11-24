@@ -9,6 +9,9 @@ Last updated: 2026-11-24. Everything else is built and pushed on branch `naimur`
 | Real bKash / Nagad payments | The backend payment provider is a stub (returns 501). Merchant accounts are needed. | Replace the pay-mock button with `POST /orders/:id/payments`, then redirect to `redirectUrl`. Handle the success, failed and cancelled return pages. |
 | Real SMS / WhatsApp sending | The provider is a stub. A provider account is needed. | No UI change needed. The opt-out and `/admin/messages` log are already done. Only test with real phones. |
 
+| Courier delivery, step 3 (shop + checkout) | Backend: owner `deliveryMode`/`courierReady` in `GET /shops/mine`, courier store state in `GET /admin/shops`, a delivery fee quote per address. | Courier status + "Ready for pickup" on shop orders, admin "create Pathao store" per shop, courier fee at checkout. For now every delivery goes through Vendors Hub courier (Pathao). |
+| Shop's own delivery (later) | Decided 2026-11-24: build later. | Owner setting "My own delivery" vs "Vendors Hub courier". |
+
 ## Frontend only (optional ideas)
 
 - [x] To-Let: warn the owner before submitting a listing with no photos.
