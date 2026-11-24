@@ -3428,7 +3428,8 @@
       "CANCELLED": "Cancelled"
     },
     "outcome": {
-      "DELETED": "Deleted",
+      "DELETED": "Product deleted",
+      "LISTING_DELETED": "Listing deleted",
       "DEACTIVATED": "Switched off (has orders)"
     },
     "empty": "No requests here.",
@@ -3455,18 +3456,22 @@
       "state": "This request was already decided. The list has been refreshed.",
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
-    }
+    },
+    "scope": {
+      "PRODUCT": "Whole product",
+      "LISTING": "Shop's listing only"
+    },
+    "approveConfirmListing": "Delete this shop's listing now? The product stays for other shops. This can't be undone. If the listing has orders it is only switched off."
   },
   "OwnerDeletion": {
     "boxTitle": "Delete this product",
-    "boxText": "Only for products your shop added. It is hidden at once and deleted after 12 hours, unless Vendors Hub rejects it. A product with orders is only switched off.",
+    "boxText": "If your shop created this product and no other shop sells it, the whole product is deleted. Otherwise only your listing (price, stock, photos) is deleted and the product stays for other shops. It is hidden at once and deleted after 12 hours, unless Vendors Hub rejects it. Anything with orders is only switched off.",
     "request": "Request deletion",
-    "confirmText": "The product will be hidden now and deleted in 12 hours. You can cancel until then.",
+    "confirmText": "It will be hidden now and deleted in 12 hours. You can cancel until then.",
     "reasonLabel": "Reason (optional)",
     "send": "Request deletion",
     "sending": "Sending…",
     "keep": "Keep it",
-    "pendingText": "Deletion requested. The product is hidden from customers.",
     "autoIn": "Deletes {when}",
     "autoSoon": "Deleting now…",
     "cancel": "Cancel request",
@@ -3480,18 +3485,23 @@
       "CANCELLED": "Cancelled"
     },
     "outcome": {
-      "DELETED": "Deleted",
+      "DELETED": "Product deleted",
+      "LISTING_DELETED": "Listing deleted",
       "DEACTIVATED": "Switched off (has orders)"
     },
     "errors": {
-      "NOT_CREATED_BY_SHOP": "This is a shared catalog product. Remove your listing instead (switch it off).",
-      "PRODUCT_LOCKED": "Vendors Hub has locked this product, so it can't be deleted.",
-      "SHARED_PRODUCT": "Another shop sells this product, so it can't be deleted. Switch off your listing instead.",
       "ALREADY_PENDING": "A deletion request for this product is already waiting.",
       "NOT_PENDING": "This request was already decided.",
       "ownerOnly": "Only the shop owner can do this.",
       "network": "No connection. Try again.",
-      "generic": "Something went wrong. Try again."
+      "generic": "Something went wrong. Try again.",
+      "notListed": "Your shop doesn't list this product any more. Refresh the page."
+    },
+    "pendingProduct": "Deletion requested: the whole product. It is hidden from customers.",
+    "pendingListing": "Deletion requested: your listing only. Other shops keep the product. Your listing is hidden from customers.",
+    "scope": {
+      "PRODUCT": "Whole product",
+      "LISTING": "Your listing"
     }
   }
 }

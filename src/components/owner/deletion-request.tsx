@@ -16,7 +16,7 @@ import {
 } from "@/lib/api/product-deletion";
 import { cn } from "@/lib/utils";
 
-const KNOWN = ["NOT_CREATED_BY_SHOP", "PRODUCT_LOCKED", "SHARED_PRODUCT", "ALREADY_PENDING", "NOT_PENDING"];
+const KNOWN = ["ALREADY_PENDING", "NOT_PENDING"];
 const outline = "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:opacity-60";
 const danger = "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-error px-4 text-primary-foreground hover:opacity-90 focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60";
 
@@ -31,6 +31,7 @@ function useErrorText() {
       const code = deletionErrorCode(err.details);
       if (err.status === 409 && code && KNOWN.includes(code)) return t(`errors.${code}`);
       if (err.status === 403) return t("errors.ownerOnly");
+      if (err.status === 404) return t("errors.notListed");
       if (err.status === 0) return t("errors.network");
     }
     return t("errors.generic");
@@ -98,7 +99,7 @@ export function DeletionRequestBox({ shopId, productId }: { shopId: string; prod
         <div className="h-11 skeleton rounded-sm" aria-hidden />
       ) : pending ? (
         <div className="flex flex-col gap-2 rounded-sm bg-error-soft p-3">
-          <p className="type-body text-ink">{t("pendingText")}</p>
+          <p className="type-body text-ink">{t(pending.scope === "LISTING" ? "pendingListing" : "pendingProduct")}</p>
           <Countdown r={pending} />
           <CancelButton shopId={shopId} r={pending} />
         </div>
@@ -143,6 +144,7 @@ export function DeletionRequestsSummary({ shopId }: { shopId: string }) {
             <span className="flex min-w-0 flex-col gap-1">
               <span className="flex flex-wrap items-center gap-2">
                 <span className="type-body-medium text-ink">{r.productTitle}</span>
+                <span className="type-caption rounded-full bg-highlight-soft px-2 py-0.5 text-highlight">{t(`scope.${r.scope}`)}</span>
                 <span className="type-caption rounded-full bg-subtle px-2 py-0.5 text-ink-secondary">
                   {r.status === "DONE" && r.outcome ? t(`outcome.${r.outcome}`) : t(`status.${r.status}`)}
                 </span>

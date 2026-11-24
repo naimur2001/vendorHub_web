@@ -3632,8 +3632,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Ask to delete a product your shop created (shop owner only)
-         * @description The product is hidden from public pages at once (as if deactivated) and every admin is notified. It is deleted automatically at autoDeleteAt (12 hours later) unless an admin rejects the request. Staff and admins get 403. 404 when the shop neither created nor lists the product. 409 with error.details.code: NOT_CREATED_BY_SHOP (a shared catalog product: remove your listing instead), PRODUCT_LOCKED (Vendors Hub locked it), SHARED_PRODUCT (another shop lists it), ALREADY_PENDING (one pending request per product).
+         * Ask to delete a product from your shop (shop owner only)
+         * @description The shop must have a listing of the product (else 404). The backend picks the scope: PRODUCT when the shop created the product, it is not locked and no other shop has an active listing of it (the whole product goes); LISTING in every other case (only this shop's listing goes, the product stays for the other shops). This shop's listing is hidden from public pages at once, and for PRODUCT scope the product too. Every admin is notified. It is carried out at autoDeleteAt (12 hours later) unless an admin rejects it. When it is carried out, PRODUCT falls back to LISTING if another shop has listed the product meanwhile; after a LISTING delete, a shop-made, unlocked product with no listing left is deleted too. Anything with orders is only deactivated. Staff and admins get 403. 409 ALREADY_PENDING (one pending request per shop and product).
          */
         post: operations["requestProductDeletion"];
         delete?: never;
@@ -5464,8 +5464,13 @@ export interface components {
         };
         /** @enum {string} */
         ProductDeletionStatus: "PENDING" | "REJECTED" | "CANCELLED" | "DONE";
+        /**
+         * @description DELETED = the product was deleted; LISTING_DELETED = only this shop's listing was deleted (the product stays); DEACTIVATED = it had orders, so the product (PRODUCT scope) or the listing (LISTING scope) was deactivated instead.
+         * @enum {string}
+         */
+        ProductDeletionOutcome: "DELETED" | "DEACTIVATED" | "LISTING_DELETED";
         /** @enum {string} */
-        ProductDeletionOutcome: "DELETED" | "DEACTIVATED";
+        ProductDeletionScope: "PRODUCT" | "LISTING";
         ProductDeletionRequest: {
             /** Format: uuid */
             id: string;
@@ -5475,6 +5480,8 @@ export interface components {
             productTitle: string;
             /** Format: uuid */
             shopId: string;
+            /** @description Decided at create; a PRODUCT request becomes LISTING if another shop listed the product before it was carried out. */
+            scope: components["schemas"]["ProductDeletionScope"];
             reason: string | null;
             status: components["schemas"]["ProductDeletionStatus"];
             /** @description null until DONE. */

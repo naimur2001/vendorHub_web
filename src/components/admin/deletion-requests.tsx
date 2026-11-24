@@ -96,6 +96,7 @@ function Row({ r }: { r: AdminDeletionRequest }) {
       <div className="flex flex-col gap-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="type-body-medium text-ink">{r.product?.title ?? r.productTitle}</span>
+          <span className="type-caption rounded-full bg-highlight-soft px-2 py-0.5 text-highlight">{t(`scope.${r.scope}`)}</span>
           {r.outcome && <span className="type-caption rounded-full bg-subtle px-2 py-0.5 text-ink-secondary">{t(`outcome.${r.outcome}`)}</span>}
         </span>
         <span className="type-caption text-ink-secondary">{t("byShop", { shop: r.shop.name })} · {format.dateTime(new Date(r.createdAt), { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>
@@ -118,7 +119,7 @@ function Row({ r }: { r: AdminDeletionRequest }) {
 
       {mode === "approve" && (
         <div className="flex flex-col gap-2 rounded-sm bg-error-soft p-3">
-          <p className="type-body text-ink">{t("approveConfirm")}</p>
+          <p className="type-body text-ink">{t(r.scope === "LISTING" ? "approveConfirmListing" : "approveConfirm")}</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => approve.mutate()} disabled={busy} className={danger}>{approve.isPending ? t("working") : t("approveYes")}</button>
             <button type="button" onClick={() => setMode(null)} disabled={busy} className={outline}>{t("cancel")}</button>
