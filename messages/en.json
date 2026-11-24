@@ -760,7 +760,21 @@
     "next": "Next",
     "pageOf": "Page {page} of {total}",
     "track": "Track order",
-    "trackLabel": "Track order {number}"
+    "trackLabel": "Track order {number}",
+    "eyebrow": "Your account",
+    "subtitle": "Follow every order from the shop to your hands: placed, confirmed, on its way, done.",
+    "browseMarkets": "Browse markets",
+    "more": "+{count} more",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "cancelledNote": "This order was cancelled.",
+    "progressLabel": "Step {step} of {total}: {stop}",
+    "stops": {
+      "placed": "Placed",
+      "confirmed": "Confirmed",
+      "ready": "Ready",
+      "onTheWay": "On the way",
+      "done": "Done"
+    }
   },
   "Bargain": {
     "makeOffer": "Make an offer",

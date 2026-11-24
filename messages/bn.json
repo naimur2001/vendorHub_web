@@ -684,7 +684,21 @@
     "next": "পরের",
     "pageOf": "পেজ {page} / {total}",
     "track": "অর্ডার ট্র্যাক করুন",
-    "trackLabel": "অর্ডার {number} ট্র্যাক করুন"
+    "trackLabel": "অর্ডার {number} ট্র্যাক করুন",
+    "eyebrow": "আপনার অ্যাকাউন্ট",
+    "subtitle": "প্রতিটি অর্ডার দোকান থেকে আপনার হাত পর্যন্ত অনুসরণ করুন: দেওয়া হয়েছে, নিশ্চিত, পথে, সম্পন্ন।",
+    "browseMarkets": "মার্কেট দেখুন",
+    "more": "+আরও {count}টি",
+    "itemCount": "{count}টি পণ্য",
+    "cancelledNote": "এই অর্ডারটি বাতিল করা হয়েছে।",
+    "progressLabel": "ধাপ {step} / {total}: {stop}",
+    "stops": {
+      "placed": "দেওয়া হয়েছে",
+      "confirmed": "নিশ্চিত",
+      "ready": "প্রস্তুত",
+      "onTheWay": "পথে",
+      "done": "সম্পন্ন"
+    }
   },
   "Bargain": {
     "makeOffer": "অফার দিন",
