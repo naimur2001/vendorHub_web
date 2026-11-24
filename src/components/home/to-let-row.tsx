@@ -6,17 +6,16 @@ import { getHomeToLet, type HomeToLet } from "@/lib/api/catalog-cache";
 import { safeMediaUrl } from "@/lib/api/storefront";
 import { formatTaka } from "@/lib/format";
 
-/** Home page advert for people looking for a shop to rent. Hidden when nothing is listed. */
+/** Home page advert for people looking for a shop to rent. Always shown; an empty note when nothing is listed. */
 export async function ToLetRow() {
   const t = await getTranslations("ToLetHome");
   const tL = await getTranslations("ToLet");
-  let items: HomeToLet[];
+  let items: HomeToLet[] = [];
   try {
     items = await getHomeToLet();
   } catch {
-    return null;
+    // API down: still show the row with the "List your shop" button
   }
-  if (items.length === 0) return null;
   const locale = await getLocale();
   const format = await getFormatter();
 
@@ -40,6 +39,9 @@ export async function ToLetRow() {
           </Link>
         </div>
       </div>
+      {items.length === 0 ? (
+        <p className="type-body rounded-sm bg-brand-alt p-4 text-primary-foreground/85">{t("empty")}</p>
+      ) : (
       <ul className="scroll-row -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 md:-mx-8 md:px-8">
         {items.map((l) => {
           const cover = safeMediaUrl(l.cover?.thumbUrl) ?? safeMediaUrl(l.cover?.url);
@@ -72,6 +74,7 @@ export async function ToLetRow() {
           );
         })}
       </ul>
+      )}
     </section>
   );
 }

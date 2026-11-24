@@ -2639,7 +2639,8 @@
       "bargain": "Bargain-friendly",
       "premium": "Premium picks",
       "classics": "Long-time favourites"
-    }
+    },
+    "empty": "No products on this shelf yet. Check back soon."
   },
   "Promotions": {
     "title": "Deals and coupons",
@@ -3404,6 +3405,7 @@
     "listYours": "List your shop",
     "adLabel": "Shop for rent",
     "adOne": "See this shop",
-    "adMore": "See all {count} shops to let"
+    "adMore": "See all {count} shops to let",
+    "empty": "No shops to let right now. Have one to rent out? List it free."
   }
 }

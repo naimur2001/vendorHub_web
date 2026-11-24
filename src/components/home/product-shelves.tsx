@@ -5,16 +5,17 @@ import type { ProductCardData } from "@/lib/api/catalog";
 import { getShelf, SHELF_KEYS as KEYS } from "@/lib/api/catalog-cache";
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
-/** Home page "Explore the shelves": tabs of products (trending, best sellers, best prices, bargain, premium, long-time favourites). Empty tabs are left out. */
+/** Home page "Explore the shelves": tabs of products (trending, best sellers, best prices, bargain, premium, long-time favourites). Always shown; an empty tab shows a short note. */
 export async function ProductShelves() {
   const t = await getTranslations("Shelves");
   const lists = await Promise.all(KEYS.map((k) => getShelf(k).catch((): ProductCardData[] => [])));
   const tabs = KEYS.map((key, i) => ({ key, products: lists[i] }))
-    .filter((s) => s.products.length > 0)
     .map(({ key, products }) => ({
       key,
       label: t(`tabs.${key}`),
-      panel: (
+      panel: products.length === 0 ? (
+        <p className="type-body rounded-sm bg-subtle p-6 text-center text-ink-secondary">{t("empty")}</p>
+      ) : (
         <div className={GRID}>
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -22,7 +23,6 @@ export async function ProductShelves() {
         </div>
       ),
     }));
-  if (tabs.length === 0) return null; // nothing to show (or the API is down): the rest of the page still works
 
   return (
     <section aria-labelledby="shelves-title" className="flex flex-col gap-5">
