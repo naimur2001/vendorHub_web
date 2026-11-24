@@ -80,6 +80,7 @@ function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean;
         <img
           {...img}
           alt={title}
+          draggable={false}
           className={cn(contain ? "object-contain" : "object-cover", "motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out", active ? "scale-100" : "scale-105")}
         />
       </picture>
@@ -121,12 +122,11 @@ function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean;
   );
 }
 
-/** Home page billboard: sliding admin banners. Pauses on hover, focus, hidden tab and reduced motion. */
+/** Home page billboard: sliding admin banners. Always auto-slides; pauses only for keyboard focus, a hidden tab and reduced motion. */
 export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
   const t = useTranslations("Banners");
   const reduced = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(false);
   const startX = useRef<number | null>(null);
@@ -140,7 +140,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
 
-  const playing = count > 1 && !reduced && !hovered && !focused && !hidden;
+  const playing = count > 1 && !reduced && !focused && !hidden;
   useEffect(() => {
     if (!playing) return;
     const id = window.setTimeout(() => go(index + 1), AUTOPLAY_MS);
@@ -155,8 +155,11 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     else return;
     e.preventDefault();
   }
-  function onPointerDown(e: PointerEvent) {
+  function onPointerDown(e: PointerEvent<HTMLDivElement>) {
     startX.current = e.clientX;
+    // Keep getting pointer events while a mouse drag leaves the banner.
+    // (Not on a link, so its click still works.)
+    if (!(e.target as Element).closest("a, button")) e.currentTarget.setPointerCapture(e.pointerId);
   }
   function onPointerUp(e: PointerEvent) {
     if (startX.current === null) return;
@@ -170,8 +173,6 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
       aria-roledescription={t("carousel")}
       aria-label={t("label")}
       onKeyDown={onKeyDown}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       // Only keyboard focus pauses; a mouse click on a control must not stop the slideshow.
       onFocus={(e) => setFocused(e.target.matches(":focus-visible"))}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setFocused(false)}
@@ -179,7 +180,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     >
       <div className="relative overflow-hidden rounded-3xl">
         <div
-          className={cn("flex touch-pan-y", SLIDE_EASE, BANNER_FRAME)}
+          className={cn("flex touch-pan-y cursor-grab select-none active:cursor-grabbing", SLIDE_EASE, BANNER_FRAME)}
           style={{ transform: `translateX(-${index * 100}%)` }}
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
