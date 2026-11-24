@@ -121,7 +121,7 @@ export function ToLetAd({ listing: l, count, tall = false }: { listing: HomeToLe
         <KeyRound className="absolute top-3 right-3 -z-10 size-16 text-gold/40" strokeWidth={1} aria-hidden />
       )}
       <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-brand via-brand/70 to-transparent" />
-      <span className="type-body-medium absolute top-3 left-3 rounded-full bg-gold px-5 py-1 text-ink shadow-card">{tL("badge")}</span>
+      <span className="type-body-medium absolute top-3 left-3 rounded-full bg-gold px-5 py-2 text-ink shadow-card">{tL("badge")}</span>
       <span className="type-caption text-primary-foreground/80">{t("adLabel")}</span>
       <span className="type-body-medium line-clamp-2">{l.marketName ?? l.title}</span>
       <span className="type-caption font-medium text-gold">{tL("perMonth", { rent: formatTaka(l.monthlyRent, locale) })}</span>
