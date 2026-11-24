@@ -282,11 +282,6 @@ export default async function HomePage({ params }: Props) {
         </Suspense>
       </section>
 
-      {/* Admin-picked shops */}
-      <Suspense>
-        <FeaturedShops />
-      </Suspense>
-
       {/* Asks for location only when the visitor taps the button */}
       <ShopsNearYou />
 
@@ -302,6 +297,11 @@ export default async function HomePage({ params }: Props) {
           <LatestProducts />
         </Suspense>
       </section>
+
+      {/* Admin-picked shops */}
+      <Suspense>
+        <FeaturedShops />
+      </Suspense>
 
       {/* Tabs: trending, best sellers, prices, bargains, premium, favourites (1-minute cache) */}
       <Suspense fallback={<LatestSkeleton />}>
