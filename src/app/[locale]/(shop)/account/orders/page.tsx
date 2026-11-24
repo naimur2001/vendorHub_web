@@ -21,9 +21,8 @@ export default async function MyOrdersPage({ params }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <AccountBack />
-      {/* Header: eyebrow, title and a gold rule that draws itself once */}
+      {/* Header: title and a gold rule that draws itself once */}
       <header className="relative flex flex-col gap-2 pb-4">
-        <span className="type-caption font-medium tracking-[0.2em] text-highlight uppercase">{t("eyebrow")}</span>
         <h1 className="type-display text-ink">{t("title")}</h1>
         <p className="type-body max-w-xl text-ink-secondary">{t("subtitle")}</p>
         <span aria-hidden className="absolute bottom-0 left-0 h-px w-full origin-left bg-gold motion-safe:animate-[vh-draw-x_300ms_cubic-bezier(0.65,0,0.35,1)_backwards]" />
