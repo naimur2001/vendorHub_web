@@ -3268,7 +3268,11 @@
     "photosSkipped": "Some files were skipped: use JPEG, PNG or WebP up to 5 MB.",
     "photosGuest": "As a guest, you'll add these after confirming your email (from your private link).",
     "photosAfterConfirm": "Add your photos from the private link after you confirm your email.",
-    "photosUploaded": "{done} of {total} photos uploaded. Add more any time."
+    "photosUploaded": "{done} of {total} photos uploaded. Add more any time.",
+    "noPhotosTitle": "Add photos before you send?",
+    "noPhotosText": "Listings with photos get many more enquiries. You can still send it now and add photos later.",
+    "noPhotosAdd": "Add photos",
+    "noPhotosSend": "Send without photos"
   },
   "ToLetManage": {
     "title": "Manage your shop to let",

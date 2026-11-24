@@ -1,6 +1,6 @@
 # Features still to build
 
-Last updated: 2026-11-23. Everything else is built and pushed on branch `naimur`.
+Last updated: 2026-11-24. Everything else is built and pushed on branch `naimur`.
 
 ## Needs the backend first
 
@@ -12,8 +12,13 @@ Last updated: 2026-11-23. Everything else is built and pushed on branch `naimur`
 
 ## Frontend only (optional ideas)
 
-- [ ] To-Let: warn the owner before submitting a listing with no photos.
+- [x] To-Let: warn the owner before submitting a listing with no photos.
 - [ ] Small home advert row: shrink the text if long advert titles look crowded at 390px.
+
+## Recently built
+
+- Product deletion: shop owners request it (hidden at once, deleted after 12 hours unless an admin rejects). Shared or catalog products delete only the owner's listing. Admins have `/admin/deletion-requests` and "Delete permanently" on products. Anything with orders is only switched off.
+- Home page: the shops-to-let row and the product shelves always show, with an empty note when there is nothing yet.
 
 ## Decided not to do
 

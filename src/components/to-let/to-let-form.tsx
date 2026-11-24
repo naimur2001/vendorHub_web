@@ -52,6 +52,7 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
   const [files, setFiles] = useState<File[]>([]);
   const [photoNote, setPhotoNote] = useState<string | null>(null);
   const [uploaded, setUploaded] = useState(0);
+  const [noPhotoWarn, setNoPhotoWarn] = useState(false); // new listing without photos: ask once before sending
   const [v, setV] = useState({
     marketId: existing?.marketId ?? "",
     marketName: existing && !existing.marketId ? (existing.marketName ?? "") : "",
@@ -114,7 +115,13 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
     if (!existing && !EMAIL.test(v.contactEmail.trim())) next.contactEmail = t("errors.email");
     setErrors(next);
     if (Object.keys(next).length) return setFormError(t("errors.fix"));
+    setFormError(null);
+    if (!existing && files.length === 0) return setNoPhotoWarn(true);
+    send();
+  }
 
+  function send() {
+    setNoPhotoWarn(false);
     save.mutate({
       ...(v.marketId ? { marketId: v.marketId, marketName: null } : { marketId: null, marketName: v.marketName.trim() }),
       levelFloor: v.levelFloor.trim() || null,
@@ -269,6 +276,7 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
                   const ok = picked.filter((f) => IMG.includes(f.type) && f.size <= FIVE_MB);
                   setPhotoNote(ok.length < picked.length ? t("photosSkipped") : null);
                   setFiles((fs) => [...fs, ...ok].slice(0, MAX_PHOTOS));
+                  if (ok.length) setNoPhotoWarn(false);
                 }}
               />
             </label>
@@ -295,6 +303,21 @@ export function ToLetForm({ existing, auth = {}, onSaved }: Props) {
       </fieldset>
 
       {formError && <p role="alert" className="type-body text-error">{formError}</p>}
+      {noPhotoWarn && (
+        <div role="alert" className="flex flex-col gap-3 rounded-md border border-highlight bg-highlight-soft p-4">
+          <p className="type-body-medium text-ink">{t("noPhotosTitle")}</p>
+          <p className="type-body text-ink-secondary">{t("noPhotosText")}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => document.getElementById(`${id}-ph`)?.click()} className="type-body-medium inline-flex h-11 items-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none">
+              <ImagePlus className="size-4" aria-hidden />
+              {t("noPhotosAdd")}
+            </button>
+            <button type="button" onClick={send} disabled={save.isPending} className="type-body-medium inline-flex h-11 items-center rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:opacity-60">
+              {t("noPhotosSend")}
+            </button>
+          </div>
+        </div>
+      )}
       <p className="type-caption text-ink-muted">{existing ? t("editNote") : t("afterNote")}</p>
       <button type="submit" disabled={save.isPending} className="type-body-medium flex h-12 items-center justify-center gap-2 self-start rounded-sm bg-action px-6 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60">
         {save.isPending && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden />}
