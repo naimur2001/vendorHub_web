@@ -311,6 +311,11 @@ export default async function HomePage({ params }: Props) {
       {/* Products opened during this visit (shows from the second one) */}
       <RecentlyViewed />
 
+      {/* Shops to let: just before "How it works" (5-minute cache) */}
+      <Suspense>
+        <ToLetRow />
+      </Suspense>
+
       {/* How it works: three numbered arches that grow up as you reach them, joined by a gold line */}
       <section aria-labelledby="how-title" className="flex flex-col gap-8">
         <SectionHeading id="how-title" title={t("howTitle")} text={t("howText")} />
@@ -389,11 +394,6 @@ export default async function HomePage({ params }: Props) {
           </div>
         </section>
       </Reveal>
-
-      {/* Shops to let: the last section, just before the footer (5-minute cache) */}
-      <Suspense>
-        <ToLetRow />
-      </Suspense>
     </div>
   );
 }
