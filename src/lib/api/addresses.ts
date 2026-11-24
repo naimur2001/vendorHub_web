@@ -9,6 +9,13 @@ export type Address = {
   city: string;
   phone: string;
   isDefault: boolean;
+  // Delivery area from the courier's lists (needed for courier delivery); names filled in by the server
+  courierCityId?: number | null;
+  courierCityName?: string | null;
+  courierZoneId?: number | null;
+  courierZoneName?: string | null;
+  courierAreaId?: number | null;
+  courierAreaName?: string | null;
 };
 
 export type AddressInput = {
@@ -18,6 +25,10 @@ export type AddressInput = {
   city: string;
   phone: string;
   isDefault?: boolean;
+  // all three or none (400 BAD_LOCATION otherwise)
+  courierCityId?: number | null;
+  courierZoneId?: number | null;
+  courierAreaId?: number | null;
 };
 
 export const addressKeys = { all: ["addresses"] as const };

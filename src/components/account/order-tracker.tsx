@@ -12,6 +12,7 @@ import { getOrder, orderKeys, type OrderDetail, type OrderStatus } from "@/lib/a
 import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
 import { OrderChat } from "@/components/orders/order-chat";
+import { CourierStatus } from "@/components/orders/courier-status";
 
 const DONE: OrderStatus[] = ["COMPLETED", "CANCELLED"];
 const REFRESH_MS = 30_000;
@@ -106,6 +107,8 @@ function TrackerView({ order, refreshing }: { order: OrderDetail; refreshing: bo
 
         <OrderTimeline order={order} />
       </section>
+
+      {order.shipment && <CourierStatus shipment={order.shipment} />}
 
       <OrderChat scope={{ kind: "customer", orderId: order.id }} />
 

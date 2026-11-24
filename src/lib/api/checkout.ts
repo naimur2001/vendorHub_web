@@ -101,7 +101,8 @@ export function cancelOrder(orderId: string, reason?: string): Promise<Order> {
 }
 // One saved status change (oldest first). No ids or user data.
 export type OrderStatusEvent = components["schemas"]["OrderStatusEvent"];
-export type OrderDetail = Order & { statusEvents: OrderStatusEvent[] };
+// shipment: courier orders only (else null). Courier name and tracking code stay null until pickup.
+export type OrderDetail = Order & { statusEvents: OrderStatusEvent[]; shipment?: import("./delivery").CustomerShipment | null };
 
 export const orderKeys = {
   detail: (orderId: string) => ["order", orderId] as const,

@@ -3,13 +3,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, LoaderCircle, MapPin, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TextField } from "@/components/ui/text-field";
 import { Link } from "@/i18n/routing";
+import { deliveryKeys, listAreas, listCities, listZones } from "@/lib/api/delivery";
 import { addressKeys, createAddress, deleteAddress, listAddresses, updateAddress, type Address, type AddressInput } from "@/lib/api/addresses";
+import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
 
@@ -22,12 +24,13 @@ function AddressForm({ address, onSaved, onCancel }: { address?: Address; onSave
   const [city, setCity] = useState(address?.city ?? "Dhaka");
   const [phone, setPhone] = useState(address?.phone ?? user?.phone ?? "");
   const [isDefault, setIsDefault] = useState(address?.isDefault ?? false);
+  const [loc, setLoc] = useState<Loc>({ city: address?.courierCityId ?? null, zone: address?.courierZoneId ?? null, area: address?.courierAreaId ?? null });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const save = useMutation({
     mutationFn: (input: AddressInput) => (address ? updateAddress(address.id, input) : createAddress(input)),
     onSuccess: onSaved,
-    onError: () => setErrors({ form: t("errors.generic") }),
+    onError: (err) => setErrors({ form: err instanceof ApiError && err.status === 400 ? t("errors.badArea") : t("errors.generic") }),
   });
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -37,6 +40,7 @@ function AddressForm({ address, onSaved, onCancel }: { address?: Address; onSave
     if (line1.trim().length < 5 || line1.trim().length > 200) next.line1 = t("errors.line1");
     if (city.trim().length < 2 || city.trim().length > 60) next.city = t("errors.city");
     if (!BD_MOBILE.test(p)) next.phone = t("errors.phone");
+    if (loc.city && (!loc.zone || !loc.area)) next.loc = t("errors.area");
     setErrors(next);
     if (Object.keys(next).length > 0) return;
     save.mutate({
@@ -46,6 +50,8 @@ function AddressForm({ address, onSaved, onCancel }: { address?: Address; onSave
       city: city.trim(),
       phone: p,
       isDefault,
+      // the delivery area goes only when all three are chosen
+      ...(loc.city && loc.zone && loc.area && { courierCityId: loc.city, courierZoneId: loc.zone, courierAreaId: loc.area }),
     });
   }
 
@@ -55,6 +61,7 @@ function AddressForm({ address, onSaved, onCancel }: { address?: Address; onSave
       <TextField label={t("form.line1")} placeholder={t("form.line1Placeholder")} autoComplete="address-line1" maxLength={200} value={line1} onChange={(e) => setLine1(e.target.value)} error={errors.line1} />
       <TextField label={t("form.area")} autoComplete="address-level3" maxLength={100} value={area} onChange={(e) => setArea(e.target.value)} />
       <TextField label={t("form.city")} autoComplete="address-level2" maxLength={60} value={city} onChange={(e) => setCity(e.target.value)} error={errors.city} />
+      <AreaPicker value={loc} onChange={setLoc} error={errors.loc} />
       <TextField label={t("form.phone")} type="tel" inputMode="tel" autoComplete="tel" maxLength={25} value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} />
       <label className="flex cursor-pointer items-center gap-3">
         <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="size-5 accent-brand" />
@@ -74,6 +81,50 @@ function AddressForm({ address, onSaved, onCancel }: { address?: Address; onSave
         </button>
       </div>
     </form>
+  );
+}
+
+type Loc = { city: number | null; zone: number | null; area: number | null };
+const select = "type-body h-11 w-full rounded-sm border border-input bg-card px-3 text-ink focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none disabled:bg-subtle disabled:text-ink-disabled";
+
+/** City, then zone, then area, from the courier's own lists. Needed for courier delivery; the fee depends on it. */
+function AreaPicker({ value, onChange, error }: { value: Loc; onChange: (v: Loc) => void; error?: string }) {
+  const t = useTranslations("Addresses");
+  const id = useId();
+  const cities = useQuery({ queryKey: deliveryKeys.cities, queryFn: listCities, staleTime: 60 * 60_000 });
+  const zones = useQuery({ queryKey: deliveryKeys.zonesOf(value.city ?? 0), queryFn: () => listZones(value.city as number), enabled: value.city !== null, staleTime: 60 * 60_000 });
+  const areas = useQuery({ queryKey: deliveryKeys.areasOf(value.zone ?? 0), queryFn: () => listAreas(value.zone as number), enabled: value.zone !== null, staleTime: 60 * 60_000 });
+  const num = (v: string) => (/^\d{1,9}$/.test(v) ? Number(v) : null);
+  const failed = cities.isError || zones.isError || areas.isError;
+
+  return (
+    <fieldset className="flex flex-col gap-3 rounded-sm border border-line p-3" aria-describedby={`${id}-hint`}>
+      <legend className="type-body-medium px-1 text-ink">{t("form.deliveryArea")}</legend>
+      <p id={`${id}-hint`} className="type-caption -mt-1 text-ink-muted">{t("form.deliveryAreaHint")}</p>
+      <label htmlFor={`${id}-c`} className="flex flex-col gap-1">
+        <span className="type-caption text-ink-secondary">{t("form.cityPick")}</span>
+        <select id={`${id}-c`} value={value.city ?? ""} disabled={cities.isPending} onChange={(e) => onChange({ city: num(e.target.value), zone: null, area: null })} className={select}>
+          <option value="">{cities.isPending ? t("form.loadingList") : t("form.choose")}</option>
+          {(cities.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </label>
+      <label htmlFor={`${id}-z`} className="flex flex-col gap-1">
+        <span className="type-caption text-ink-secondary">{t("form.zonePick")}</span>
+        <select id={`${id}-z`} value={value.zone ?? ""} disabled={value.city === null || zones.isPending} onChange={(e) => onChange({ ...value, zone: num(e.target.value), area: null })} className={select}>
+          <option value="">{value.city !== null && zones.isPending ? t("form.loadingList") : t("form.choose")}</option>
+          {(zones.data ?? []).map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
+        </select>
+      </label>
+      <label htmlFor={`${id}-a`} className="flex flex-col gap-1">
+        <span className="type-caption text-ink-secondary">{t("form.areaPick")}</span>
+        <select id={`${id}-a`} value={value.area ?? ""} disabled={value.zone === null || areas.isPending} onChange={(e) => onChange({ ...value, area: num(e.target.value) })} className={select}>
+          <option value="">{value.zone !== null && areas.isPending ? t("form.loadingList") : t("form.choose")}</option>
+          {(areas.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+        </select>
+      </label>
+      {failed && <p role="alert" className="type-caption text-error">{t("errors.areaList")}</p>}
+      {error && <p role="alert" className="type-caption text-error">{error}</p>}
+    </fieldset>
   );
 }
 
@@ -140,6 +191,11 @@ export function AddressBook() {
               </div>
               {/* Plain text */}
               <p className="type-body text-ink-secondary">{[a.line1, a.area, a.city].filter(Boolean).join(", ")}</p>
+              {a.courierAreaName ? (
+                <p className="type-caption flex items-center gap-1 text-success-ink">{t("areaSet", { area: [a.courierAreaName, a.courierZoneName, a.courierCityName].filter(Boolean).join(", ") })}</p>
+              ) : (
+                <p className="type-caption text-ink-muted">{t("areaMissing")}</p>
+              )}
               <p className="type-caption text-ink-muted">{a.phone}</p>
               <div className="flex flex-wrap gap-2 border-t border-line pt-3">
                 <button type="button" onClick={() => { setNotice(null); setPanel({ address: a }); }} className="type-body-medium flex h-10 items-center gap-1 rounded-sm border border-brand px-3 text-brand hover:bg-subtle">

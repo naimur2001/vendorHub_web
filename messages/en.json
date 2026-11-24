@@ -1748,14 +1748,26 @@
       "isDefault": "Use as my default address",
       "save": "Save",
       "saving": "Saving…",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "deliveryArea": "Delivery area",
+      "deliveryAreaHint": "Choose your city, zone and area so couriers can deliver here. Some shops deliver only with it.",
+      "cityPick": "City",
+      "zonePick": "Zone",
+      "areaPick": "Area",
+      "choose": "Choose…",
+      "loadingList": "Loading…"
     },
     "errors": {
       "line1": "Enter the house and road (5 to 200 characters).",
       "city": "Enter the city (2 to 60 characters).",
       "phone": "Use a Bangladesh mobile number like 01712345678.",
-      "generic": "That didn't work. Try again in a moment."
-    }
+      "generic": "That didn't work. Try again in a moment.",
+      "area": "Choose the zone and the area too, or leave the city empty.",
+      "areaList": "The area list couldn't load. Try again later.",
+      "badArea": "This delivery area isn't valid any more. Choose it again."
+    },
+    "areaSet": "Delivery area: {area}",
+    "areaMissing": "No delivery area yet: add it for courier delivery."
   },
   "Reviews": {
     "rateTitle": "Rate your purchase",
@@ -3572,5 +3584,44 @@
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "CourierStatus": {
+    "title": {
+      "PENDING": "Getting ready for the courier",
+      "BOOKED": "Courier booked",
+      "PICKUP_ASSIGNED": "A rider is coming to the shop",
+      "PICKED_UP": "Picked up by the courier",
+      "IN_TRANSIT": "On the way",
+      "OUT_FOR_DELIVERY": "Out for delivery",
+      "DELIVERED": "Delivered",
+      "FAILED": "Delivery didn't succeed",
+      "RETURNING": "Coming back to the shop",
+      "RETURNED": "Returned to the shop",
+      "CANCELLED": "Courier delivery cancelled"
+    },
+    "byCourier": "Your parcel is with {name}.",
+    "courierShop": "Courier: {name}",
+    "notPickedYet": "The shop is packing your parcel. The courier's name appears here once it's picked up.",
+    "tracking": "Tracking code",
+    "copy": "Copy tracking code",
+    "copied": "Copied",
+    "done": "done",
+    "notYet": "not yet",
+    "stops": {
+      "pickedUp": "Picked up",
+      "inTransit": "On the way",
+      "outForDelivery": "Out for delivery",
+      "delivered": "Delivered"
+    },
+    "problem": {
+      "FAILED": "The courier couldn't deliver this time. The shop or our team will contact you.",
+      "RETURNING": "The parcel is going back to the shop. The shop will contact you.",
+      "RETURNED": "The parcel went back to the shop.",
+      "CANCELLED": "This courier delivery was cancelled."
+    },
+    "bookingFailed": "Booking the courier failed three times. Our team has been told and will sort it out.",
+    "cod": "Cash on delivery to collect: {amount}",
+    "paid": "Paid to your shop",
+    "notPaid": "Not paid to your shop yet"
   }
 }
