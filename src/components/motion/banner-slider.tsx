@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getImageProps } from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
@@ -16,9 +16,6 @@ const SWIPE_PX = 50;
 
 // Slim billboard: wide and low. Phones get a little more height so text still fits.
 export const BANNER_FRAME = "aspect-5/2 sm:aspect-7/2 xl:aspect-[21/8]";
-
-const navButton =
-  "flex size-11 items-center justify-center rounded-full border border-gold/70 bg-brand/80 text-primary-foreground backdrop-blur-sm hover:bg-brand focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none motion-safe:transition motion-safe:duration-200 motion-safe:hover:scale-105";
 
 const ctaClass =
   "group/cta type-body-medium inline-flex h-11 items-center gap-2 rounded-sm bg-gold px-5 text-brand shadow-card hover:bg-card focus-visible:ring-2 focus-visible:ring-card focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none";
@@ -205,26 +202,28 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
         </div>
 
         {count > 1 && (
-          <>
-            {/* Desktop arrows: show on hover or keyboard focus */}
-            <button
-              type="button"
-              onClick={() => go(index - 1)}
-              aria-label={t("previous")}
-              className={cn(navButton, "absolute top-1/2 left-4 hidden -translate-y-1/2 opacity-0 group-hover/slider:opacity-100 focus-visible:opacity-100 sm:flex")}
-            >
-              <ChevronLeft className="size-5" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(index + 1)}
-              aria-label={t("next")}
-              className={cn(navButton, "absolute top-1/2 right-4 hidden -translate-y-1/2 opacity-0 group-hover/slider:opacity-100 focus-visible:opacity-100 sm:flex")}
-            >
-              <ChevronRight className="size-5" aria-hidden />
-            </button>
-
-          </>
+          // Arch notch cut into the bottom edge (brand motif) holding gold keystone diamonds.
+          <div className="absolute bottom-0 left-1/2 flex h-9 -translate-x-1/2 items-end rounded-t-full bg-surface px-3 sm:h-10 sm:px-4">
+            {banners.map((b, i) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={t("goTo", { n: i + 1 })}
+                aria-current={i === index ? "true" : undefined}
+                className="group/dot relative flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
+              >
+                <span aria-hidden className="absolute size-2 rotate-45 border border-gold motion-safe:transition motion-safe:duration-200 group-hover/dot:scale-125" />
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute size-2.5 rotate-45 bg-brand motion-safe:transition motion-safe:duration-300 motion-safe:ease-out",
+                    i === index ? "scale-100 opacity-100" : "scale-50 opacity-0",
+                  )}
+                />
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </section>
