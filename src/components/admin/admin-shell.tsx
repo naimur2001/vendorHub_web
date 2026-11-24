@@ -23,7 +23,7 @@ const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "ca
   { href: "/admin/deletion-requests", key: "deletion", icon: Trash2 },
   { href: "/admin/audit", key: "audit", icon: ScrollText },
   { href: "/admin/catalog", key: "catalog", icon: Tags },
-    { href: "/admin/disputes", key: "disputes", icon: Scale },
+  { href: "/admin/disputes", key: "disputes", icon: Scale },
   { href: "/admin/users", key: "users", icon: Users },
   { href: "/admin/shops", key: "shops", icon: Building2 },
 ];
@@ -110,7 +110,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <span className="font-heading text-[1.25rem] text-surface">Vendors Hub</span>
           <span className="type-caption rounded-sm bg-gold/20 px-1.5 text-gold">{t("portal")}</span>
         </div>
-        <nav aria-label={t("navLabel")} className="scroll-row -mx-1 px-1 md:mx-0 md:flex-1 md:px-0">
+        <nav aria-label={t("navLabel")} className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] md:mx-0 md:min-h-0 md:flex-1 md:overflow-x-hidden md:overflow-y-auto md:px-0 md:[scrollbar-width:thin] md:[scrollbar-color:var(--color-ink-muted)_transparent]">
           <Suspense fallback={<NavLinks pathname={null} />}>
             <ActiveNavLinks />
           </Suspense>
