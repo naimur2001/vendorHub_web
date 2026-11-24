@@ -1,15 +1,16 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, Truck, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, Truck, CreditCard, Activity, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion" | "deliverySettings"; icon: LucideIcon }[] = [
+const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion" | "deliverySettings" | "delivery"; icon: LucideIcon; icon2?: LucideIcon }[] = [
   { href: "/admin", key: "queue", icon: ShieldCheck },
   { href: "/admin/orders", key: "orders", icon: PackageCheck },
+  { href: "/admin/delivery", key: "delivery", icon: Activity },
   { href: "/admin/delivery/settings", key: "deliverySettings", icon: Truck },
   { href: "/admin/to-let", key: "toLet", icon: KeyRound },
   { href: "/admin/reports", key: "reports", icon: ChartColumn },
@@ -18,7 +19,7 @@ const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "ca
   { href: "/admin/banners", key: "banners", icon: GalleryHorizontal },
   { href: "/admin/featured", key: "featured", icon: Sparkles },
   { href: "/admin/moderation", key: "moderation", icon: Flag },
-  { href: "/admin/messages", key: "messages", icon: MessageSquareText },
+  { href: "/admin/messages", key: "messages", icon: MessageSquareText, icon2: CreditCard },
   { href: "/admin/products", key: "products", icon: Package },
   { href: "/admin/deletion-requests", key: "deletion", icon: Trash2 },
   { href: "/admin/audit", key: "audit", icon: ScrollText },
@@ -31,10 +32,14 @@ const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "ca
 
 function NavLinks({ pathname }: { pathname: string | null }) {
   const t = useTranslations("Admin");
+  // Only the closest match is highlighted (/admin/delivery/settings lights "Couriers & fees", not "Delivery" too).
+  const activeHref = NAV.map((n) => n.href)
+    .filter((h) => pathname === h || (h !== "/admin" && pathname?.startsWith(`${h}/`)))
+    .sort((a, b) => b.length - a.length)[0];
   return (
     <ul className="flex gap-1 md:flex-col">
-      {NAV.map(({ href, key, icon: Icon }) => {
-        const active = pathname === href || (href !== "/admin" && pathname?.startsWith(`${href}/`));
+      {NAV.map(({ href, key, icon: Icon, icon2: Icon2 }) => {
+        const active = href === activeHref;
         return (
           <li key={href}>
             <Link
@@ -45,7 +50,14 @@ function NavLinks({ pathname }: { pathname: string | null }) {
                 active ? "bg-surface/15 text-surface" : "text-surface/75 hover:bg-surface/10 hover:text-surface",
               )}
             >
-              <Icon className="size-5" aria-hidden />
+              {Icon2 ? (
+                <span aria-hidden className="relative flex size-5 shrink-0">
+                  <Icon className="size-4" />
+                  <Icon2 className="absolute right-[-3px] bottom-[-3px] size-3.5 rounded-[3px] bg-ink" />
+                </span>
+              ) : (
+                <Icon className="size-5 shrink-0" aria-hidden />
+              )}
               {t(`nav.${key}`)}
             </Link>
           </li>
@@ -104,7 +116,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
+    <div className="min-h-dvh md:grid md:grid-cols-[17.5rem_minmax(0,1fr)]">
       <aside className="flex flex-col gap-4 bg-ink px-4 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] text-surface md:sticky md:top-0 md:h-dvh md:gap-8 md:px-5 md:py-6">
         <div className="flex items-baseline gap-2">
           <span className="font-heading text-[1.25rem] text-surface">Vendors Hub</span>

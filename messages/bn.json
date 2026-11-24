@@ -1953,7 +1953,8 @@
       "orders": "অর্ডার",
       "toLet": "ভাড়ার দোকান",
       "deletion": "মুছে ফেলার অনুরোধ",
-      "deliverySettings": "কুরিয়ার ও ডেলিভারি ফি"
+      "deliverySettings": "কুরিয়ার ও ডেলিভারি ফি",
+      "delivery": "ডেলিভারি মনিটর"
     }
   },
   "BannerSides": {
