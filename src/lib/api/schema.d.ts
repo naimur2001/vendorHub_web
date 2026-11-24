@@ -1395,7 +1395,10 @@ export interface paths {
         /** My saved addresses, default first */
         get: operations["listMyAddresses"];
         put?: never;
-        /** Save an address (at most 10; the first one becomes the default) */
+        /**
+         * Save an address (at most 10; the first one becomes the default)
+         * @description courierCityId / courierZoneId / courierAreaId (all three or none) come from GET /delivery/locations/*; the server checks them and fills in the names (400 BAD_LOCATION). Courier delivery needs them.
+         */
         post: operations["createMyAddress"];
         delete?: never;
         options?: never;
@@ -3767,6 +3770,411 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/delivery/locations/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cities for the address form (names only, cached 24 h) */
+        get: operations["deliveryCities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/locations/cities/{id}/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["CourierLocationId"];
+            };
+            cookie?: never;
+        };
+        /** Zones of a city */
+        get: operations["deliveryZonesOfCity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/locations/zones/{id}/areas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["CourierLocationId"];
+            };
+            cookie?: never;
+        };
+        /** Areas of a zone */
+        get: operations["deliveryAreasOfZone"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/couriers/pathao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pathao status webhook (server to server; the web app never calls it)
+         * @description Header X-PATHAO-Signature must equal the webhook secret (else 401). Duplicates and events older than the newest applied one are ignored. Pathao's integration check (event webhook_integration) gets 202 and the X-Pathao-Merchant-Webhook-Integration-Secret header when configured.
+         */
+        post: operations["pathaoWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/delivery-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeliveryShopId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * OWN or PLATFORM_COURIER (shop owner only)
+         * @description PLATFORM_COURIER offers delivery only once an admin has created the courier store (courierReady).
+         */
+        patch: operations["setShopDeliveryMode"];
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/orders/{orderId}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeliveryShopId"];
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Book the courier for a courier order now (idempotent; READY_FOR_PICKUP does it too)
+         * @description Shop team or admin. An already booked shipment is returned unchanged. 409 NOT_COURIER_ORDER, ORDER_NOT_READY (not CONFIRMED or READY_FOR_PICKUP); 502 BOOKING_FAILED (kept PENDING and retried).
+         */
+        post: operations["shipOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shops/{shopId}/courier-store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeliveryShopId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create (or refresh) the shop's pickup store at the default courier (ADMIN)
+         * @description Uses the shop's name, phone and address; the location is required the first time (400 LOCATION_REQUIRED). state PENDING_APPROVAL = the courier approves the store later: call again to fetch its id. 409 SHOP_PHONE_MISSING.
+         */
+        post: operations["adminCreateCourierStore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/couriers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The courier providers (ADMIN; API keys live only in env and are never returned) */
+        get: operations["adminListCouriers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/couriers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Switch a courier on or off, make it the default, sandbox, settings (ADMIN, audited)
+         * @description Exactly one active default: 409 DEFAULT_MUST_BE_ACTIVE, DEFAULT_REQUIRED (make another one the default first). Setting isDefault true moves the default here.
+         */
+        patch: operations["adminUpdateCourier"];
+        trace?: never;
+    };
+    "/api/v1/admin/delivery-zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Delivery zones and customer fees (ADMIN) */
+        get: operations["adminListDeliveryZones"];
+        put?: never;
+        /** Create a zone (one per code; 409 ZONE_EXISTS) */
+        post: operations["adminCreateDeliveryZone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery-zones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a zone (OUTSIDE_DHAKA is the fallback: 409 FALLBACK_ZONE) */
+        delete: operations["adminDeleteDeliveryZone"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a zone's fee, ETA, courier city / zone ids or switch it off
+         * @description An address maps to a zone by courierZoneIds, then courierCityIds, else OUTSIDE_DHAKA. An inactive zone has no delivery.
+         */
+        patch: operations["adminUpdateDeliveryZone"];
+        trace?: never;
+    };
+    "/api/v1/admin/delivery/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Delivery numbers for a range (ADMIN)
+         * @description Shipments count by the day they were made; money counts on DELIVERED shipments. successRate = delivered / (delivered + failed + returned), in percent.
+         */
+        get: operations["adminDeliverySummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery/timeseries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Per Dhaka day - booked, delivered, failed, fees, cost, margin, courier orders placed and their value (ADMIN) */
+        get: operations["adminDeliveryTimeseries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery/by-shop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The summary numbers per shop, most delivered first (ADMIN) */
+        get: operations["adminDeliveryByShop"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery/by-provider": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The summary numbers per courier, most delivered first (ADMIN) */
+        get: operations["adminDeliveryByProvider"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shipments, newest first (ADMIN); stuck = active and no status change for 48 h */
+        get: operations["adminListShipments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        /** One shipment with the recipient and every courier event, raw data included (ADMIN) */
+        get: operations["adminGetShipment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipments/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel at the courier before pickup (ADMIN, audited); 409 SHIPMENT_NOT_CANCELLABLE */
+        post: operations["adminCancelShipment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipments/{id}/rebook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Book again from scratch (PENDING, FAILED or CANCELLED; the order still open) (ADMIN, audited) */
+        post: operations["adminRebookShipment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipments/{id}/mark-cod-remitted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The courier paid us the collected cash (ADMIN, audited; 409 NOT_DUE) */
+        post: operations["adminMarkCodRemitted"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipments/{id}/mark-shop-paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** We paid the shop for this delivered order (ADMIN, audited; 409 NOT_DUE) */
+        post: operations["adminMarkShopPaid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4238,13 +4646,19 @@ export interface components {
         };
         Address: {
             /** Format: uuid */
-            id?: string;
-            label?: string | null;
-            line1?: string;
-            area?: string | null;
-            city?: string;
-            phone?: string;
-            isDefault?: boolean;
+            id: string;
+            label: string | null;
+            line1: string;
+            area: string | null;
+            city: string;
+            phone: string;
+            isDefault: boolean;
+            courierCityId: number | null;
+            courierCityName: string | null;
+            courierZoneId: number | null;
+            courierZoneName: string | null;
+            courierAreaId: number | null;
+            courierAreaName: string | null;
         };
         Upload: {
             /** Format: uuid */
@@ -4632,8 +5046,12 @@ export interface components {
             /** @description Every status change, oldest first. The first entry is always PLACED. */
             statusEvents: components["schemas"]["OrderStatusEvent"][];
         };
-        CustomerOrderDetail: components["schemas"]["CustomerOrder"] & components["schemas"]["OrderStatusTimeline"];
-        ShopOrderDetail: components["schemas"]["Order"] & components["schemas"]["OrderStatusTimeline"];
+        CustomerOrderDetail: components["schemas"]["CustomerOrder"] & components["schemas"]["OrderStatusTimeline"] & {
+            shipment: components["schemas"]["CustomerShipment"];
+        };
+        ShopOrderDetail: components["schemas"]["Order"] & components["schemas"]["OrderStatusTimeline"] & {
+            shipment: components["schemas"]["ShopShipment"];
+        };
         BannerMedia: {
             /**
              * Format: uri
@@ -5520,6 +5938,183 @@ export interface components {
                 isActive: boolean;
             } | null;
         };
+        /** @enum {string} */
+        CourierCode: "PATHAO" | "STEADFAST" | "REDX" | "PAPERFLY" | "ECOURIER";
+        /** @enum {string} */
+        ShopDeliveryMode: "OWN" | "PLATFORM_COURIER";
+        /** @enum {string} */
+        DeliveryZoneCode: "INSIDE_DHAKA" | "DHAKA_SUBURB" | "OUTSIDE_DHAKA";
+        /** @enum {string} */
+        ShipmentStatus: "PENDING" | "BOOKED" | "PICKUP_ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERED" | "FAILED" | "RETURNING" | "RETURNED" | "CANCELLED";
+        CourierProvider: {
+            /** Format: uuid */
+            id: string;
+            code: components["schemas"]["CourierCode"];
+            name: string;
+            isActive: boolean;
+            isDefault: boolean;
+            sandbox: boolean;
+            config: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DeliveryZone: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            code: components["schemas"]["DeliveryZoneCode"];
+            customerFee: number;
+            etaText: string;
+            isActive: boolean;
+            courierCityIds: number[];
+            courierZoneIds: number[];
+        };
+        DeliveryZoneInput: {
+            code: components["schemas"]["DeliveryZoneCode"];
+            name: string;
+            customerFee: number;
+            etaText: string;
+            /** @default true */
+            isActive: boolean;
+            courierCityIds?: number[];
+            courierZoneIds?: number[];
+        };
+        DeliveryMetrics: {
+            shipments: number;
+            delivered: number;
+            failed: number;
+            returned: number;
+            successRate: number | null;
+            /** @description booked -> picked up */
+            avgPickupMinutes: number | null;
+            /** @description picked up -> delivered */
+            avgDeliveryMinutes: number | null;
+            customerFees: number;
+            courierCost: number;
+            margin: number;
+            /** @description Cash collected on delivered orders that the courier has not paid us yet. */
+            codOwedByCourier: number;
+            /** @description Delivered orders not paid to the shop yet (order total minus the delivery fee). */
+            owedToShops: number;
+        };
+        TimelineEntry: {
+            status: components["schemas"]["ShipmentStatus"];
+            /** Format: date-time */
+            at: string;
+        };
+        /** @description Courier orders only (else null). courier and trackingCode stay null until PICKED_UP. */
+        CustomerShipment: {
+            status: components["schemas"]["ShipmentStatus"];
+            timeline: components["schemas"]["TimelineEntry"][];
+            courier: {
+                name: string;
+            } | null;
+            trackingCode: string | null;
+        } | null;
+        /** @description Courier orders only (else null). No courier cost or margin. */
+        ShopShipment: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["ShipmentStatus"];
+            timeline: components["schemas"]["TimelineEntry"][];
+            courier: {
+                name?: string;
+            } | null;
+            trackingCode: string | null;
+            codAmount: number;
+            shopPaid: boolean;
+            /** Format: date-time */
+            shopPaidAt: string | null;
+            /** @description Three booking tries failed; our team was told. */
+            bookingFailed: boolean;
+        } | null;
+        AdminShipment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            subOrderId: string;
+            orderNumber: string | null;
+            shop: {
+                /** Format: uuid */
+                id?: string;
+                name?: string;
+                slug?: string;
+            } | null;
+            provider: {
+                /** Format: uuid */
+                id?: string;
+                code?: components["schemas"]["CourierCode"];
+                name?: string;
+            } | null;
+            consignmentId: string | null;
+            trackingCode: string | null;
+            status: components["schemas"]["ShipmentStatus"];
+            /** Format: date-time */
+            statusAt: string;
+            zoneCode: components["schemas"]["DeliveryZoneCode"];
+            customerFee: number;
+            courierCost: number | null;
+            /** @description customerFee - courierCost */
+            margin: number | null;
+            codAmount: number;
+            codCollected: boolean;
+            /** Format: date-time */
+            codRemittedAt: string | null;
+            /** Format: date-time */
+            shopPaidAt: string | null;
+            /** Format: date-time */
+            bookedAt: string | null;
+            /** Format: date-time */
+            pickedUpAt: string | null;
+            /** Format: date-time */
+            deliveredAt: string | null;
+            failReason: string | null;
+            bookingAttempts: number;
+            /** Format: date-time */
+            nextAttemptAt: string | null;
+            lastError: string | null;
+            ageHours: number;
+            stuck: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminShipmentDetail: components["schemas"]["AdminShipment"] & {
+            orderStatus: string | null;
+            recipient: {
+                [key: string]: unknown;
+            };
+            events: {
+                /** Format: uuid */
+                id: string;
+                status: components["schemas"]["ShipmentStatus"] | null;
+                rawStatus: string;
+                note: string | null;
+                /** @enum {string} */
+                source: "WEBHOOK" | "POLL" | "SYSTEM" | "ADMIN";
+                /** Format: date-time */
+                at: string;
+                raw: {
+                    [key: string]: unknown;
+                } | null;
+            }[];
+        };
+        AddressInput: {
+            label?: string;
+            line1: string;
+            area?: string;
+            /** @default Dhaka */
+            city: string;
+            phone: string;
+            /** @default false */
+            isDefault: boolean;
+            courierCityId?: number;
+            courierZoneId?: number;
+            courierAreaId?: number;
+        };
     };
     responses: {
         /** @description The input is invalid (error.details lists the fields). */
@@ -5854,6 +6449,81 @@ export interface components {
                 };
             };
         };
+        /** @description The courier is not reachable (502 COURIER_UNAVAILABLE / BOOKING_FAILED) or not set up (503 NO_COURIER). */
+        CourierUnavailable: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description The list (names only). */
+        DeliveryLocations: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        id: number;
+                        name: string;
+                    }[];
+                };
+            };
+        };
+        /** @description The zone. */
+        DeliveryZoneResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["DeliveryZone"];
+                };
+            };
+        };
+        /** @description One row per shop or courier. */
+        DeliveryRanking: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        /** Format: date */
+                        from: string;
+                        /** Format: date */
+                        to: string;
+                        items: (components["schemas"]["DeliveryMetrics"] & {
+                            /** Format: uuid */
+                            shopId?: string;
+                            shopName?: string;
+                            shopSlug?: string;
+                            /** Format: uuid */
+                            providerId?: string;
+                            providerCode?: components["schemas"]["CourierCode"];
+                            providerName?: string;
+                        })[];
+                    };
+                };
+            };
+        };
+        /** @description The shipment (admin view). */
+        AdminShipmentDetailResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["AdminShipmentDetail"];
+                };
+            };
+        };
     };
     parameters: {
         Page: number;
@@ -5888,6 +6558,15 @@ export interface components {
         DeletionRequestId: string;
         DeletionStatus: components["schemas"]["ProductDeletionStatus"];
         DeletionLimit: number;
+        CourierLocationId: number;
+        DeliveryShopId: string;
+        DeliveryUuid: string;
+        /** @description First Dhaka day (YYYY-MM-DD), inclusive. Default 29 days before "to". */
+        DeliveryFrom: string;
+        /** @description Last Dhaka day, inclusive. Default today. At most one year. */
+        DeliveryTo: string;
+        DeliveryProviderId: string;
+        DeliveryShopFilter: string;
     };
     requestBodies: {
         PhotoUpload: {
@@ -8871,17 +9550,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    /** @example Home */
-                    label?: string;
-                    line1: string;
-                    area?: string;
-                    /** @default Dhaka */
-                    city?: string;
-                    phone: string;
-                    /** @default false */
-                    isDefault?: boolean;
-                };
+                "application/json": components["schemas"]["AddressInput"];
             };
         };
         responses: {
@@ -8892,9 +9561,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example true */
-                        success?: boolean;
-                        data?: components["schemas"]["Address"];
+                        success: boolean;
+                        data: components["schemas"]["Address"];
                     };
                 };
             };
@@ -13382,6 +14050,661 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    deliveryCities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeliveryLocations"];
+            502: components["responses"]["CourierUnavailable"];
+            503: components["responses"]["CourierUnavailable"];
+        };
+    };
+    deliveryZonesOfCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["CourierLocationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeliveryLocations"];
+            400: components["responses"]["BadRequest"];
+            502: components["responses"]["CourierUnavailable"];
+            503: components["responses"]["CourierUnavailable"];
+        };
+    };
+    deliveryAreasOfZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["CourierLocationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeliveryLocations"];
+            400: components["responses"]["BadRequest"];
+            502: components["responses"]["CourierUnavailable"];
+            503: components["responses"]["CourierUnavailable"];
+        };
+    };
+    pathaoWebhook: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-PATHAO-Signature": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    consignment_id?: string;
+                    /** @example order.delivered */
+                    event?: string;
+                    updated_at?: string;
+                } & {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Received. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            integration?: boolean;
+                            received?: number;
+                            applied?: number;
+                            ignored?: number;
+                            unknown?: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setShopDeliveryMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeliveryShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    deliveryMode: components["schemas"]["ShopDeliveryMode"];
+                };
+            };
+        };
+        responses: {
+            /** @description The new mode. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            shopId: string;
+                            deliveryMode: components["schemas"]["ShopDeliveryMode"];
+                            courierReady: boolean;
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    shipOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeliveryShopId"];
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The shipment (shop view). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopShipment"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            502: components["responses"]["CourierUnavailable"];
+        };
+    };
+    adminCreateCourierStore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["DeliveryShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    courierCityId?: number;
+                    courierZoneId?: number;
+                    courierAreaId?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The store. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            shopId: string;
+                            provider: components["schemas"]["CourierCode"];
+                            courierStoreId: string | null;
+                            /** @enum {string} */
+                            state: "READY" | "PENDING_APPROVAL";
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            502: components["responses"]["CourierUnavailable"];
+        };
+    };
+    adminListCouriers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The providers. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["CourierProvider"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateCourier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    isActive?: boolean;
+                    isDefault?: boolean;
+                    sandbox?: boolean;
+                    config?: {
+                        /** @enum {integer} */
+                        deliveryType?: 48 | 12;
+                        /** @enum {integer} */
+                        itemType?: 1 | 2;
+                        itemWeight?: number;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description The provider. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["CourierProvider"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminListDeliveryZones: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The zones. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["DeliveryZone"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateDeliveryZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryZoneInput"];
+            };
+        };
+        responses: {
+            201: components["responses"]["DeliveryZoneResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminDeleteDeliveryZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminUpdateDeliveryZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    customerFee?: number;
+                    etaText?: string;
+                    isActive?: boolean;
+                    courierCityIds?: number[];
+                    courierZoneIds?: number[];
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["DeliveryZoneResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminDeliverySummary: {
+        parameters: {
+            query?: {
+                /** @description First Dhaka day (YYYY-MM-DD), inclusive. Default 29 days before "to". */
+                from?: components["parameters"]["DeliveryFrom"];
+                /** @description Last Dhaka day, inclusive. Default today. At most one year. */
+                to?: components["parameters"]["DeliveryTo"];
+                providerId?: components["parameters"]["DeliveryProviderId"];
+                shopId?: components["parameters"]["DeliveryShopFilter"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The summary. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["DeliveryMetrics"] & {
+                            /** Format: date */
+                            from: string;
+                            /** Format: date */
+                            to: string;
+                            countsByStatus: {
+                                [key: string]: number;
+                            };
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminDeliveryTimeseries: {
+        parameters: {
+            query?: {
+                interval?: "day";
+                /** @description First Dhaka day (YYYY-MM-DD), inclusive. Default 29 days before "to". */
+                from?: components["parameters"]["DeliveryFrom"];
+                /** @description Last Dhaka day, inclusive. Default today. At most one year. */
+                to?: components["parameters"]["DeliveryTo"];
+                providerId?: components["parameters"]["DeliveryProviderId"];
+                shopId?: components["parameters"]["DeliveryShopFilter"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One point per day, every day of the range. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: date */
+                            from: string;
+                            /** Format: date */
+                            to: string;
+                            interval: string;
+                            points: {
+                                /** Format: date */
+                                day: string;
+                                booked: number;
+                                delivered: number;
+                                failed: number;
+                                customerFees: number;
+                                courierCost: number;
+                                margin: number;
+                                ordersPlaced: number;
+                                orderValue: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminDeliveryByShop: {
+        parameters: {
+            query?: {
+                /** @description First Dhaka day (YYYY-MM-DD), inclusive. Default 29 days before "to". */
+                from?: components["parameters"]["DeliveryFrom"];
+                /** @description Last Dhaka day, inclusive. Default today. At most one year. */
+                to?: components["parameters"]["DeliveryTo"];
+                providerId?: components["parameters"]["DeliveryProviderId"];
+                shopId?: components["parameters"]["DeliveryShopFilter"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeliveryRanking"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminDeliveryByProvider: {
+        parameters: {
+            query?: {
+                /** @description First Dhaka day (YYYY-MM-DD), inclusive. Default 29 days before "to". */
+                from?: components["parameters"]["DeliveryFrom"];
+                /** @description Last Dhaka day, inclusive. Default today. At most one year. */
+                to?: components["parameters"]["DeliveryTo"];
+                providerId?: components["parameters"]["DeliveryProviderId"];
+                shopId?: components["parameters"]["DeliveryShopFilter"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["DeliveryRanking"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminListShipments: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ShipmentStatus"];
+                providerId?: components["parameters"]["DeliveryProviderId"];
+                shopId?: components["parameters"]["DeliveryShopFilter"];
+                /** @description Part of the order number, or the exact tracking code / consignment id. */
+                q?: string;
+                stuck?: "true" | "false";
+                /** @description First Dhaka day (YYYY-MM-DD), inclusive. Default 29 days before "to". */
+                from?: components["parameters"]["DeliveryFrom"];
+                /** @description Last Dhaka day, inclusive. Default today. At most one year. */
+                to?: components["parameters"]["DeliveryTo"];
+                page?: components["parameters"]["Page"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminShipment"][];
+                        meta: {
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetShipment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminShipmentDetailResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminCancelShipment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminShipmentDetailResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            502: components["responses"]["CourierUnavailable"];
+        };
+    };
+    adminRebookShipment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminShipmentDetailResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminMarkCodRemitted: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminShipmentDetailResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminMarkShopPaid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminShipmentDetailResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
 }

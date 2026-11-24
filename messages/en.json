@@ -1215,7 +1215,8 @@
       "messages": "Messages & payments",
       "orders": "Orders",
       "toLet": "Shops to let",
-      "deletion": "Deletion requests"
+      "deletion": "Deletion requests",
+      "deliverySettings": "Couriers & fees"
     },
     "loading": "Loading…",
     "guestTitle": "Log in as an admin",
@@ -3519,6 +3520,57 @@
     "scope": {
       "PRODUCT": "Whole product",
       "LISTING": "Your listing"
+    }
+  },
+  "AdminDelivery": {
+    "title": "Couriers & delivery fees",
+    "subtitle": "Switch courier companies on or off and set what customers pay for delivery in each zone. Customers only see the fee, never the courier, until their parcel is picked up.",
+    "couriersTitle": "Courier companies",
+    "couriersText": "Exactly one active company is the default: every new courier order is booked with it. Only Pathao is connected for now.",
+    "default": "Default",
+    "on": "On",
+    "off": "Off",
+    "sandbox": "Sandbox (test)",
+    "comingSoon": "Coming soon",
+    "notConnected": "Not connected yet. It can be switched on once its connection is built.",
+    "switchOn": "Switch on",
+    "switchOff": "Switch off",
+    "makeDefault": "Make default",
+    "useSandbox": "Use sandbox",
+    "goLive": "Go live",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "zonesTitle": "Delivery zones and fees",
+    "zonesText": "Every customer address falls into one zone. The fee here is what the customer pays; the courier's own charge is recorded separately, and the difference is Vendors Hub's margin.",
+    "zonesEmpty": "No delivery zones yet.",
+    "zoneCode": {
+      "INSIDE_DHAKA": "Inside Dhaka",
+      "DHAKA_SUBURB": "Dhaka suburbs",
+      "OUTSIDE_DHAKA": "Outside Dhaka (everything else)"
+    },
+    "citiesList": "Cities: {cities}",
+    "citiesRest": "Every city not in another zone.",
+    "citiesNone": "No cities chosen yet.",
+    "zoneIds": "{count, plural, one {# courier zone} other {# courier zones}} mapped",
+    "name": "Name",
+    "fee": "Customer fee (৳)",
+    "eta": "Delivery time",
+    "etaPlaceholder": "1–2 days",
+    "cities": "Cities in this zone",
+    "citiesHint": "Addresses in these courier cities belong to this zone.",
+    "zoneOn": "Switch on",
+    "zoneOff": "Switch off",
+    "zoneOffNote": "Switched off: addresses in this zone can't choose courier delivery.",
+    "loadError": "This couldn't load.",
+    "retry": "Try again",
+    "errors": {
+      "DEFAULT_MUST_BE_ACTIVE": "Switch this courier on before making it the default.",
+      "DEFAULT_REQUIRED": "This is the default. Make another courier the default first.",
+      "check": "Check the values and try again.",
+      "network": "No connection. Try again.",
+      "generic": "Something went wrong. Try again."
     }
   }
 }

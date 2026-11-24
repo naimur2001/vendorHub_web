@@ -1940,7 +1940,8 @@
       "messages": "বার্তা ও পেমেন্ট",
       "orders": "অর্ডার",
       "toLet": "ভাড়ার দোকান",
-      "deletion": "মুছে ফেলার অনুরোধ"
+      "deletion": "মুছে ফেলার অনুরোধ",
+      "deliverySettings": "কুরিয়ার ও ডেলিভারি ফি"
     }
   },
   "BannerSides": {

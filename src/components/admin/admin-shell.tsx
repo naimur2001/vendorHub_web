@@ -1,15 +1,16 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, Truck, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion"; icon: LucideIcon }[] = [
+const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion" | "deliverySettings"; icon: LucideIcon }[] = [
   { href: "/admin", key: "queue", icon: ShieldCheck },
   { href: "/admin/orders", key: "orders", icon: PackageCheck },
+  { href: "/admin/delivery/settings", key: "deliverySettings", icon: Truck },
   { href: "/admin/to-let", key: "toLet", icon: KeyRound },
   { href: "/admin/reports", key: "reports", icon: ChartColumn },
   { href: "/admin/overview", key: "overview", icon: LayoutDashboard },
