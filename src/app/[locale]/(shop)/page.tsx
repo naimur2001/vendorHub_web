@@ -287,11 +287,6 @@ export default async function HomePage({ params }: Props) {
         <FeaturedShops />
       </Suspense>
 
-      {/* Shops to let: an advert for people looking to rent (5-minute cache) */}
-      <Suspense>
-        <ToLetRow />
-      </Suspense>
-
       {/* Asks for location only when the visitor taps the button */}
       <ShopsNearYou />
 
@@ -394,6 +389,11 @@ export default async function HomePage({ params }: Props) {
           </div>
         </section>
       </Reveal>
+
+      {/* Shops to let: the last section, just before the footer (5-minute cache) */}
+      <Suspense>
+        <ToLetRow />
+      </Suspense>
     </div>
   );
 }
