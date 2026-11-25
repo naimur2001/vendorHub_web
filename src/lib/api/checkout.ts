@@ -20,8 +20,8 @@ export const ORDER_STATUSES: OrderStatus[] = [
   "CANCELLED",
 ];
 
-// Same as the backend (DELIVERY_FEE, taka per shop that delivers). Shown before ordering;
-// the confirmation always shows the server's own numbers.
+
+// Own-delivery shops only (the backend OWN_DELIVERY_FEE); courier fees come from GET /cart?addressId=.
 export const DELIVERY_FEE = 60;
 
 // Exact shape of formatOrder() in checkout.service.js
@@ -67,6 +67,7 @@ export type ShopChoice = {
   deliveryMethod: DeliveryMethod;
   paymentMethod: PaymentMethod;
   deliveryAddress?: string;
+  addressId?: string; // a saved address (required for Vendors Hub courier delivery); the server builds the address text and the fee
   couponCode?: string; // the server checks it and computes the discount
 };
 

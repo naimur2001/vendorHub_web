@@ -484,7 +484,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** My cart, grouped by shop, with live prices and problems flagged */
+        /**
+         * My cart, grouped by shop, with live prices, problems flagged and delivery fees
+         * @description With addressId (one of my saved addresses; another user's -> 404), each shop group's deliveryFee is the VENDOR_DELIVERY fee to that address: for a courier shop the admin zone fee (the same as GET /delivery/quote and what checkout charges). deliveryFee is null for a courier shop without addressId, when the address has no courier area or its zone is off, and when the shop offers no delivery (deliveryAvailable false).
+         */
         get: operations["getCart"];
         put?: never;
         post?: never;
@@ -1151,7 +1154,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The vendors list with statistics */
+        /** The vendors list with statistics and courier store state */
         get: operations["adminListShops"];
         put?: never;
         post?: never;
@@ -3902,8 +3905,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create (or refresh) the shop's pickup store at the default courier (ADMIN)
-         * @description Uses the shop's name, phone and address; the location is required the first time (400 LOCATION_REQUIRED). state PENDING_APPROVAL = the courier approves the store later: call again to fetch its id. 409 SHOP_PHONE_MISSING.
+         * Create the shop's pickup store at the default courier, or check it again (ADMIN)
+         * @description Uses the shop's name, phone and address. Without any store yet the location is required (400 LOCATION_REQUIRED). The courier may approve a new store later: then state PENDING_APPROVAL is saved with the chosen location (GET /admin/shops?courierStoreState=PENDING_APPROVAL). Calling again while it is pending only looks the store up again: it never creates a second store and ignores a location sent then. READY once the courier gives the store id. 409 SHOP_PHONE_MISSING. Mock mode: a store in an area whose id ends in 2 stays PENDING_APPROVAL.
          */
         post: operations["adminCreateCourierStore"];
         delete?: never;
@@ -4169,6 +4172,26 @@ export interface paths {
         put?: never;
         /** We paid the shop for this delivered order (ADMIN, audited; 409 NOT_DUE) */
         post: operations["adminMarkShopPaid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/delivery/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The courier delivery fee to one of my saved addresses
+         * @description fee = the admin zone fee of the address's zone. My own address only (another user's -> 404). 400 ADDRESS_NEEDS_AREA when the address has no courier city/zone/area; 400 AREA_UNAVAILABLE when its zone is switched off.
+         */
+        get: operations["getDeliveryQuote"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4561,19 +4584,21 @@ export interface components {
             success?: boolean;
             data?: components["schemas"]["ShopListing"];
         };
-        /** @description The cart grouped by shop, with live prices, problems flagged per item, and whether checkout is possible. */
         Cart: {
-            shops?: {
-                [key: string]: unknown;
-            }[];
-            totals?: {
-                shopCount?: number;
-            } & {
-                [key: string]: unknown;
+            shops: components["schemas"]["CartShopGroup"][];
+            /**
+             * Format: uuid
+             * @description The addressId sent, or null.
+             */
+            deliveryAddressId: string | null;
+            /** @description The quote for addressId; null without one, or when it has no courier area or its zone is off. */
+            deliveryQuote: components["schemas"]["DeliveryQuote"] | null;
+            totals: {
+                itemCount: number;
+                shopCount: number;
+                subtotal: number;
+                checkoutReady: boolean;
             };
-            checkoutReady?: boolean;
-        } & {
-            [key: string]: unknown;
         };
         CartResponse: {
             /** @example true */
@@ -4659,6 +4684,8 @@ export interface components {
             courierZoneName: string | null;
             courierAreaId: number | null;
             courierAreaName: string | null;
+            /** @description The courier delivery fee to this address; null without a courier area or when its zone is off. */
+            deliveryQuote: components["schemas"]["DeliveryQuote"] | null;
         };
         Upload: {
             /** Format: uuid */
@@ -4785,25 +4812,28 @@ export interface components {
         VerificationStatus: "PENDING" | "AUTO_FLAGGED" | "CORRECTION_REQUESTED" | "APPROVED" | "REJECTED" | "REVOKED";
         MyShop: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @example TechZone Electronics */
-            name?: string;
+            name: string;
             /** @example techzone-electronics */
-            slug?: string;
+            slug: string;
             /** @description False when an admin deactivated the shop. */
-            isActive?: boolean;
+            isActive: boolean;
             /** @enum {string} */
-            membership?: "OWNER" | "STAFF";
+            membership: "OWNER" | "STAFF";
             /** @description The staff title for STAFF, null for OWNER. */
-            staffTitle?: string | null;
-            verificationLevel?: components["schemas"]["VerificationLevel"];
-            market?: components["schemas"]["IdNameSlug"] | null;
+            staffTitle: string | null;
+            verificationLevel: components["schemas"]["VerificationLevel"];
+            market: components["schemas"]["IdNameSlug"] | null;
             /** @example Level 3 */
-            levelFloor?: string | null;
+            levelFloor: string | null;
             /** @example Shop 42 */
-            shopNumber?: string | null;
+            shopNumber: string | null;
+            deliveryMode: components["schemas"]["ShopDeliveryMode"];
+            /** @description True when the admin has made the shop's courier pickup store (courier delivery can be offered). */
+            courierReady: boolean;
             /** @description The newest verification request of this shop, or null if none. */
-            latestVerification?: {
+            latestVerification: {
                 /** Format: uuid */
                 id?: string;
                 status?: components["schemas"]["VerificationStatus"];
@@ -4815,7 +4845,7 @@ export interface components {
                 createdAt?: string;
             } | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
         };
         ShopSearchItem: {
             hours: components["schemas"]["OpeningHours"];
@@ -6114,6 +6144,94 @@ export interface components {
             courierCityId?: number;
             courierZoneId?: number;
             courierAreaId?: number;
+        };
+        /**
+         * @description NONE = no store asked for; PENDING_APPROVAL = waiting for the courier; READY = has a store id.
+         * @enum {string}
+         */
+        CourierStoreState: "NONE" | "PENDING_APPROVAL" | "READY";
+        DeliveryQuote: {
+            zoneCode: components["schemas"]["DeliveryZoneCode"];
+            /** @example Inside Dhaka */
+            zoneName: string;
+            /**
+             * @description The customer's delivery fee in taka (the admin zone fee).
+             * @example 80
+             */
+            fee: number;
+            /** @example 1-2 days */
+            etaText: string;
+        };
+        /** @description The pickup location sent when the store was requested (null if none). */
+        CourierStoreLocation: {
+            cityId: number;
+            cityName: string;
+            zoneId: number;
+            zoneName: string;
+            areaId: number;
+            areaName: string;
+        } | null;
+        AdminShop: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            verificationLevel: components["schemas"]["VerificationLevel"];
+            /** Format: date-time */
+            lastAuditedAt: string | null;
+            owner: {
+                name: string;
+                email: string;
+            };
+            /** @description The market name. */
+            market: string | null;
+            deliveryMode: components["schemas"]["ShopDeliveryMode"];
+            courierStoreId: string | null;
+            courierStoreState: components["schemas"]["CourierStoreState"];
+            courierStoreLocation: components["schemas"]["CourierStoreLocation"];
+            /** Format: date-time */
+            courierStoreRequestedAt: string | null;
+            stats: {
+                listings: number;
+                followers: number;
+                orders: number;
+                revenue: number;
+                ratingAverage: number | null;
+                reviewCount: number;
+            };
+        };
+        CartShop: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            logoUrl: string | null;
+            levelFloor: string | null;
+            shopNumber: string | null;
+            addressLine: string | null;
+            verificationLevel: components["schemas"]["VerificationLevel"];
+            supportsDelivery: boolean;
+            supportsPickup: boolean;
+            market: {
+                name?: string;
+                slug?: string;
+            } | null;
+            /** @description False = checkout cannot offer VENDOR_DELIVERY for this shop (no delivery, or courier store not ready). */
+            deliveryAvailable: boolean;
+            /** @description True for a PLATFORM_COURIER shop; its fee is the admin zone fee of the address. */
+            courierDelivery: boolean;
+        };
+        CartShopGroup: {
+            shop: components["schemas"]["CartShop"];
+            items: {
+                [key: string]: unknown;
+            }[];
+            subtotal: number;
+            /** @description The VENDOR_DELIVERY fee for this shop (see GET /cart); null when unknown or not available. */
+            deliveryFee: number | null;
         };
     };
     responses: {
@@ -7662,7 +7780,9 @@ export interface operations {
     };
     getCart: {
         parameters: {
-            query?: never;
+            query?: {
+                addressId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7678,7 +7798,9 @@ export interface operations {
                     "application/json": components["schemas"]["CartResponse"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     clearCart: {
@@ -8926,6 +9048,8 @@ export interface operations {
                 verificationLevel?: components["schemas"]["VerificationLevel"];
                 isActive?: "true" | "false";
                 marketId?: string;
+                courierStoreState?: components["schemas"]["CourierStoreState"];
+                deliveryMode?: components["schemas"]["ShopDeliveryMode"];
                 page?: components["parameters"]["Page"];
                 limit?: components["parameters"]["Limit"];
             };
@@ -8935,15 +9059,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description One page of shops with owner, market, listings, followers, orders, revenue and rating. */
+            /** @description One page of shops. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataList"];
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminShop"][];
+                        meta: {
+                            pagination?: components["schemas"]["Pagination"];
+                        };
+                    };
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
         };
@@ -14250,6 +14381,7 @@ export interface operations {
                             courierStoreId: string | null;
                             /** @enum {string} */
                             state: "READY" | "PENDING_APPROVAL";
+                            location: components["schemas"]["CourierStoreLocation"];
                         };
                     };
                 };
@@ -14705,6 +14837,34 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    getDeliveryQuote: {
+        parameters: {
+            query: {
+                addressId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The quote. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["DeliveryQuote"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

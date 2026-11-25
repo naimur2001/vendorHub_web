@@ -1,5 +1,6 @@
 import "client-only";
 import { api } from "./client";
+import type { components } from "./schema";
 
 export type Address = {
   id: string;
@@ -16,6 +17,8 @@ export type Address = {
   courierZoneName?: string | null;
   courierAreaId?: number | null;
   courierAreaName?: string | null;
+  // The courier delivery fee to this address (the admin zone fee); null without a delivery area or when its zone is off
+  deliveryQuote?: components["schemas"]["DeliveryQuote"] | null;
 };
 
 export type AddressInput = {
