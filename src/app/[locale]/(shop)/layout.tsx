@@ -3,6 +3,8 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { TopNav } from "@/components/layout/top-nav";
 import { VerifyBanner } from "@/components/auth/email-verification";
 import { DeletionGate } from "@/components/account/deletion-gate";
+import { WelcomePopup } from "@/components/layout/welcome-popup";
+import { Suspense } from "react";
 // Shared frame for all shopping pages: top bar, content, bottom bar on phones.
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +18,10 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       </main>
       <SiteFooter />
       <BottomNav />
+      {/* The admin's welcome poster (reads the time for "once a day", so it sits in Suspense) */}
+      <Suspense fallback={null}>
+        <WelcomePopup />
+      </Suspense>
     </div>
   );
 }

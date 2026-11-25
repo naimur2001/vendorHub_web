@@ -3890,5 +3890,11 @@
     "RETURNING": "Returning",
     "RETURNED": "Returned",
     "CANCELLED": "Cancelled"
+  },
+  "WelcomePopup": {
+    "label": "From Vendors Hub",
+    "close": "Close",
+    "notNow": "Not now",
+    "open": "See more"
   }
 }
