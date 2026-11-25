@@ -4191,6 +4191,34 @@
         "noPrice": "Tick at least one billing period with a price.",
         "price": "Prices must be whole taka."
       }
+    },
+    "requests": {
+      "title": "Plan requests from shops",
+      "text": "Shop owners can ask for a plan once subscriptions are on. Approve it after the payment, or reject it with a reason.",
+      "loadError": "Couldn't load the requests.",
+      "retry": "Try again",
+      "empty": "No requests waiting.",
+      "wants": "Wants {plan} · {period}",
+      "approve": "Approve",
+      "reject": "Reject",
+      "trialDays": "Trial days (optional)",
+      "noteOptional": "Note (optional)",
+      "reason": "Reason (the shop sees it)",
+      "confirmApprove": "Approve request",
+      "confirmReject": "Reject request",
+      "cancel": "Cancel"
+    },
+    "usage": {
+      "title": "Who uses what",
+      "text": "How many shops use each module today, from the real data. Use it to decide what goes into which plan before setting prices.",
+      "loadError": "Couldn't load the usage.",
+      "retry": "Try again",
+      "colModule": "Module",
+      "colMeasure": "Measured by",
+      "colShops": "Shops",
+      "colTotal": "Total",
+      "colTop": "Top shops",
+      "notTracked": "Not measured yet"
     }
   }
 }

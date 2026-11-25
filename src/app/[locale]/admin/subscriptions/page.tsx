@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { SubscriptionsList } from "@/components/admin/subscriptions-list";
+import { ModuleUsageTable, SubscriptionRequests } from "@/components/admin/subscriptions-extra";
 import { StartPlan, SubscriptionSummaryTiles, SubscriptionSwitch } from "@/components/admin/subscriptions-overview";
 import { Link } from "@/i18n/routing";
 
@@ -39,8 +40,10 @@ export default async function AdminSubscriptionsPage({ params }: Props) {
       <Suspense fallback={<div className="h-64 skeleton rounded-md" aria-hidden />}>
         <SubscriptionSwitch />
         <SubscriptionSummaryTiles />
+        <SubscriptionRequests />
         <StartPlan />
         <SubscriptionsList />
+        <ModuleUsageTable />
       </Suspense>
     </div>
   );

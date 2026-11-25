@@ -31,6 +31,8 @@ const id = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
   if (n.type.startsWith("VERIFICATION")) return "/owner/setup";
   if (n.type === "PRODUCT_DELETION_REQUESTED") return isAdmin ? "/admin/deletion-requests" : "/";
   if (n.type.startsWith("PRODUCT_DELETION")) return "/owner/listings";
+  // Plans: admins see new requests; the shop owner's notices go to the owner area (no plan page while subscriptions are off)
+  if (n.type.startsWith("SUBSCRIPTION_")) return isAdmin ? "/admin/subscriptions" : isTeam ? "/owner" : "/";
   if (n.type.startsWith("SHIPMENT_")) {
     // Courier problems also reach admins; picked up / delivered reach the customer and the shop team.
     if (isAdmin && ["SHIPMENT_BOOKING_FAILED", "SHIPMENT_FAILED", "SHIPMENT_RETURNED"].includes(n.type)) return "/admin/delivery";
