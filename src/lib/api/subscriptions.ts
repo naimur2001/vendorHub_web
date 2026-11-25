@@ -48,6 +48,7 @@ export const subKeys = {
   requests: ["admin", "subscriptions", "requests"] as const,
   usage: ["admin", "subscriptions", "usage"] as const,
   entitlements: (shopId: string) => ["shop", "entitlements", shopId] as const,
+  shopPlan: (shopId: string) => ["shop", "subscription", shopId] as const,
 };
 
 const enc = encodeURIComponent;
@@ -83,6 +84,12 @@ export const approveRequest = (id: string, input: { startsAt?: string; trialDays
 export const rejectRequest = (id: string, note: string) => api.post<unknown>(`/admin/subscription-requests/${enc(id)}/reject`, { note });
 
 // ---------- Shop side ----------
+export type ShopSubscriptionView = S["ShopSubscriptionView"];
+/** The shop's plan, limits used and the published plans. Only { enabled: false } while subscriptions are off. */
+export const getShopSubscription = (shopId: string) => api.get<ShopSubscriptionView>(`/shops/${enc(shopId)}/subscription`);
+/** Owner only. 409 REQUEST_PENDING, 400 PLAN_NOT_AVAILABLE; { enabled: false } while off. */
+export const requestPlan = (shopId: string, planId: string, period: BillingPeriod) =>
+  api.post<SubscriptionRequest | { enabled: false }>(`/shops/${enc(shopId)}/subscription/request`, { planId, period });
 /** What this shop may use. While subscriptions are off: enabled false, every module, no limits. */
 export const getEntitlements = (shopId: string) => api.get<Entitlements>(`/shops/${enc(shopId)}/entitlements`);
 

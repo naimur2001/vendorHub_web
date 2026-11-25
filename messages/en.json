@@ -4220,5 +4220,75 @@
       "colTop": "Top shops",
       "notTracked": "Not measured yet"
     }
+  },
+  "OwnerPlan": {
+    "metaTitle": "My plan",
+    "title": "My plan",
+    "subtitle": "Your shop's plan, what it includes and how much of it you use.",
+    "loading": "Loading your plan…",
+    "noShop": "Open your shop first to see its plan.",
+    "loadError": "Couldn't load your plan.",
+    "retry": "Try again",
+    "freeTitle": "Everything is free for now",
+    "freeText": "Your shop can use every Vendors Hub feature at no cost. If plans come later, you will see them here first, with time to choose.",
+    "current": "Your plan",
+    "freePlan": "Free",
+    "status": {
+      "TRIAL": "Free trial",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Payment overdue",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Expired",
+      "FREE": "Free"
+    },
+    "period": {
+      "MONTHLY": "Monthly",
+      "QUARTERLY": "Every 3 months",
+      "HALF_YEARLY": "Every 6 months",
+      "YEARLY": "Yearly"
+    },
+    "module": {
+      "ANALYTICS": "Sales analytics and low stock alerts",
+      "CSV_IMPORT": "Import products from a CSV file",
+      "PROMOTIONS": "Flash deals and coupons",
+      "FEATURED_SLOTS": "Featured on the home page",
+      "STAFF_ACCOUNTS": "Staff accounts",
+      "BARGAINING": "Bargaining with customers",
+      "ORDER_CHAT": "Chat with customers about orders",
+      "COURIER_DELIVERY": "Vendors Hub courier delivery",
+      "SHOP_PHOTOS_EXTRA": "More than 3 shop photos",
+      "PRIORITY_SUPPORT": "Priority support"
+    },
+    "limit": {
+      "maxProducts": "Products",
+      "maxStaff": "Staff",
+      "maxActiveDeals": "Active deals"
+    },
+    "usedOf": "{used} of {max}",
+    "usedUnlimited": "{used} · no limit",
+    "unlimited": "no limit",
+    "until": "Paid until",
+    "trialEnds": "Free trial ends",
+    "price": "Price",
+    "due": "{amount} is due. Pay Vendors Hub by bKash, Nagad, cash or bank and our team will mark it paid.",
+    "endsAtPeriodEnd": "This plan ends on {date} and won't renew.",
+    "included": "Included in your plan",
+    "pending": "Your request for {plan} ({period}) is waiting for Vendors Hub.",
+    "plansTitle": "Plans",
+    "plansText": "Choose a plan and a billing period, then send a request. Vendors Hub confirms it after your payment.",
+    "yourPlan": "Your plan",
+    "limitsLine": "Products {products} · staff {staff} · active deals {deals}",
+    "choosePeriod": "Billing period for {plan}",
+    "perMonth": "{amount} a month",
+    "saving": "save {percent}%",
+    "request": "Request this plan",
+    "requested": "Request sent. Vendors Hub will contact you about the payment.",
+    "errors": {
+      "pending": "You already have a request waiting.",
+      "notAvailable": "This plan or period isn't available any more.",
+      "network": "Can't reach Vendors Hub. Check your connection.",
+      "generic": "That didn't work. Try again."
+    },
+    "periodName": "Billing"
   }
 }
