@@ -3617,6 +3617,16 @@
       "check": "Check the values and try again.",
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."
+    },
+    "zonePicker": {
+      "title": "Courier zones",
+      "hint": "An address in one of these courier zones belongs to this delivery zone, even when its city is listed in another one. Use it for Dhaka suburbs such as Savar or Keraniganj.",
+      "city": "Show the zones of",
+      "none": "This city has no courier zones.",
+      "retry": "Could not load the zones. Try again",
+      "taken": "in {name}",
+      "chosen": "{count, plural, =0 {No courier zones chosen} one {# courier zone chosen} other {# courier zones chosen}}",
+      "clear": "Clear all"
     }
   },
   "CourierStatus": {

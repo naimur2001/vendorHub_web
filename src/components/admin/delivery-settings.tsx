@@ -11,8 +11,10 @@ import {
   listCities,
   listCouriers,
   listDeliveryZones,
+  listZones,
   updateCourier,
   updateDeliveryZone,
+  type CourierLocation,
   type CourierProvider,
   type DeliveryZone,
 } from "@/lib/api/delivery";
@@ -86,7 +88,7 @@ export function DeliverySettings() {
           <ul className="flex flex-col gap-3">
             {zones.data.map((z) => (
               <li key={z.id}>
-                <ZoneCard z={z} />
+                <ZoneCard z={z} others={zones.data.filter((o) => o.id !== z.id)} />
               </li>
             ))}
           </ul>
@@ -160,14 +162,15 @@ function CourierCard({ c }: { c: CourierProvider }) {
   );
 }
 
-function ZoneCard({ z }: { z: DeliveryZone }) {
+function ZoneCard({ z, others }: { z: DeliveryZone; others: DeliveryZone[] }) {
   const t = useTranslations("AdminDelivery");
   const locale = useLocale();
   const uid = useId();
   const queryClient = useQueryClient();
   const errorText = useErrorText();
   const [editing, setEditing] = useState(false);
-  const [v, setV] = useState({ name: z.name, fee: String(z.customerFee), eta: z.etaText, cities: z.courierCityIds });
+  const start = { name: z.name, fee: String(z.customerFee), eta: z.etaText, cities: z.courierCityIds, zones: z.courierZoneIds };
+  const [v, setV] = useState(start);
   const cities = useQuery({ queryKey: deliveryKeys.cities, queryFn: listCities, staleTime: 60 * 60_000, enabled: editing || z.courierCityIds.length > 0 });
   const cityName = (id: number) => cities.data?.find((c) => c.id === id)?.name ?? `#${id}`;
 
@@ -183,7 +186,7 @@ function ZoneCard({ z }: { z: DeliveryZone }) {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (valid) save.mutate({ name: v.name.trim(), customerFee: fee, etaText: v.eta.trim(), courierCityIds: v.cities });
+    if (valid) save.mutate({ name: v.name.trim(), customerFee: fee, etaText: v.eta.trim(), courierCityIds: v.cities, courierZoneIds: v.zones });
   }
 
   return (
@@ -248,9 +251,10 @@ function ZoneCard({ z }: { z: DeliveryZone }) {
               )}
             </fieldset>
           )}
+          {cities.isSuccess && <CourierZonePicker value={v.zones} onChange={(zones) => setV({ ...v, zones })} cities={cities.data} others={others} />}
           <div className="flex flex-wrap gap-2">
             <button type="submit" disabled={!valid || save.isPending} className={solid}>{save.isPending ? t("saving") : t("save")}</button>
-            <button type="button" onClick={() => { setEditing(false); setV({ name: z.name, fee: String(z.customerFee), eta: z.etaText, cities: z.courierCityIds }); }} className="type-body-medium h-11 rounded-sm px-4 text-ink-secondary hover:bg-subtle">{t("cancel")}</button>
+            <button type="button" onClick={() => { setEditing(false); setV(start); }} className="type-body-medium h-11 rounded-sm px-4 text-ink-secondary hover:bg-subtle">{t("cancel")}</button>
           </div>
         </form>
       ) : (
@@ -264,5 +268,62 @@ function ZoneCard({ z }: { z: DeliveryZone }) {
       {!z.isActive && <p className="type-caption text-ink-muted">{t("zoneOffNote")}</p>}
       {save.isError && <p role="alert" className="type-body text-error">{errorText(save.error)}</p>}
     </article>
+  );
+}
+
+/**
+ * Courier zones inside a city. The server matches an address's courier zone first, then its city,
+ * so a Dhaka suburb (a zone of the city Dhaka) can get its own fee. A zone sits in one delivery zone only.
+ */
+function CourierZonePicker({ value, onChange, cities, others }: { value: number[]; onChange: (ids: number[]) => void; cities: CourierLocation[]; others: DeliveryZone[] }) {
+  const t = useTranslations("AdminDelivery.zonePicker");
+  const uid = useId();
+  const [city, setCity] = useState<number | null>((cities.find((c) => c.name.trim().toLowerCase() === "dhaka") ?? cities[0])?.id ?? null);
+  const zones = useQuery({ queryKey: deliveryKeys.zonesOf(city ?? 0), queryFn: () => listZones(city as number), enabled: city !== null, staleTime: 60 * 60_000 });
+  const usedBy = (id: number) => others.find((o) => o.courierZoneIds.includes(id));
+
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="type-body-medium text-ink">{t("title")}</legend>
+      <p className="type-caption text-ink-muted">{t("hint")}</p>
+      <label htmlFor={`${uid}-c`} className="flex flex-col gap-1 sm:max-w-xs">
+        <span className="type-caption text-ink-secondary">{t("city")}</span>
+        <select id={`${uid}-c`} value={city ?? ""} onChange={(e) => setCity(/^d{1,9}$/.test(e.target.value) ? Number(e.target.value) : null)} className={field}>
+          {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </label>
+      {city === null ? null : zones.isPending ? (
+        <div className="h-11 skeleton relative overflow-hidden rounded-sm" aria-hidden />
+      ) : zones.isError ? (
+        <button type="button" onClick={() => zones.refetch()} className="type-body-medium h-11 self-start rounded-sm px-3 text-brand hover:bg-subtle">{t("retry")}</button>
+      ) : zones.data.length === 0 ? (
+        <p className="type-caption text-ink-muted">{t("none")}</p>
+      ) : (
+        <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+          {zones.data.map((zone) => {
+            const on = value.includes(zone.id);
+            const taken = on ? undefined : usedBy(zone.id);
+            return (
+              <button
+                key={zone.id}
+                type="button"
+                aria-pressed={on}
+                disabled={Boolean(taken)}
+                onClick={() => onChange(on ? value.filter((x) => x !== zone.id) : [...value, zone.id])}
+                className={cn("type-body inline-flex h-11 items-center gap-1 rounded-full border px-3 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:border-line disabled:bg-subtle disabled:text-ink-muted", on ? "border-brand bg-brand text-primary-foreground" : "border-line-strong bg-card text-ink hover:border-brand")}
+              >
+                {on && <Check className="size-4" aria-hidden />}
+                {zone.name}
+                {taken && <span className="type-caption">· {t("taken", { name: taken.name })}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="type-caption text-ink-secondary" aria-live="polite">{t("chosen", { count: value.length })}</p>
+        {value.length > 0 && <button type="button" onClick={() => onChange([])} className="type-body-medium h-11 rounded-sm px-3 text-ink-secondary hover:bg-subtle">{t("clear")}</button>}
+      </div>
+    </fieldset>
   );
 }
