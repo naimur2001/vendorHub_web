@@ -23,6 +23,7 @@ import { ToLetRow } from "@/components/home/to-let-row";
 import { ProductShelves } from "@/components/home/product-shelves";
 import { FeaturedProducts, FeaturedShops } from "@/components/home/featured-rows";
 import { CategoryArches, CategoryArchesSkeleton } from "@/components/home/category-arches";
+import { BagOrbit } from "@/components/home/bag-orbit";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -228,6 +229,10 @@ export default async function HomePage({ params }: Props) {
     <div className="flex flex-col gap-14 md:gap-20">
             {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
       <OwnerStrip />
+      {/* Products circling a shopping bag (1-minute cache); nothing with fewer than 4 photos */}
+      <Suspense fallback={<div className="h-72 md:h-104" aria-hidden />}>
+        <BagOrbit />
+      </Suspense>
       {/* Admin banners (1-minute cache); nothing shows when there are none or the API is down */}
       <Suspense fallback={<div className="-mb-2 aspect-5/2 skeleton rounded-3xl sm:aspect-7/2 md:mb-0 xl:aspect-auto xl:h-80" aria-hidden />}>
         <HomeBanners />
