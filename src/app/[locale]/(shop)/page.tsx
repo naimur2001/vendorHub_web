@@ -23,6 +23,7 @@ import { ToLetRow } from "@/components/home/to-let-row";
 import { ProductShelves } from "@/components/home/product-shelves";
 import { FeaturedProducts, FeaturedShops } from "@/components/home/featured-rows";
 import { CategoryArches, CategoryArchesSkeleton } from "@/components/home/category-arches";
+import { TrendingSpotlight, TrendingSpotlightSkeleton } from "@/components/home/trending-spotlight";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -262,6 +263,13 @@ export default async function HomePage({ params }: Props) {
           </Suspense>
         </div>
       </section>
+
+      {/* Trending this week: #1 as a big showcase, #2–#4 beside it (1-minute cache) */}
+      <Suspense fallback={<TrendingSpotlightSkeleton />}>
+        <TrendingSpotlight
+          heading={<SectionHeading id="spotlight-title" title={t("spotlightTitle")} text={t("spotlightText")} href="/search?sort=trending" link={tCatalog("seeAll")} />}
+        />
+      </Suspense>
 
       {/* Shop by category: arch doors for the biggest categories */}
       {/* (the heading comes with it, so nothing shows when there are no categories) */}
