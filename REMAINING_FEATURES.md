@@ -1,32 +1,18 @@
 # Features still to build
 
-Last updated: 2026-11-25. Everything not listed here is built and pushed on branch `naimur`.
+Last updated: 2026-11-25 (evening). Everything not listed here is built and pushed on branch `naimur`.
 
 ## Next: courier delivery, step 3 (the rest)
 
 For now every delivery goes through **Vendors Hub courier (Pathao)**. The shop's own delivery comes later.
+The backend has everything since commit `55d0c05` (2026-11-25). The admin zone fee is what the customer pays, and the courier's price is our cost.
 
-### 1. Backend first (the prompt was sent on 2026-11-25)
+### 1. Frontend still to do
 
-The backend is still on commit `678e74b`. It does **not** have these yet:
+- [ ] **Admin → Shops:** show `courierStoreState` on each shop (none, waiting for approval, ready) and add the `?courierStoreState=` filter. The "Courier store" panel already works.
+- [ ] **Test end to end in mock mode:** create a courier store for a shop (Admin → Shops), give the customer an address with a delivery area, order with delivery, then mark it "Ready for courier pickup" in Owner → Orders. Locally, 0 shops had a store on 2026-11-25.
 
-1. `GET /shops/mine` (and the owner's shop settings data): add `deliveryMode` and `courierReady` (true when `courierStoreId` is set).
-2. `GET /admin/shops`: add `deliveryMode`, `courierStoreId` and `courierStoreState` (NONE | PENDING_APPROVAL | READY), with filters for both. Save the PENDING_APPROVAL state, so "Check again" does not ask for the area again.
-3. Delivery fee before ordering: `deliveryQuote: { zoneCode, zoneName, fee, etaText } | null` on each address in `GET /users/me/addresses`, plus `GET /delivery/quote?addressId=`.
-4. Cart: `shop.courierDelivery` and `shop.deliveryAvailable` exist in `cart.service.js` but not in OpenAPI. For courier shops, `deliveryFee: null` until an address is chosen.
-5. Make `PLATFORM_COURIER` the default for new shops and migrate existing shops to it (all 15 local shops are `OWN` now). Keep `OWN` in the code for later.
-
-Already in the backend: checkout takes `addressId` and returns `ADDRESS_NEEDS_AREA`, `AREA_UNAVAILABLE` and `DELIVERY_UNAVAILABLE`.
-
-Before building, check the backend: run `npm run api:types` and look for `deliveryQuote` and `courierStoreState` in `src/lib/api/schema.d.ts`.
-
-### 2. Frontend once the backend is ready
-
-- [ ] **Checkout:** for courier shops, choose a saved address with a delivery area, show the courier fee from the server before ordering, and send `addressId`. Explain the errors `ADDRESS_NEEDS_AREA`, `AREA_UNAVAILABLE` and `DELIVERY_UNAVAILABLE`.
-- [ ] **Admin → Shops:** show the saved store state on each shop (none, waiting for approval, ready) and a filter for shops still waiting. The button itself is done.
-- [ ] **Owner → Orders:** test the courier card and booking with a real courier order (none exist locally until item 5).
-
-### 3. Your action (not code)
+### 2. Your action (not code)
 
 - [ ] Get **Pathao sandbox keys**, put them in the backend `.env`, run `node --env-file=.env scripts/check-pathao.mjs`, and send the output to the backend session. Keep `COURIER_MODE=mock` until it passes.
 
@@ -46,6 +32,7 @@ Before building, check the backend: run `npm run api:types` and look for `delive
 
 ## Recently built
 
+- **Checkout with courier fee (2026-11-25):** courier shops need a saved address with a delivery area. Each address shows its zone, fee and time from the server, all fees come from `GET /cart?addressId=`, the order sends `addressId`, and `ADDRESS_NEEDS_AREA`, `AREA_UNAVAILABLE` and `DELIVERY_UNAVAILABLE` are explained. Own-delivery shops keep the typed address.
 - **Courier delivery, step 3 part 1 (2026-11-25):**
   - Owner → Orders: courier card (COD amount, paid or not, booking failed), "Ready for courier pickup" books the courier, "Book the courier again" while the booking is still pending, clear messages when the courier already manages the order.
   - Notification bell: `SHIPMENT_*` open Track order (customer), Owner → Orders (shop) or the Delivery monitor (admin, for problems).
