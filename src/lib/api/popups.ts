@@ -8,7 +8,8 @@ export type AdminPopup = S["AdminPopup"];
 export type PopupAudience = S["PopupAudience"];
 export type PopupPages = S["PopupPages"];
 export type PopupFrequency = S["PopupFrequency"];
-export type PopupStats = S["PopupStatCounts"] & { days?: (S["PopupStatCounts"] & { day: string })[] };
+export type PopupStatCounts = S["PopupStatCounts"];
+export type PopupStats = { popupId: string; from: string; to: string; totals: PopupStatCounts; days: (PopupStatCounts & { day: string })[] };
 
 export const popupKeys = {
   active: (page: string, lang: string, signedIn: boolean) => ["popup", page, lang, signedIn] as const,

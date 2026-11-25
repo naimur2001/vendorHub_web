@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, Truck, CreditCard, Activity, type LucideIcon } from "lucide-react";
+import { ArrowLeft, LoaderCircle, ShieldCheck, Store,LayoutDashboard, Package,ScrollText,Tags,Scale, Users, ChartColumn , Building2, GalleryHorizontal, Sparkles, Flag, MessageSquareText, PackageCheck, KeyRound, Trash2, Truck, CreditCard, Activity, Megaphone, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Suspense, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion" | "deliverySettings" | "delivery"; icon: LucideIcon; icon2?: LucideIcon }[] = [
+const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "catalog" | "disputes" | "users" | "shops" | "overview" | "reports" | "banners" | "featured" | "moderation" | "messages" | "orders" | "toLet" | "deletion" | "deliverySettings" | "delivery" | "popups"; icon: LucideIcon; icon2?: LucideIcon }[] = [
   { href: "/admin", key: "queue", icon: ShieldCheck },
   { href: "/admin/orders", key: "orders", icon: PackageCheck },
   { href: "/admin/delivery", key: "delivery", icon: Activity },
@@ -17,6 +17,7 @@ const NAV: { href: string; key: "queue" | "markets" | "products" | "audit" | "ca
   { href: "/admin/overview", key: "overview", icon: LayoutDashboard },
   { href: "/admin/markets", key: "markets", icon: Store },
   { href: "/admin/banners", key: "banners", icon: GalleryHorizontal },
+  { href: "/admin/popups", key: "popups", icon: Megaphone },
   { href: "/admin/featured", key: "featured", icon: Sparkles },
   { href: "/admin/moderation", key: "moderation", icon: Flag },
   { href: "/admin/messages", key: "messages", icon: MessageSquareText, icon2: CreditCard },
