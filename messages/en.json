@@ -649,7 +649,11 @@
       "couponMinOrder": "A coupon needs a bigger order from its shop. Add items or remove the coupon.",
       "couponUsedUp": "A coupon has been used up. Remove it to continue.",
       "couponAlreadyUsed": "You've already used a coupon you entered. Remove it to continue.",
-      "dealSoldOut": "A flash deal in your cart just sold out. Check your cart and try again."
+      "dealSoldOut": "A flash deal in your cart just sold out. Check your cart and try again.",
+      "chooseAddress": "Choose a saved address with a delivery area.",
+      "addressNeedsArea": "This address has no delivery area. Add the city, zone and area in Saved addresses.",
+      "areaUnavailable": "Delivery to this area is not available right now. Choose another address or pick up at the shop.",
+      "deliveryUnavailable": "One shop can't deliver right now. Choose store pickup for it."
     },
     "reserve": "Reserve, pick up within 2 hours",
     "reserveHint": "The shop holds it for you. Pay at the store. The shop confirms within 30 minutes.",
@@ -658,7 +662,18 @@
     "couponHint": "For this shop only. The discount is checked and applied when you place the order.",
     "couponFormat": "A coupon code is 4–16 letters or numbers.",
     "useCredit": "Use my credit ({amount} available)",
-    "useCreditHint": "Up to 20% of each order's items, after any coupon. The rest you pay as chosen."
+    "useCreditHint": "Up to 20% of each order's items, after any coupon. The rest you pay as chosen.",
+    "courierDelivery": "Vendors Hub courier",
+    "courierHint": "Delivered to your door. The fee depends on your address.",
+    "courierHintFee": "Delivered to your door. {fee} to your address.",
+    "deliveryUnavailableNow": "Delivery is not available right now",
+    "courierAddressText": "Vendors Hub courier delivers to a saved address with a delivery area (city, zone and area). The fee comes from that area.",
+    "addressQuote": "{zone} · {fee} · {eta}",
+    "addressNoArea": "No delivery area yet. Add one in Saved addresses.",
+    "noCourierAddress": "You have no saved address with a delivery area yet. Add one to get delivery.",
+    "manageAddresses": "Add or edit addresses",
+    "feeAfterAddress": "Choose an address",
+    "addressesLoadError": "Couldn't load your addresses."
   },
   "Order": {
     "metaTitle": "Order confirmation",

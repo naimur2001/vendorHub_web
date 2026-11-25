@@ -21,9 +21,6 @@ export const ORDER_STATUSES: OrderStatus[] = [
 ];
 
 
-// Own-delivery shops only (the backend OWN_DELIVERY_FEE); courier fees come from GET /cart?addressId=.
-export const DELIVERY_FEE = 60;
-
 // Exact shape of formatOrder() in checkout.service.js
 export type Order = {
   id: string;

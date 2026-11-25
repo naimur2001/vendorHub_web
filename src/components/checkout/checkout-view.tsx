@@ -1,17 +1,16 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Circle, CircleAlert, CircleCheck, Info, LoaderCircle, MapPin, ShoppingCart, TriangleAlert, TicketPercent } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useSession } from "@/components/app-providers";
 import { VerificationSeal } from "@/components/brand/verification-seal";
 import { TextField } from "@/components/ui/text-field";
 import { Link, useRouter } from "@/i18n/routing";
-import { cartKeys, getCart, type CartGroup } from "@/lib/api/cart";
+import { cartKeys, getCart, getCartFor, type CartGroup } from "@/lib/api/cart";
 import {
   checkoutKeys,
-  DELIVERY_FEE,
   placeOrders,
   type DeliveryMethod,
   type PaymentMethod,
@@ -23,7 +22,7 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BD_MOBILE, normalizePhone } from "@/lib/validation";
 import { isEmailNotVerified } from "@/lib/api/auth";
-import { addressKeys, listAddresses } from "@/lib/api/addresses";
+import { addressKeys, listAddresses, type Address as SavedAddress } from "@/lib/api/addresses";
 import { creditKey, getMyCredit } from "@/components/account/credit-view";
 
 
@@ -46,7 +45,14 @@ function defaultChoice(group: CartGroup): Choice {
 
 // A shop coupon: 4-16 letters or digits (the backend rule). Only the format is checked here.
 const COUPON = /^[A-Z0-9]{4,16}$/;
-const COUPON_ERRORS: Record<string, string> = {
+// Courier delivery problems: the saved addresses and fees are fetched again after these.
+const DELIVERY_ERRORS: Record<string, string> = {
+  ADDRESS_NEEDS_AREA: "errors.addressNeedsArea",
+  AREA_UNAVAILABLE: "errors.areaUnavailable",
+  DELIVERY_UNAVAILABLE: "errors.deliveryUnavailable",
+};
+const CODE_ERRORS: Record<string, string> = {
+  ...DELIVERY_ERRORS,
   COUPON_INVALID: "errors.couponInvalid",
   COUPON_NOT_STARTED: "errors.couponNotStarted",
   COUPON_EXPIRED: "errors.couponExpired",
@@ -77,7 +83,7 @@ function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
         if (isEmailNotVerified(err)) return "errors.verifyEmail";
     const code = (err.details as { code?: string } | undefined)?.code;
-    if (code && COUPON_ERRORS[code]) return COUPON_ERRORS[code];
+    if (code && CODE_ERRORS[code]) return CODE_ERRORS[code];
     if (err.status === 409 && /already being placed/i.test(err.message)) return "errors.inProgress";
     if (err.status === 409 && (err.details as { code?: string } | undefined)?.code === "RESERVATION_LIMIT") return "errors.reservationLimit";
     if (err.status === 409) return Array.isArray(err.details) ? "errors.problems" : "errors.stock";
@@ -98,8 +104,20 @@ export function CheckoutView() {
   const queryClient = useQueryClient();
   const { status, user } = useSession();
 
-  const cart = useQuery({ queryKey: cartKeys.cart, queryFn: getCart, enabled: status === "authenticated" });
   const saved = useQuery({ queryKey: addressKeys.all, queryFn: listAddresses, enabled: status === "authenticated" });
+  // Courier delivery goes to a saved address with a delivery area. The customer's pick, else the
+  // default (or first) address that has a quote.
+  const [pickedAddressId, setPickedAddressId] = useState<string | null>(null);
+  const quoted = (saved.data ?? []).filter((a) => a.deliveryQuote);
+  const courierAddressId =
+    (pickedAddressId && quoted.some((a) => a.id === pickedAddressId) ? pickedAddressId : null) ?? (quoted.find((a) => a.isDefault) ?? quoted[0])?.id ?? null;
+  // Each shop's delivery fee to that address comes from the server (admin zone fee for courier shops).
+  const cart = useQuery({
+    queryKey: cartKeys.quoted(courierAddressId),
+    queryFn: () => (courierAddressId ? getCartFor(courierAddressId) : getCart()),
+    enabled: status === "authenticated",
+    placeholderData: keepPreviousData,
+  });
   const [choices, setChoices] = useState<Record<string, Choice>>({});
   const [coupons, setCoupons] = useState<Record<string, string>>({});
   const [useCredit, setUseCredit] = useState(false);
@@ -132,6 +150,8 @@ export function CheckoutView() {
       }
       setFormError(t(errorKey(err)));
       void queryClient.invalidateQueries({ queryKey: cartKeys.cart });
+      const code = err instanceof ApiError ? (err.details as { code?: string } | undefined)?.code : undefined;
+      if (code && DELIVERY_ERRORS[code]) void queryClient.invalidateQueries({ queryKey: addressKeys.all });
     },
   });
 
@@ -216,9 +236,14 @@ export function CheckoutView() {
 
   // Current choice per shop (defaults until the customer changes something)
   const choiceFor = (group: CartGroup) => choices[group.shop.id] ?? defaultChoice(group);
-  const deliveringCount = shops.filter((g) => choiceFor(g).delivery === "VENDOR_DELIVERY").length;
-  const deliveryFees = deliveringCount * DELIVERY_FEE;
+  const delivering = shops.filter((g) => choiceFor(g).delivery === "VENDOR_DELIVERY");
+  const deliveringCount = delivering.length;
+  // Vendors Hub courier: a saved address with a delivery area is needed (it decides the fee).
+  const usesCourier = delivering.some((g) => g.shop.courierDelivery);
+  const feeUnknown = delivering.some((g) => g.deliveryFee === null);
+  const deliveryFees = delivering.reduce((n, g) => n + (g.deliveryFee ?? 0), 0);
   const total = totals.subtotal + deliveryFees;
+  const updatingFees = cart.isPlaceholderData; // the fees for a newly chosen address are on the way
   const phonePlaceholder = user?.phone ?? "01712345678";
 
   function setChoice(group: CartGroup, next: Partial<Choice>) {
@@ -235,12 +260,17 @@ export function CheckoutView() {
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (place.isPending) return;
+    if (place.isPending || updatingFees) return;
     setFormError(null);
+
+    if (usesCourier && !courierAddressId) {
+      setFormError(t("errors.chooseAddress"));
+      return;
+    }
 
     // Use the account phone if the field was left empty.
     const filled = { ...address, phone: address.phone.trim() || user?.phone || "" };
-    if (deliveringCount > 0) {
+    if (deliveringCount > 0 && !usesCourier) {
       const errors = checkAddress(filled, t);
       setAddressErrors(errors);
       if (Object.keys(errors).length > 0) return;
@@ -251,14 +281,15 @@ export function CheckoutView() {
     setCouponErrors(badCoupons);
     if (Object.values(badCoupons).some(Boolean)) return;
 
-    const deliveryAddress = deliveringCount > 0 ? composeAddress(filled) : undefined;
+    // Courier: every delivering shop gets the saved address (the server builds its text and the fee).
+    const deliveryAddress = deliveringCount > 0 && !usesCourier ? composeAddress(filled) : undefined;
     const payload: ShopChoice[] = shops.map((group) => {
       const choice = choiceFor(group);
       return {
         shopId: group.shop.id,
         deliveryMethod: choice.delivery,
         paymentMethod: choice.payment,
-        ...(choice.delivery === "VENDOR_DELIVERY" && { deliveryAddress }),
+        ...(choice.delivery === "VENDOR_DELIVERY" && (usesCourier && courierAddressId ? { addressId: courierAddressId } : { deliveryAddress })),
         ...(coupons[group.shop.id] && { couponCode: coupons[group.shop.id] }),
       };
     });
@@ -307,7 +338,23 @@ export function CheckoutView() {
           </label>
         )}
 
-        {deliveringCount > 0 && (
+        {usesCourier && (
+          <CourierAddresses
+            addresses={saved.data ?? []}
+            pending={saved.isPending}
+            failed={saved.isError}
+            onRetry={() => saved.refetch()}
+            chosenId={courierAddressId}
+            onChoose={(id) => {
+              setPickedAddressId(id);
+              setFormError(null);
+            }}
+            disabled={place.isPending}
+            locale={locale}
+          />
+        )}
+
+        {deliveringCount > 0 && !usesCourier && (
           <fieldset className="flex flex-col gap-4 rounded-md border border-line bg-card p-4 md:p-5" disabled={place.isPending}>
             <legend className="type-h3 flex items-center gap-2 px-1 text-ink">
               <MapPin className="size-5 text-highlight" aria-hidden />
@@ -395,7 +442,7 @@ export function CheckoutView() {
         <h2 id="summary-heading" className="type-h3 text-ink">
           {t("summaryTitle")}
         </h2>
-        <ul className="flex flex-col gap-1.5">
+        <ul className={cn("flex flex-col gap-1.5 transition-opacity", updatingFees && "opacity-60")} aria-busy={updatingFees}>
           {shops.map((group) => (
             <li key={group.shop.id} className="type-body flex justify-between gap-3 text-ink-secondary">
               <span className="truncate">{group.shop.name}</span>
@@ -404,7 +451,7 @@ export function CheckoutView() {
           ))}
           <li className="type-body flex justify-between gap-3 text-ink-secondary">
             <span>{t("deliveryFees")}</span>
-            <span className="type-price">{deliveryFees > 0 ? formatTaka(deliveryFees, locale) : t("free")}</span>
+            <span className="type-price">{feeUnknown ? t("feeAfterAddress") : deliveryFees > 0 ? formatTaka(deliveryFees, locale) : t("free")}</span>
           </li>
         </ul>
         <div className="flex items-baseline justify-between border-t border-gold pt-3">
@@ -424,7 +471,7 @@ export function CheckoutView() {
           </div>
         )}
 
-        <button type="submit" disabled={place.isPending} aria-busy={place.isPending} className={cn(primaryButton, "w-full disabled:cursor-not-allowed disabled:opacity-80")}>
+        <button type="submit" disabled={place.isPending || updatingFees} aria-busy={place.isPending || updatingFees} className={cn(primaryButton, "w-full disabled:cursor-not-allowed disabled:opacity-80")}>
           {place.isPending && <LoaderCircle className="size-5 animate-spin" aria-hidden />}
           {place.isPending ? t("placing") : t("place", { count: shops.length })}
         </button>
@@ -451,14 +498,27 @@ type CardProps = {
 function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange, coupon, couponError, onCoupon }: CardProps) {
   const t = useTranslations("Checkout");
   const { shop } = group;
-  const fee = choice.delivery === "VENDOR_DELIVERY" ? DELIVERY_FEE : 0;
+  // From the server: null for a courier shop until an address with a delivery area is chosen.
+  const fee = choice.delivery === "VENDOR_DELIVERY" ? group.deliveryFee : 0;
   const place = [shopPlace(shop.levelFloor, shop.shopNumber), shop.market?.name].filter(Boolean).join(" · ");
   const itemCount = group.items.reduce((n, i) => n + i.quantity, 0);
 
+  const deliveryHint = !shop.deliveryAvailable
+    ? t("deliveryUnavailableNow")
+    : shop.courierDelivery
+      ? group.deliveryFee !== null
+        ? t("courierHintFee", { fee: formatTaka(group.deliveryFee, locale) })
+        : t("courierHint")
+      : `${t("deliveryHint")} ${group.deliveryFee !== null ? formatTaka(group.deliveryFee, locale) : ""}`.trim();
   const deliveryOptions: { value: DeliveryMethod; label: string; hint: string; offered: boolean }[] = [
     { value: "STORE_PICKUP", label: t("pickup"), hint: t("pickupHint"), offered: shop.supportsPickup },
     { value: "RESERVE_PICKUP", label: t("reserve"), hint: t("reserveHint"), offered: shop.supportsPickup },
-    { value: "VENDOR_DELIVERY", label: t("delivery"), hint: `${t("deliveryHint")} ${formatTaka(DELIVERY_FEE, locale)}`, offered: shop.supportsDelivery },
+    {
+      value: "VENDOR_DELIVERY",
+      label: shop.courierDelivery ? t("courierDelivery") : t("delivery"),
+      hint: shop.supportsDelivery ? deliveryHint : t("notOffered"),
+      offered: shop.supportsDelivery && shop.deliveryAvailable,
+    },
   ];
   const paymentLabels: Record<PaymentMethod, { label: string; hint: string }> = {
     PAY_AT_STORE: { label: t("payAtStore"), hint: t("payAtStoreHint") },
@@ -500,7 +560,7 @@ function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange
               checked={choice.delivery === option.value}
               disabled={!option.offered}
               label={option.label}
-              hint={option.offered ? option.hint : t("notOffered")}
+              hint={option.offered || option.value === "VENDOR_DELIVERY" ? option.hint : t("notOffered")}
               onSelect={() => onChange({ delivery: option.value })}
             />
           ))}
@@ -556,11 +616,11 @@ function ShopOrderCard({ group, index, total, choice, locale, disabled, onChange
         </div>
         <div className="type-body flex justify-between text-ink-secondary">
           <dt>{t("deliveryFee")}</dt>
-          <dd className="type-price">{fee > 0 ? formatTaka(fee, locale) : t("free")}</dd>
+          <dd className="type-price">{fee === null ? t("feeAfterAddress") : fee > 0 ? formatTaka(fee, locale) : t("free")}</dd>
         </div>
         <div className="type-body-medium flex justify-between text-ink">
           <dt>{t("orderTotal")}</dt>
-          <dd className="type-price">{formatTaka(group.subtotal + fee, locale)}</dd>
+          <dd className="type-price">{formatTaka(group.subtotal + (fee ?? 0), locale)}</dd>
         </div>
       </dl>
     </section>
@@ -574,6 +634,7 @@ function Option({
   disabled = false,
   label,
   hint,
+  extra,
   onSelect,
 }: {
   name: string;
@@ -581,6 +642,7 @@ function Option({
   disabled?: boolean;
   label: string;
   hint: string;
+  extra?: ReactNode;
   onSelect: () => void;
 }) {
   return (
@@ -595,8 +657,89 @@ function Option({
       <span className="flex flex-col">
         <span className="type-body-medium text-ink">{label}</span>
         <span className="type-caption text-ink-muted">{hint}</span>
+        {extra}
       </span>
     </label>
+  );
+}
+
+/**
+ * Vendors Hub courier: pick a saved address with a delivery area. Each one shows the fee and time
+ * from the server (the admin zone fee); addresses without an area cannot be picked.
+ */
+function CourierAddresses({
+  addresses,
+  pending,
+  failed,
+  onRetry,
+  chosenId,
+  onChoose,
+  disabled,
+  locale,
+}: {
+  addresses: SavedAddress[];
+  pending: boolean;
+  failed: boolean;
+  onRetry: () => void;
+  chosenId: string | null;
+  onChoose: (id: string) => void;
+  disabled: boolean;
+  locale: string;
+}) {
+  const t = useTranslations("Checkout");
+  const anyQuoted = addresses.some((a) => a.deliveryQuote);
+
+  return (
+    <fieldset className="flex flex-col gap-3 rounded-md border border-line bg-card p-4 md:p-5" disabled={disabled}>
+      <legend className="type-h3 flex items-center gap-2 px-1 text-ink">
+        <MapPin className="size-5 text-highlight" aria-hidden />
+        {t("addressTitle")}
+      </legend>
+      <p className="type-caption -mt-1 text-ink-muted">{t("courierAddressText")}</p>
+
+      {pending ? (
+        <div className="h-28 skeleton relative overflow-hidden rounded-md" aria-hidden />
+      ) : failed ? (
+        <div role="alert" className="flex flex-wrap items-center gap-2">
+          <p className="type-body text-ink-secondary">{t("addressesLoadError")}</p>
+          <button type="button" onClick={onRetry} className="type-body-medium h-11 rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
+            {t("retry")}
+          </button>
+        </div>
+      ) : (
+        <>
+          {!anyQuoted && <p className="type-body rounded-md bg-highlight-soft p-3 text-ink">{t("noCourierAddress")}</p>}
+          {addresses.length > 0 && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {addresses.map((a) => {
+                const q = a.deliveryQuote;
+                return (
+                  <Option
+                    key={a.id}
+                    name="courier-address"
+                    checked={a.id === chosenId}
+                    disabled={!q}
+                    // Customer text: plain text, React escapes it
+                    label={a.label || a.line1 || a.city}
+                    hint={[a.line1, a.area, a.city].filter(Boolean).join(", ")}
+                    extra={
+                      <span className={cn("type-caption mt-0.5", q ? "text-ink-secondary" : "text-error")}>
+                        {q ? t("addressQuote", { zone: q.zoneName, fee: formatTaka(q.fee, locale), eta: q.etaText }) : t("addressNoArea")}
+                      </span>
+                    }
+                    onSelect={() => onChoose(a.id)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      <Link href="/account/addresses" className="type-body-medium flex h-11 items-center self-start text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
+        {t("manageAddresses")}
+      </Link>
+    </fieldset>
   );
 }
 
