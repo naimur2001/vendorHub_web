@@ -20,6 +20,13 @@ The backend has everything since commit `55d0c05` (2026-11-25). The admin zone f
 
 - **Vendors Hub delivery profit:** the amounts are not decided yet. Admins can now add, edit, switch off and delete profit rules (fixed ৳ or %, per zone and courier) in Couriers & fees, and the Delivery monitor compares the real profit with that target. Set the real rules after the discussion.
 
+## Before switching subscriptions on (frontend)
+
+Subscriptions are built for admins and switched OFF (everything free, nothing shown to shop owners). Before an admin switches them on, build:
+- [ ] **Owner → My plan** page: `GET /shops/:shopId/subscription` (plan, period end, amount due, limits used), the published plans with prices, and "Request this plan" (`POST .../subscription/request`, errors `REQUEST_PENDING`, `PLAN_NOT_AVAILABLE`).
+- [ ] **Plan errors on owner screens:** show `402 PLAN_REQUIRED` as "Upgrade your plan" (link to My plan) and `409 PLAN_LIMIT` as "Your plan allows N (N used)". The helper `planProblem()` in `src/lib/api/subscriptions.ts` reads both. The places: analytics and low stock, CSV import, deals and coupons, staff, bargaining, chat replies, courier delivery, more than 3 shop photos, new products past the limit.
+- [ ] Optionally lock or hide those features in advance from `GET /shops/:shopId/entitlements`.
+
 ## Needs the backend or accounts first
 
 | Feature | What is missing | Frontend work once ready |
@@ -36,6 +43,7 @@ The backend has everything since commit `55d0c05` (2026-11-25). The admin zone f
 
 ## Recently built
 
+- **2026-11-25 (evening):** Delivery monitor shows "Earned (delivered)" apart from "Priced margin vs target". Welcome popup on the site plus Admin → Welcome popup (switch, schedule, audience, pages, frequency, stop, stats). Admin → Subscriptions (master switch off, trial and grace days, summary and MRR, start a plan, subscriptions with payments, refunds, extend, cancel at period end, requests, module usage) and Plans & prices (modules, limits, 4 billing periods with savings).
 - **Checkout with courier fee (2026-11-25):** courier shops need a saved address with a delivery area. Each address shows its zone, fee and time from the server, all fees come from `GET /cart?addressId=`, the order sends `addressId`, and `ADDRESS_NEEDS_AREA`, `AREA_UNAVAILABLE` and `DELIVERY_UNAVAILABLE` are explained. Own-delivery shops keep the typed address.
 - **Courier delivery, step 3 part 1 (2026-11-25):**
   - Owner → Orders: courier card (COD amount, paid or not, booking failed), "Ready for courier pickup" books the courier, "Book the courier again" while the booking is still pending, clear messages when the courier already manages the order.
