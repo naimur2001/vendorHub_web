@@ -18,7 +18,7 @@ The backend has everything since commit `55d0c05` (2026-11-25). The admin zone f
 
 ## To discuss later
 
-- **Vendors Hub delivery profit:** not decided yet. The Delivery monitor keeps its Profit field (customer fee minus courier cost, for example ৳80 − ৳60 = ৳20) unchanged until then.
+- **Vendors Hub delivery profit:** the amounts are not decided yet. Admins can now add, edit, switch off and delete profit rules (fixed ৳ or %, per zone and courier) in Couriers & fees, and the Delivery monitor compares the real profit with that target. Set the real rules after the discussion.
 
 ## Needs the backend or accounts first
 
