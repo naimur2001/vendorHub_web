@@ -9,7 +9,7 @@ The backend has everything since commit `55d0c05` (2026-11-25). The admin zone f
 
 ### 1. Frontend still to do
 
-- [ ] **Admin → Shops:** show `courierStoreState` on each shop (none, waiting for approval, ready) and add the `?courierStoreState=` filter. The "Courier store" panel already works.
+- [x] **Admin → Shops:** courier store state badge, filter, and saved state in the panel (2026-11-25).
 - [ ] **Test end to end in mock mode:** create a courier store for a shop (Admin → Shops), give the customer an address with a delivery area, order with delivery, then mark it "Ready for courier pickup" in Owner → Orders. Locally, 0 shops had a store on 2026-11-25.
 
 ### 2. Your action (not code)
