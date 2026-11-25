@@ -21,6 +21,7 @@ import { FlashDeals } from "@/components/home/flash-deals";
 import { ToLetRow } from "@/components/home/to-let-row";
 import { ProductShelves } from "@/components/home/product-shelves";
 import { FeaturedProducts, FeaturedShops } from "@/components/home/featured-rows";
+import { CategoryArches, CategoryArchesSkeleton } from "@/components/home/category-arches";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -258,6 +259,22 @@ export default async function HomePage({ params }: Props) {
           </Suspense>
         </div>
       </section>
+
+      {/* Shop by category: arch doors for the biggest categories */}
+      {/* (the heading comes with it, so nothing shows when there are no categories) */}
+      <Suspense fallback={<CategoryArchesSkeleton />}>
+        <CategoryArches
+          heading={
+            <SectionHeading
+              id="categories-title"
+              title={t("categoriesTitle")}
+              text={t("categoriesText")}
+              href="/search"
+              link={tCatalog("seeAll")}
+            />
+          }
+        />
+      </Suspense>
 
       {/* Live flash deals (30-second cache); nothing shows when there are none */}
       <Suspense>
