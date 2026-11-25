@@ -1086,7 +1086,19 @@
     "next": "Next",
     "pageOf": "Page {page} of {total}",
     "couponLine": "Coupon {code}",
-    "creditLine": "Customer credit"
+    "creditLine": "Customer credit",
+    "courier": {
+      "delivery": "Vendors Hub courier",
+      "deliverTo": "Vendors Hub courier delivers to",
+      "ready": "Ready for courier pickup",
+      "readyNote": "This books the Vendors Hub courier. They come to your shop to pick up the parcel.",
+      "bookAgain": "Book the courier again",
+      "waiting": "The courier is not booked yet. We keep trying, or you can try again now.",
+      "booked": "Courier booked. They will come to pick it up.",
+      "bookingFailed": "The courier could not be booked. We will try again shortly.",
+      "managed": "The courier moves this order on from here. To cancel it, message Vendors Hub.",
+      "cancelBooked": "The courier is already booked. Ask Vendors Hub to cancel the shipment first."
+    }
   },
   "OwnerListings": {
     "metaTitle": "Your listings",

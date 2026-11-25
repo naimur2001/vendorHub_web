@@ -31,6 +31,12 @@ const id = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
   if (n.type.startsWith("VERIFICATION")) return "/owner/setup";
   if (n.type === "PRODUCT_DELETION_REQUESTED") return isAdmin ? "/admin/deletion-requests" : "/";
   if (n.type.startsWith("PRODUCT_DELETION")) return "/owner/listings";
+  if (n.type.startsWith("SHIPMENT_")) {
+    // Courier problems also reach admins; picked up / delivered reach the customer and the shop team.
+    if (isAdmin && ["SHIPMENT_BOOKING_FAILED", "SHIPMENT_FAILED", "SHIPMENT_RETURNED"].includes(n.type)) return "/admin/delivery";
+    if (isTeam) return id(d.shopId) ? `/owner/orders?shop=${id(d.shopId)}` : "/owner/orders";
+    return id(d.orderId) ? `/account/orders/${id(d.orderId)}` : "/account/orders";
+  }
   return "/";
 }
 

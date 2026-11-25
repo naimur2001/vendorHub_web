@@ -3,6 +3,7 @@ import type { Bargain, BargainStatus } from "./bargains";
 import type { DeliveryMethod, OrderStatus, OrderStatusEvent, PaymentMethod, PaymentStatus } from "./checkout";
 import { api } from "./client";
 import type { ApiResult } from "./core";
+import type { ShopShipment } from "./delivery";
 import type { components } from "./schema";
 
 type Availability = components["schemas"]["Availability"];
@@ -97,6 +98,7 @@ export type ShopOrder = {
   items: { id: string; title: string; unitPrice: number; quantity: number; lineTotal: number; bargained: boolean }[];
   nextStatuses: NextStatus[]; // which buttons to show, decided by the backend
   statusEvents?: OrderStatusEvent[]; // only on the single-order endpoint (oldest first)
+  shipment?: ShopShipment | null; // Vendors Hub courier orders only (no courier cost or margin)
 };
 
 export const ownerKeys = {

@@ -27,6 +27,8 @@ import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { ReservationNote } from "@/components/orders/reservation-note";
 import { OrderChat } from "@/components/orders/order-chat";
 import { UnreadBadge } from "@/components/orders/unread-badge";
+import { CourierStatus } from "@/components/orders/courier-status";
+import { errorCode, shipOrder } from "@/lib/api/delivery";
 const PAGE_SIZE = 20;
 const FILTERS: OrderFilter[] = ["ALL", ...ORDER_STATUSES];
 
@@ -293,7 +295,7 @@ function OrderRow({ order, onOpen }: { order: ShopOrder; onOpen: () => void }) {
         <UnreadBadge count={order.unreadCount} />
         <p className="type-caption flex items-center gap-1.5 text-ink-muted">
           {order.deliveryMethod !== "VENDOR_DELIVERY" ? <Store className="size-3.5" aria-hidden /> : <Truck className="size-3.5" aria-hidden />}
-          {order.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("delivery")} · {t("items", { count: items })} ·{" "}
+          {order.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : order.shipment ? t("courier.delivery") : t("delivery")} · {t("items", { count: items })} ·{" "}
           <span className="type-price">{formatTaka(order.total, locale)}</span>
         </p>
       </div>
@@ -329,6 +331,39 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
     queryKey: ownerKeys.order(shopId, initial.id),
     queryFn: () => getShopOrder(shopId, initial.id),
     initialData: initial,
+    // The courier moves courier orders on: keep the card fresh while the panel is open.
+    refetchInterval: (q) => (q.state.data?.shipment && !["COMPLETED", "CANCELLED"].includes(q.state.data.status) ? 60_000 : false),
+  });
+
+  const refreshLists = () => {
+    void queryClient.invalidateQueries({ queryKey: ownerKeys.order(shopId, initial.id) });
+    void queryClient.invalidateQueries({ queryKey: ["owner", "orders"] });
+    void queryClient.invalidateQueries({ queryKey: ["owner", "dashboard"] });
+  };
+
+  // Books the courier again for a courier order still waiting (READY_FOR_PICKUP does it the first time).
+  const ship = useMutation({
+    mutationFn: () => shipOrder(shopId, initial.id),
+    onMutate: () => setMessage(null),
+    onSuccess: (shipment) => {
+      queryClient.setQueryData<ShopOrder>(ownerKeys.order(shopId, initial.id), (prev) => (prev ? { ...prev, shipment } : prev));
+      refreshLists();
+      setMessage({ kind: "ok", text: t("courier.booked") });
+    },
+    onError: (err) => {
+      const code = err instanceof ApiError ? errorCode(err.details) : null;
+      if (code === "BOOKING_FAILED" || (err instanceof ApiError && err.status >= 500)) {
+        void order.refetch();
+        setMessage({ kind: "error", text: t("courier.bookingFailed") });
+        return;
+      }
+      if (code === "ORDER_NOT_READY" || code === "NOT_COURIER_ORDER") {
+        void order.refetch();
+        setMessage({ kind: "error", text: t("errors.changed") });
+        return;
+      }
+      setMessage({ kind: "error", text: err instanceof ApiError && err.status === 0 ? t("errors.network") : t("errors.generic") });
+    },
   });
 
   const change = useMutation({
@@ -340,9 +375,7 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
         ...updated,
         statusEvents: updated.statusEvents ?? prev?.statusEvents,
       }));
-      void queryClient.invalidateQueries({ queryKey: ownerKeys.order(shopId, initial.id) });
-      void queryClient.invalidateQueries({ queryKey: ["owner", "orders"] });
-      void queryClient.invalidateQueries({ queryKey: ["owner", "dashboard"] });
+      refreshLists();
       setCancelling(false);
       setReason("");
       setMessage({ kind: "ok", text: t("updated") });
@@ -350,7 +383,8 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
     onError: (err) => {
       if (err instanceof ApiError && err.status === 409) {
         void order.refetch(); // someone else changed it first: show the real state
-        setMessage({ kind: "error", text: t("errors.changed") });
+        const code = errorCode(err.details);
+        setMessage({ kind: "error", text: code === "SHIPMENT_BOOKED" ? t("courier.cancelBooked") : code === "COURIER_MANAGED" ? t("courier.managed") : t("errors.changed") });
         return;
       }
       setMessage({ kind: "error", text: err instanceof ApiError && err.status === 0 ? t("errors.network") : t("errors.generic") });
@@ -363,6 +397,12 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
   const canCancel = o.nextStatuses.includes("CANCELLED");
   const waitingForPayment = o.status === "PLACED" && o.paymentMethod === "ONLINE" && o.paymentStatus !== "PAID";
   const finished = o.status === "COMPLETED" || o.status === "CANCELLED";
+  const courier = o.shipment ?? null;
+  // Ready for pickup but the courier is not booked yet (still retrying, or three tries failed).
+  const canBookAgain = courier?.status === "PENDING" && o.status === "READY_FOR_PICKUP";
+  // Booked: from here the courier moves the order on, and only Vendors Hub can cancel it.
+  const courierDriven = Boolean(courier) && !finished && forward.length === 0 && !canBookAgain && o.status !== "PLACED";
+  const busy = change.isPending || ship.isPending;
 
   function onCancel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -390,7 +430,7 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
       </section>
 
       <section className="flex flex-col gap-1">
-        <h3 className="type-caption text-ink-muted">{o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : t("deliverTo")}</h3>
+        <h3 className="type-caption text-ink-muted">{o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : courier ? t("courier.deliverTo") : t("deliverTo")}</h3>
         <p className="type-body flex items-start gap-2 text-ink">
           {o.deliveryMethod !== "VENDOR_DELIVERY" ? (
             <Store className="mt-0.5 size-4 shrink-0 text-highlight" aria-hidden />
@@ -401,6 +441,8 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
           {o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickupNote") : (o.deliveryAddress ?? "")}
         </p>
       </section>
+
+      {courier && <CourierStatus shipment={courier} shop={{ codAmount: courier.codAmount, shopPaid: courier.shopPaid, bookingFailed: courier.bookingFailed }} />}
 
       <section className="flex flex-col gap-1">
         <h3 className="type-caption text-ink-muted">{t("payment")}</h3>
@@ -482,23 +524,42 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
               key={next}
               type="button"
               onClick={() => change.mutate({ status: next })}
-              disabled={change.isPending}
+              disabled={busy}
               aria-busy={change.isPending}
               className="type-body-medium flex h-12 items-center justify-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
               {change.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
-              {t(`actions.${next}`)}
+              {courier && next === "READY_FOR_PICKUP" ? t("courier.ready") : t(`actions.${next}`)}
             </button>
           ))}
+          {courier && forward.includes("READY_FOR_PICKUP") && <p className="type-caption text-ink-muted">{t("courier.readyNote")}</p>}
           {forward.includes("COMPLETED") && o.paymentMethod !== "ONLINE" && <p className="type-caption text-ink-muted">{t("cashNote")}</p>}
         </div>
       )}
+
+      {!cancelling && canBookAgain && (
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => ship.mutate()}
+            disabled={busy}
+            aria-busy={ship.isPending}
+            className="type-body-medium flex h-12 items-center justify-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {ship.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <Truck className="size-4" aria-hidden />}
+            {t("courier.bookAgain")}
+          </button>
+          <p className="type-caption text-ink-muted">{t("courier.waiting")}</p>
+        </div>
+      )}
+
+      {courierDriven && <p className="type-body rounded-md bg-subtle p-3 text-ink-secondary">{t("courier.managed")}</p>}
 
       {!cancelling && canCancel && (
         <button
           type="button"
           onClick={() => setCancelling(true)}
-          disabled={change.isPending}
+          disabled={busy}
           className="type-body-medium flex h-12 items-center justify-center rounded-sm border border-error px-4 text-error hover:bg-error-soft focus-visible:ring-2 focus-visible:ring-error focus-visible:outline-none disabled:opacity-60"
         >
           {t("actions.CANCELLED")}
