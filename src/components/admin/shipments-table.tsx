@@ -19,7 +19,7 @@ import {
   type ShipmentQuery,
   type ShipmentStatus,
 } from "@/lib/api/delivery";
-import { formatTaka } from "@/lib/format";
+import { formatTaka, signedTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const PROBLEM: ShipmentStatus[] = ["FAILED", "RETURNING", "RETURNED", "CANCELLED"];
@@ -104,6 +104,7 @@ export function ShipmentsTable({ filter }: { filter: RangeFilter }) {
                 <span className="type-caption flex shrink-0 gap-3 text-ink-secondary tabular-nums md:flex-col md:items-end md:gap-0">
                   <span>{t("fee", { amount: formatTaka(s.customerFee, locale) })}</span>
                   {s.margin !== null && <span className={s.margin < 0 ? "text-error" : "text-success-ink"}>{t("margin", { amount: formatTaka(s.margin, locale) })}</span>}
+                  {s.profitGap !== null && <span className={s.profitGap < 0 ? "text-error" : "text-ink-secondary"}>{t("gapShort", { gap: signedTaka(s.profitGap, locale) })}</span>}
                 </span>
               </button>
             </li>
@@ -173,6 +174,8 @@ function Detail({ id }: { id: string }) {
     [t("factFee"), taka(s.customerFee)],
     [t("factCost"), s.courierCost === null ? "—" : taka(s.courierCost)],
     [t("factMargin"), s.margin === null ? "—" : taka(s.margin)],
+    [t("factTarget"), s.targetProfit === null ? t("noRule") : `${taka(s.targetProfit)}${s.ruleName ? ` · ${s.ruleName}` : ""}`],
+    [t("factGap"), s.profitGap === null ? "—" : signedTaka(s.profitGap, locale)],
     [t("factCod"), s.codAmount ? `${taka(s.codAmount)} · ${s.codCollected ? t("collected") : t("notCollected")}` : t("prepaid")],
     [t("factCodRemitted"), when(s.codRemittedAt)],
     [t("factShopPaid"), when(s.shopPaidAt)],

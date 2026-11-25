@@ -17,7 +17,7 @@ import {
   type RangeFilter,
   type Ranked,
 } from "@/lib/api/delivery";
-import { formatTaka } from "@/lib/format";
+import { formatTaka, signedTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const RANGES = [7, 30, 90] as const;
@@ -83,13 +83,13 @@ export function DeliveryMonitor() {
       </div>
 
       {summary.isPending ? (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {Array.from({ length: 8 }, (_, i) => <div key={i} className="relative h-24 skeleton overflow-hidden rounded-md" aria-hidden />)}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          {Array.from({ length: 9 }, (_, i) => <div key={i} className="relative h-24 skeleton overflow-hidden rounded-md" aria-hidden />)}
         </div>
       ) : summary.isError ? (
         <Retry onRetry={() => summary.refetch()} />
       ) : (
-        <Tiles m={summary.data} counts={summary.data.countsByStatus} />
+        <Tiles m={summary.data} counts={summary.data.countsByStatus} belowTarget={summary.data.belowTarget} />
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -110,7 +110,11 @@ export function DeliveryMonitor() {
             />
             <DayBars
               title={t("chartMargin")}
-              points={points.map((p) => ({ day: p.day, value: p.margin, note: t("marginNote", { fees: taka(p.customerFees), cost: taka(p.courierCost) }) }))}
+              points={points.map((p) => ({
+                day: p.day,
+                value: p.margin,
+                note: [t("marginNote", { fees: taka(p.customerFees), cost: taka(p.courierCost) }), p.targetProfit !== null && p.profitGap !== null ? t("targetNote", { target: taka(p.targetProfit), gap: signedTaka(p.profitGap, locale) }) : null].filter(Boolean).join(" · "),
+              }))}
               format={taka}
               summary={t("chartMarginSummary", { total: taka(totalMargin), days })}
             />
@@ -137,7 +141,7 @@ function Retry({ onRetry }: { onRetry: () => void }) {
 }
 
 /** Headline numbers. Money owed is the call to action, so it gets the gold frame when not zero. */
-function Tiles({ m, counts }: { m: DeliveryMetrics; counts: Record<string, number> }) {
+function Tiles({ m, counts, belowTarget }: { m: DeliveryMetrics; counts: Record<string, number>; belowTarget: number }) {
   const t = useTranslations("AdminDeliveryMonitor");
   const locale = useLocale();
   const dur = useDuration();
@@ -151,10 +155,17 @@ function Tiles({ m, counts }: { m: DeliveryMetrics; counts: Record<string, numbe
     { label: t("tileFees"), value: taka(m.customerFees), sub: t("tileFeesSub") },
     { label: t("tileCost"), value: taka(m.courierCost), sub: t("tileCostSub") },
     { label: t("tileMargin"), value: taka(m.margin), sub: t("tileMarginSub") },
+    // Target from the admin profit rules (analysis only); counts shipments the courier has priced
+    {
+      label: t("tileTarget"),
+      value: m.targetProfit === null ? t("noRule") : taka(m.targetProfit),
+      sub: m.targetProfit === null || m.profitGap === null ? t("tileTargetNone") : t("tileTargetSub", { gap: signedTaka(m.profitGap, locale), below: belowTarget }),
+      alert: belowTarget > 0,
+    },
     { label: t("tileOwed"), value: taka(m.codOwedByCourier), sub: t("tileOwedSub", { shops: taka(m.owedToShops) }), alert: m.codOwedByCourier > 0 || m.owedToShops > 0 },
   ];
   return (
-    <ul className="rise-stagger grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <ul className="rise-stagger grid grid-cols-2 gap-3 lg:grid-cols-3">
       {tiles.map((x) => (
         <li key={x.label} className={cn("flex flex-col gap-1 rounded-md border bg-card p-4 shadow-card", x.alert ? "border-gold" : "border-line")}>
           <span className="type-caption flex items-center gap-1 text-ink-secondary">
@@ -187,7 +198,7 @@ function Ranking({ title, q, name }: { title: string; q: { isPending: boolean; i
         <p className="type-body text-ink-secondary">{t("noData")}</p>
       ) : (
         <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-          <table className="w-full min-w-[40rem] text-left">
+          <table className="w-full min-w-[48rem] text-left">
             <thead>
               <tr className="type-caption text-ink-muted">
                 <th scope="col" className="py-2 font-medium">{t("colName")}</th>
@@ -195,6 +206,8 @@ function Ranking({ title, q, name }: { title: string; q: { isPending: boolean; i
                 <th scope="col" className="py-2 text-right font-medium">{t("colSuccess")}</th>
                 <th scope="col" className="py-2 text-right font-medium">{t("colDeliveryTime")}</th>
                 <th scope="col" className="py-2 text-right font-medium">{t("colMargin")}</th>
+                <th scope="col" className="py-2 text-right font-medium">{t("colTarget")}</th>
+                <th scope="col" className="py-2 text-right font-medium">{t("colGap")}</th>
                 <th scope="col" className="py-2 text-right font-medium">{t("colOwedShop")}</th>
               </tr>
             </thead>
@@ -206,6 +219,8 @@ function Ranking({ title, q, name }: { title: string; q: { isPending: boolean; i
                   <td className="py-2 text-right tabular-nums">{r.successRate === null ? "—" : `${r.successRate}%`}</td>
                   <td className="py-2 text-right tabular-nums">{dur(r.avgDeliveryMinutes)}</td>
                   <td className="py-2 text-right tabular-nums">{taka(r.margin)}</td>
+                  <td className="py-2 text-right tabular-nums">{r.targetProfit === null ? "—" : taka(r.targetProfit)}</td>
+                  <td className={cn("py-2 text-right tabular-nums", r.profitGap !== null && r.profitGap < 0 && "text-error")}>{r.profitGap === null ? "—" : signedTaka(r.profitGap, locale)}</td>
                   <td className="py-2 text-right tabular-nums">{taka(r.owedToShops)}</td>
                 </tr>
               ))}

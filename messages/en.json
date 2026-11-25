@@ -3864,7 +3864,17 @@
       "state": "Not possible in this state. The data has been refreshed.",
       "courier": "The courier didn't answer. Try again in a minute.",
       "generic": "Something went wrong. Try again."
-    }
+    },
+    "tileTarget": "Target profit",
+    "tileTargetSub": "gap {gap} · {below, plural, =0 {none below target} one {# below target} other {# below target}}",
+    "tileTargetNone": "set profit rules in Couriers & fees",
+    "noRule": "No rule",
+    "targetNote": "target {target} · gap {gap}",
+    "colTarget": "Target",
+    "colGap": "Gap",
+    "gapShort": "gap {gap}",
+    "factTarget": "Target profit",
+    "factGap": "Gap to target"
   },
   "ShipmentStatus": {
     "PENDING": "Waiting to book",

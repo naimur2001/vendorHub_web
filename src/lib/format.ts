@@ -24,6 +24,11 @@ export function formatTaka(amount: number, locale = "en"): string {
   return `${sign}৳${numberFormatter(locale).format(Math.abs(rounded))}`;
 }
 
+/** A difference with its sign always shown: "+৳2", "−৳5", "৳0". */
+export function signedTaka(amount: number, locale = "en"): string {
+  return Math.round(amount) > 0 ? `+${formatTaka(amount, locale)}` : formatTaka(amount, locale);
+}
+
 /** Calendar date in Dhaka time: "31 Oct 2026". */
 export function formatDate(value: string | Date, locale = "en"): string {
   const date = typeof value === "string" ? new Date(value) : value;
