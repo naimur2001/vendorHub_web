@@ -1,17 +1,18 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Inbox, LayoutDashboard, PackageCheck, ShieldCheck, Settings, RotateCcw, TicketPercent, ChartColumn, type LucideIcon } from "lucide-react";
+import { Boxes, Inbox, LayoutDashboard, PackageCheck, ShieldCheck, Settings, RotateCcw, TicketPercent, ChartColumn, BadgeCheck, type LucideIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/components/app-providers";
 import { Link, usePathname } from "@/i18n/routing";
 import { getShopDashboard, ownerKeys, type ShopDashboard } from "@/lib/api/owner";
 import { getMyShops, shopKeys } from "@/lib/api/shops";
+import { getEntitlements, subKeys } from "@/lib/api/subscriptions";
 import { cn } from "@/lib/utils";
 // import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { useLinkStatus } from "next/link";
-type TabKey = "dashboard" | "orders" | "offers" | "listings" | "verification" | "settings" | "returns" | "promotions" | "analytics";
+type TabKey = "dashboard" | "orders" | "offers" | "listings" | "verification" | "settings" | "returns" | "promotions" | "analytics" | "plan";
 
 type Tab = {
   key: TabKey;
@@ -21,6 +22,7 @@ type Tab = {
   ownerOnly?: boolean; // shop setup and verification: owners only
   count?: (d: ShopDashboard) => number;
   keepShop?: boolean; // carries ?shop= along when several shops exist
+  plansOnly?: boolean; // shown only once subscriptions are switched on
 };
 
 const TABS: Tab[] = [
@@ -33,6 +35,7 @@ const TABS: Tab[] = [
   { key: "promotions", href: "/owner/promotions", icon: TicketPercent, keepShop: true },
   { key: "verification", href: "/owner/setup", icon: ShieldCheck, ownerOnly: true },
   { key: "settings", href: "/owner/settings", icon: Settings, ownerOnly: true, keepShop: true },
+  { key: "plan", href: "/owner/plan", icon: BadgeCheck, keepShop: true, plansOnly: true },
 ];
 
 
@@ -73,10 +76,13 @@ export function OwnerNav() {
     refetchInterval: 60_000,
   });
 
+  // While subscriptions are off (enabled: false) the plan tab stays hidden.
+  const entitlements = useQuery({ queryKey: subKeys.entitlements(shop?.id ?? ""), queryFn: () => getEntitlements(shop?.id ?? ""), enabled: Boolean(shop), staleTime: 5 * 60_000 });
+
   if (!isTeam) return null;
 
   const keep = shopList.length > 1 && shop ? `?shop=${shop.id}` : "";
-  const tabs = TABS.filter((tab) => !tab.ownerOnly || isOwner);
+  const tabs = TABS.filter((tab) => (!tab.ownerOnly || isOwner) && (!tab.plansOnly || entitlements.data?.enabled === true));
 
   return (
     <nav

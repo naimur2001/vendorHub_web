@@ -1218,7 +1218,8 @@
     "returns": "Returns",
     "waiting": "{label}, {count} waiting",
     "promotions": "Promotions",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "plan": "My plan"
   },
   "Admin": {
     "metaTitle": "Admin",

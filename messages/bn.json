@@ -1144,7 +1144,8 @@
     "returns": "রিটার্ন",
     "waiting": "{label}, {count}টি অপেক্ষায়",
     "promotions": "প্রোমোশন",
-    "analytics": "পরিসংখ্যান"
+    "analytics": "পরিসংখ্যান",
+    "plan": "আমার প্ল্যান"
   },
   "OwnerSetup": {
     "metaTitle": "দোকান সেটআপ করুন",
