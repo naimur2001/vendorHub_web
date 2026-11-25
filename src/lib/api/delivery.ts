@@ -27,8 +27,10 @@ export type RangeFilter = { from?: string; to?: string; providerId?: string; sho
 export type Ranked = DeliveryMetrics & { shopId?: string; shopName?: string; shopSlug?: string; providerId?: string; providerCode?: CourierCode; providerName?: string };
 export type DayPoint = {
   day: string; booked: number; delivered: number; failed: number; customerFees: number; courierCost: number; margin: number; ordersPlaced: number; orderValue: number;
-  targetProfit: number | null; // shipments booked that day, with the CURRENT profit rules (null when none has a rule)
-  profitGap: number | null; // margin minus targetProfit
+  pricedShipments: number; // booked that day and priced by the courier (cancelled left out)
+  pricedMargin: number; // their customer fee minus courier cost
+  targetProfit: number | null; // their targets with the CURRENT profit rules (null when none has a rule)
+  profitGap: number | null; // pricedMargin minus targetProfit
 };
 // Profit rules: a target for analysis only. They never change the customer fee or the real margin.
 export type ProfitRule = S["DeliveryProfitRule"];

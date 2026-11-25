@@ -4242,6 +4242,481 @@ export interface paths {
         patch: operations["adminUpdateProfitRule"];
         trace?: never;
     };
+    "/api/v1/admin/subscriptions/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The master switch and the days settings (ADMIN) */
+        get: operations["adminSubscriptionSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Switch subscriptions on or off, change the trial and grace days (ADMIN, audited) */
+        patch: operations["adminUpdateSubscriptionSettings"];
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All plans with prices, savings and the number of shops on them (ADMIN) */
+        get: operations["adminListPlans"];
+        put?: never;
+        /** Add a plan (ADMIN, audited; 409 PLAN_CODE_TAKEN) */
+        post: operations["adminCreatePlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a plan no shop ever used (ADMIN, audited); else 409 PLAN_IN_USE (switch it off) */
+        delete: operations["adminDeletePlan"];
+        options?: never;
+        head?: never;
+        /** Change a plan (ADMIN, audited); FREE keeps its code and stays active (409 FREE_PLAN) */
+        patch: operations["adminUpdatePlan"];
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-plans/{id}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the plan's prices (one per period; periods left out are removed) (ADMIN, audited) */
+        put: operations["adminSetPlanPrices"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shops per status and plan, MRR, revenue, paying / free / trial, unpaid, expiring, churned (ADMIN)
+         * @description from / to are Dhaka days (inclusive, default the last 30 days). Shops without a subscription count as FREE. mrr = monthly equivalent of the ACTIVE and PAST_DUE paid subscriptions. revenue counts RECORDED payments by their paidAt. churned = shops whose paid subscription ended in the range and that are not on a paid plan now.
+         */
+        get: operations["adminSubscriptionSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Which shops use each module, from the real tables (ADMIN)
+         * @description Per module the metric, how many shops use it, the total and the top shops (20, or 200 with moduleCode). ANALYTICS and PRIORITY_SUPPORT are not tracked (tracked false). products = listings per shop.
+         */
+        get: operations["adminSubscriptionUsage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current shop subscriptions (ADMIN), soonest period end first
+         * @description unpaid=true = ACTIVE or PAST_DUE paid subscriptions whose paid time is over. expiringInDays = TRIAL or ACTIVE ending within that many days. history=true includes ended rows.
+         */
+        get: operations["adminListSubscriptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        /** One subscription with all its payments (ADMIN) */
+        get: operations["adminGetSubscription"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cancel at period end, set the status, a note, or extend by days (ADMIN, audited)
+         * @description status CANCELLED or EXPIRED ends it now and the shop falls back to FREE. extendDays moves currentPeriodEnd (and a trial end). 409 SUBSCRIPTION_ENDED for an ended row.
+         */
+        patch: operations["adminUpdateSubscription"];
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a payment by hand; moves currentPeriodEnd forward by one period (ADMIN, audited)
+         * @description The payment covers [currentPeriodEnd, currentPeriodEnd + one period]. 400 ONLINE_NOT_AVAILABLE for method ONLINE (later); 409 NOTHING_DUE on a free plan, SUBSCRIPTION_ENDED for an ended row.
+         */
+        post: operations["adminRecordSubscriptionPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-payments/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a payment refunded; the latest paid period is taken back (ADMIN, audited; 409 ALREADY_REFUNDED) */
+        post: operations["adminRefundSubscriptionPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shops/{shopId}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start or change a shop's plan (ADMIN, audited); the old row is kept as history
+         * @description The price is copied (a per-shop custom price first, else the plan's active price for the period; 400 PRICE_NOT_SET). trialDays > 0 -> TRIAL; price 0 -> FREE; else ACTIVE and unpaid until a payment is recorded. 400 PLAN_INACTIVE.
+         */
+        post: operations["adminStartShopSubscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plan requests from shop owners (ADMIN; default PENDING, oldest first) */
+        get: operations["adminListSubscriptionRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-requests/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve (after payment) and start the plan (ADMIN, audited; 409 NOT_PENDING) */
+        post: operations["adminApproveSubscriptionRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscription-requests/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject a plan request with a note (ADMIN, audited; 409 NOT_PENDING) */
+        post: operations["adminRejectSubscriptionRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        /** My shop's plan, limits with usage and the published plans (owner / staff); { enabled false } while off */
+        get: operations["shopSubscription"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/entitlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        /** What the shop may use (owner / staff); every module and no limits while subscriptions are off */
+        get: operations["shopEntitlements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shops/{shopId}/subscription/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask for a published plan (shop owner); an admin approves after payment
+         * @description While off: 200 { enabled: false } and nothing is saved. 400 PLAN_NOT_AVAILABLE; 409 REQUEST_PENDING (one pending request per shop). Admins are told (SUBSCRIPTION_REQUEST).
+         */
+        post: operations["shopRequestPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/popups/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The one popup to show now, or null (no login needed)
+         * @description The highest priority live popup (active, inside its dates) for this visitor's audience (from the optional login: guests GUESTS, customers CUSTOMERS, shop owners / staff SHOP_TEAM; ALL for everyone) and page (page=home shows HOME_ONLY and ALL_PAGES popups, any other page only ALL_PAGES). Texts in ?lang= (or Accept-Language bn); Bangla falls back to English. Cache-Control max-age=60 (private when logged in), Vary Authorization, Accept-Language.
+         */
+        get: operations["activePopup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/popups/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Count a view, close or click (anonymous; at most 30 a minute per IP) */
+        post: operations["popupEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/popups/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The popupsEnabled switch (ADMIN) */
+        get: operations["adminPopupSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Switch every popup on or off (ADMIN, audited) */
+        patch: operations["adminUpdatePopupSettings"];
+        trace?: never;
+    };
+    "/api/v1/admin/popups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All popups, active and highest priority first, with liveNow (ADMIN) */
+        get: operations["adminListPopups"];
+        put?: never;
+        /** Add a popup (multipart like banners; ADMIN, audited) */
+        post: operations["adminCreatePopup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/popups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a popup with its images and stats (ADMIN, audited) */
+        delete: operations["adminDeletePopup"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a popup; a content change bumps its version (ADMIN, audited)
+         * @description Any field of the create form, a new media / mobileMedia, or removeMobileMedia=true. "" clears an optional field.
+         */
+        patch: operations["adminUpdatePopup"];
+        trace?: never;
+    };
+    "/api/v1/admin/popups/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop a popup now (isActive false; ADMIN, audited) */
+        post: operations["adminStopPopup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/popups/{id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Views, closes, clicks and CTR per Dhaka day (ADMIN)
+         * @description from / to are Dhaka days (inclusive; default the last 30 days). ctr = clicks / views in percent (null without views).
+         */
+        get: operations["adminPopupStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6074,9 +6549,13 @@ export interface components {
             codOwedByCourier: number;
             /** @description Delivered orders not paid to the shop yet (order total minus the delivery fee). */
             owedToShops: number;
-            /** @description Sum over shipments the courier priced (courierCost known, cancelled left out), with the CURRENT profit rules; null when none has a rule. */
+            /** @description Shipments the courier priced (courierCost known, cancelled left out). pricedMargin, targetProfit, profitGap and belowTarget count these. */
+            pricedShipments: number;
+            /** @description customerFee minus courierCost over the priced shipments (margin counts DELIVERED only). */
+            pricedMargin: number;
+            /** @description The targets of the priced shipments with the CURRENT profit rules; null when none has a rule. */
             targetProfit: number | null;
-            /** @description margin minus targetProfit (null when either is unknown). */
+            /** @description pricedMargin minus targetProfit (a priced shipment without a rule counts with target 0); null when targetProfit is null. */
             profitGap: number | null;
         };
         TimelineEntry: {
@@ -6333,6 +6812,361 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        /** @enum {string} */
+        SubscriptionModule: "ANALYTICS" | "CSV_IMPORT" | "PROMOTIONS" | "FEATURED_SLOTS" | "STAFF_ACCOUNTS" | "BARGAINING" | "ORDER_CHAT" | "COURIER_DELIVERY" | "SHOP_PHOTOS_EXTRA" | "PRIORITY_SUPPORT";
+        /** @enum {string} */
+        BillingPeriod: "MONTHLY" | "QUARTERLY" | "HALF_YEARLY" | "YEARLY";
+        /** @enum {string} */
+        SubscriptionStatus: "TRIAL" | "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED" | "FREE";
+        /**
+         * @description ONLINE comes later (400 ONLINE_NOT_AVAILABLE for now).
+         * @enum {string}
+         */
+        SubscriptionPaymentMethod: "MANUAL_BKASH" | "MANUAL_NAGAD" | "CASH" | "BANK" | "ONLINE";
+        PlanLimits: {
+            maxProducts: number | null;
+            maxStaff: number | null;
+            maxActiveDeals: number | null;
+        };
+        PlanPrice: {
+            period: components["schemas"]["BillingPeriod"];
+            months: number;
+            amount: number;
+            isActive: boolean;
+            monthlyEquivalent: number;
+            /** @description monthly price x months - amount (null without a monthly price). */
+            savingVsMonthly: number | null;
+            savingPercent: number | null;
+        };
+        SubscriptionPlanInput: {
+            /** @description Stored upper case. */
+            code: string;
+            nameEn: string;
+            nameBn: string;
+            descriptionEn?: string | null;
+            descriptionBn?: string | null;
+            modules?: components["schemas"]["SubscriptionModule"][];
+            maxProducts?: number | null;
+            maxStaff?: number | null;
+            maxActiveDeals?: number | null;
+            /** @default false */
+            isPublished: boolean;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        SubscriptionPlanPatch: {
+            code?: string;
+            nameEn?: string;
+            nameBn?: string;
+            descriptionEn?: string | null;
+            descriptionBn?: string | null;
+            modules?: components["schemas"]["SubscriptionModule"][];
+            maxProducts?: number | null;
+            maxStaff?: number | null;
+            maxActiveDeals?: number | null;
+            isPublished?: boolean;
+            isActive?: boolean;
+            sortOrder?: number;
+        };
+        SubscriptionPlan: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            nameEn: string;
+            nameBn: string;
+            descriptionEn: string | null;
+            descriptionBn: string | null;
+            modules: components["schemas"]["SubscriptionModule"][];
+            maxProducts: number | null;
+            maxStaff: number | null;
+            maxActiveDeals: number | null;
+            isPublished: boolean;
+            isActive: boolean;
+            sortOrder: number;
+            prices: components["schemas"]["PlanPrice"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ShopSubscriptionRow: {
+            /** Format: uuid */
+            id: string;
+            shop: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                slug: string;
+                owner: {
+                    name?: string;
+                    email?: string;
+                };
+            };
+            plan: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                nameEn: string;
+                nameBn: string;
+            };
+            period: components["schemas"]["BillingPeriod"];
+            status: components["schemas"]["SubscriptionStatus"];
+            /** Format: date-time */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description Paid (or trial) until; null on a free plan.
+             */
+            currentPeriodEnd: string | null;
+            /** Format: date-time */
+            trialEndsAt: string | null;
+            cancelAtPeriodEnd: boolean;
+            priceAtStart: number;
+            /** @enum {string} */
+            source: "ADMIN" | "SELF_SERVE";
+            note: string | null;
+            isCurrent: boolean;
+            /** Format: date-time */
+            endedAt: string | null;
+            /** Format: date-time */
+            lastPaymentAt: string | null;
+            paidThisPeriod: boolean;
+            amountDue: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SubscriptionPayment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            subscriptionId: string;
+            amount: number;
+            method: components["schemas"]["SubscriptionPaymentMethod"];
+            reference: string | null;
+            /** Format: date-time */
+            paidAt: string;
+            /** Format: uuid */
+            recordedById: string;
+            /** Format: date-time */
+            periodStart: string;
+            /** Format: date-time */
+            periodEnd: string;
+            /** @enum {string} */
+            status: "RECORDED" | "REFUNDED";
+            /** Format: date-time */
+            refundedAt?: string | null;
+            refundNote?: string | null;
+        };
+        SubscriptionRequest: {
+            /** Format: uuid */
+            id: string;
+            shop?: {
+                /** Format: uuid */
+                id?: string;
+                name?: string;
+                slug?: string;
+            };
+            plan: {
+                /** Format: uuid */
+                id?: string;
+                code?: string;
+                nameEn?: string;
+                nameBn?: string;
+            };
+            period: components["schemas"]["BillingPeriod"];
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            rejectNote: string | null;
+            /** Format: uuid */
+            subscriptionId: string | null;
+            /** Format: date-time */
+            decidedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /** @description While off only { enabled: false }; when on all fields. */
+        ShopSubscriptionView: {
+            enabled: boolean;
+            /** @description null = on the FREE plan without a row. */
+            subscription?: {
+                period?: components["schemas"]["BillingPeriod"];
+                status?: components["schemas"]["SubscriptionStatus"];
+                /** Format: date-time */
+                startsAt?: string;
+                /** Format: date-time */
+                currentPeriodEnd?: string | null;
+                /** Format: date-time */
+                trialEndsAt?: string | null;
+                cancelAtPeriodEnd?: boolean;
+                price?: number;
+                amountDue?: number;
+            } | null;
+            plan?: components["schemas"]["SubscriptionPlan"] | null;
+            modules?: components["schemas"]["SubscriptionModule"][];
+            /** @description Each limit as { limit (null = unlimited), used }, e.g. maxProducts { limit: 200, used: 120 }. */
+            limits?: {
+                [key: string]: {
+                    limit?: number | null;
+                    used?: number;
+                };
+            };
+            /** @description Published, active plans with their active prices. */
+            plans?: components["schemas"]["SubscriptionPlan"][];
+            pendingRequest?: components["schemas"]["SubscriptionRequest"] | null;
+        };
+        ModuleUsage: {
+            metric: string | null;
+            shopCount: number;
+            total: number;
+            top: {
+                /** Format: uuid */
+                shopId?: string;
+                name?: string;
+                slug?: string;
+                count?: number;
+            }[];
+        };
+        SubscriptionSummary: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            shops: number;
+            byStatus: {
+                [key: string]: number;
+            };
+            byPlan: {
+                /** Format: uuid */
+                planId?: string;
+                code?: string;
+                nameEn?: string;
+                shops?: number;
+            }[];
+            counts: {
+                paying: number;
+                trial: number;
+                free: number;
+                unpaid: number;
+                expiringNext7Days: number;
+                churned: number;
+            };
+            /** @description Monthly-equivalent revenue of the paying subscriptions (taka). */
+            mrr: number;
+            revenue: {
+                total: number;
+                byDay: {
+                    /** Format: date */
+                    day?: string;
+                    amount?: number;
+                }[];
+                byPlan: {
+                    /** Format: uuid */
+                    planId?: string;
+                    code?: string;
+                    amount?: number;
+                }[];
+            };
+        };
+        /** @enum {string} */
+        PopupAudience: "ALL" | "GUESTS" | "CUSTOMERS" | "SHOP_TEAM";
+        /** @enum {string} */
+        PopupPages: "HOME_ONLY" | "ALL_PAGES";
+        /**
+         * @description The web decides when to show it again (remember id + version).
+         * @enum {string}
+         */
+        PopupFrequency: "ONCE_PER_VISITOR" | "ONCE_PER_DAY" | "EVERY_VISIT";
+        PopupInput: {
+            /**
+             * Format: binary
+             * @description JPG, PNG, WebP or GIF (stays animated); at least 300 x 300, max 5 MB.
+             */
+            media?: string;
+            /** Format: binary */
+            mobileMedia?: string;
+            /** @description Also the alt text. */
+            titleEn?: string;
+            titleBn?: string;
+            bodyEn?: string;
+            bodyBn?: string;
+            /** @description A path starting with "/" or an https:// URL. */
+            linkUrl?: string;
+            ctaLabelEn?: string;
+            ctaLabelBn?: string;
+            /** @enum {string} */
+            isActive?: "true" | "false";
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            /** @default 0 */
+            priority: number;
+            audience?: components["schemas"]["PopupAudience"];
+            pages?: components["schemas"]["PopupPages"];
+            frequency?: components["schemas"]["PopupFrequency"];
+            /** @default 2 */
+            delaySeconds: number;
+        };
+        PublicPopup: {
+            /** Format: uuid */
+            id: string;
+            version: number;
+            title: string;
+            body: string | null;
+            imageUrl: string;
+            mobileImageUrl: string | null;
+            /** @enum {string} */
+            mediaType: "IMAGE" | "GIF";
+            linkUrl: string | null;
+            ctaLabel: string | null;
+            frequency: components["schemas"]["PopupFrequency"];
+            delaySeconds: number;
+        };
+        PopupMedia: {
+            url?: string;
+            thumbUrl?: string;
+            width?: number;
+            height?: number;
+        } | null;
+        AdminPopup: {
+            /** Format: uuid */
+            id: string;
+            version: number;
+            titleEn: string;
+            titleBn: string | null;
+            bodyEn: string | null;
+            bodyBn: string | null;
+            /** @enum {string} */
+            mediaType: "IMAGE" | "GIF";
+            media: components["schemas"]["PopupMedia"];
+            mobileMedia: components["schemas"]["PopupMedia"];
+            linkUrl: string | null;
+            ctaLabelEn: string | null;
+            ctaLabelBn: string | null;
+            isActive: boolean;
+            /** Format: date-time */
+            startsAt: string | null;
+            /** Format: date-time */
+            endsAt: string | null;
+            priority: number;
+            audience: components["schemas"]["PopupAudience"];
+            pages: components["schemas"]["PopupPages"];
+            frequency: components["schemas"]["PopupFrequency"];
+            delaySeconds: number;
+            liveNow: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PopupStatCounts: {
+            views: number;
+            closes: number;
+            clicks: number;
+            ctr: number | null;
         };
     };
     responses: {
@@ -6755,6 +7589,108 @@ export interface components {
                 };
             };
         };
+        /** @description Subscriptions are on and the plan lacks the module: { code: PLAN_REQUIRED, module }. */
+        PlanRequired: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        /** @description The settings. */
+        SubscriptionSettingsResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        subscriptionsEnabled: boolean;
+                        freeTrialDays: number;
+                        graceDays: number;
+                    };
+                };
+            };
+        };
+        /** @description The plan. */
+        SubscriptionPlanResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["SubscriptionPlan"];
+                };
+            };
+        };
+        /** @description The subscription. */
+        ShopSubscriptionResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["ShopSubscriptionRow"];
+                };
+            };
+        };
+        /** @description The payment and the subscription after it. */
+        SubscriptionPaymentResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        payment: components["schemas"]["SubscriptionPayment"];
+                        subscription: components["schemas"]["ShopSubscriptionRow"];
+                    };
+                };
+            };
+        };
+        /** @description The request. */
+        SubscriptionRequestResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["SubscriptionRequest"];
+                };
+            };
+        };
+        /** @description The setting. */
+        PopupSettingsResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: {
+                        popupsEnabled: boolean;
+                    };
+                };
+            };
+        };
+        /** @description The popup. */
+        AdminPopupResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["AdminPopup"];
+                };
+            };
+        };
     };
     parameters: {
         Page: number;
@@ -6798,6 +7734,9 @@ export interface components {
         DeliveryTo: string;
         DeliveryProviderId: string;
         DeliveryShopFilter: string;
+        SubUuid: string;
+        SubShopId: string;
+        PopupId: string;
     };
     requestBodies: {
         PhotoUpload: {
@@ -14763,9 +15702,13 @@ export interface operations {
                                 margin: number;
                                 ordersPlaced: number;
                                 orderValue: number;
-                                /** @description Shipments booked that day, with the current profit rules (null when none has a rule). */
+                                /** @description Priced shipments booked that day. */
+                                pricedShipments: number;
+                                /** @description Their customerFee minus courierCost. */
+                                pricedMargin: number;
+                                /** @description Their targets with the current profit rules (null when none has a rule). */
                                 targetProfit: number | null;
-                                /** @description margin minus targetProfit (null when either is unknown). */
+                                /** @description pricedMargin minus targetProfit (null when targetProfit is null). */
                                 profitGap: number | null;
                             }[];
                         };
@@ -15088,6 +16031,908 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    adminSubscriptionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["SubscriptionSettingsResponse"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateSubscriptionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    subscriptionsEnabled?: boolean;
+                    freeTrialDays?: number;
+                    graceDays?: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["SubscriptionSettingsResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminListPlans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The plans. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: (components["schemas"]["SubscriptionPlan"] & {
+                            currentShops: number;
+                        })[];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionPlanInput"];
+            };
+        };
+        responses: {
+            201: components["responses"]["SubscriptionPlanResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminDeletePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataObject"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminUpdatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionPlanPatch"];
+            };
+        };
+        responses: {
+            200: components["responses"]["SubscriptionPlanResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminSetPlanPrices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    prices: {
+                        period: components["schemas"]["BillingPeriod"];
+                        /** @description Whole taka. */
+                        amount: number;
+                        /** @default true */
+                        isActive?: boolean;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["SubscriptionPlanResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminSubscriptionSummary: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The summary. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["SubscriptionSummary"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminSubscriptionUsage: {
+        parameters: {
+            query?: {
+                moduleCode?: components["schemas"]["SubscriptionModule"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The usage. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: date-time */
+                            since: string;
+                            modules: (components["schemas"]["ModuleUsage"] & {
+                                module: components["schemas"]["SubscriptionModule"];
+                                tracked: boolean;
+                            })[];
+                            products: components["schemas"]["ModuleUsage"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminListSubscriptions: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["SubscriptionStatus"];
+                planId?: string;
+                period?: components["schemas"]["BillingPeriod"];
+                /** @description Shop name or slug. */
+                q?: string;
+                expiringInDays?: number;
+                unpaid?: "true" | "false";
+                history?: "true" | "false";
+                page?: components["parameters"]["Page"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopSubscriptionRow"][];
+                        meta: {
+                            pagination?: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The subscription. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopSubscriptionRow"] & {
+                            payments: components["schemas"]["SubscriptionPayment"][];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdateSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    cancelAtPeriodEnd?: boolean;
+                    /** @enum {string} */
+                    status?: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED";
+                    note?: string | null;
+                    extendDays?: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["ShopSubscriptionResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRecordSubscriptionPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amount: number;
+                    method: components["schemas"]["SubscriptionPaymentMethod"];
+                    /** @description e.g. the bKash transaction id. */
+                    reference?: string;
+                    /** Format: date-time */
+                    paidAt?: string;
+                };
+            };
+        };
+        responses: {
+            201: components["responses"]["SubscriptionPaymentResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRefundSubscriptionPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["SubscriptionPaymentResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminStartShopSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    planId: string;
+                    period: components["schemas"]["BillingPeriod"];
+                    /** Format: date-time */
+                    startsAt?: string;
+                    trialDays?: number;
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            201: components["responses"]["ShopSubscriptionResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminListSubscriptionRequests: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "APPROVED" | "REJECTED";
+                page?: components["parameters"]["Page"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["SubscriptionRequest"][];
+                        meta: {
+                            pagination?: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminApproveSubscriptionRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    startsAt?: string;
+                    trialDays?: number;
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["SubscriptionRequestResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRejectSubscriptionRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["SubUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    note: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["SubscriptionRequestResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    shopSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description While off: { enabled: false } only. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["ShopSubscriptionView"];
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    shopEntitlements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Show or lock features with this. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            enabled: boolean;
+                            modules: components["schemas"]["SubscriptionModule"][];
+                            limits: components["schemas"]["PlanLimits"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    shopRequestPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                shopId: components["parameters"]["SubShopId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    planId: string;
+                    period: components["schemas"]["BillingPeriod"];
+                };
+            };
+        };
+        responses: {
+            /** @description Subscriptions are off: { enabled: false }. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataObject"];
+                };
+            };
+            /** @description The request. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            enabled: boolean;
+                            request: components["schemas"]["SubscriptionRequest"];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    activePopup: {
+        parameters: {
+            query?: {
+                /** @description A page key, e.g. home, product, shop (a-z, 0-9, -). */
+                page?: string;
+                lang?: "en" | "bn";
+            };
+            header?: {
+                /** @description Optional; decides the audience. */
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The popup or null. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["PublicPopup"] | null;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    popupEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    type: "VIEW" | "CLOSE" | "CLICK";
+                };
+            };
+        };
+        responses: {
+            /** @description Counted. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** @enum {string} */
+                            recorded: "VIEW" | "CLOSE" | "CLICK";
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminPopupSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["PopupSettingsResponse"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdatePopupSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    popupsEnabled: boolean;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["PopupSettingsResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminListPopups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The popups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["AdminPopup"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreatePopup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["PopupInput"] & Record<string, never>;
+            };
+        };
+        responses: {
+            201: components["responses"]["AdminPopupResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description The image is larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The image is too small (at least 300 x 300) or not an image. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminDeletePopup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataObject"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdatePopup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["PopupInput"] & {
+                    /** @enum {string} */
+                    removeMobileMedia?: "true" | "false";
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminPopupResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description The image is larger than 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The image is too small or not an image. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminStopPopup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminPopupResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminPopupStats: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["PopupId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The stats. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: {
+                            /** Format: uuid */
+                            popupId: string;
+                            /** Format: date */
+                            from: string;
+                            /** Format: date */
+                            to: string;
+                            totals: components["schemas"]["PopupStatCounts"];
+                            days: (components["schemas"]["PopupStatCounts"] & {
+                                /** Format: date */
+                                day: string;
+                            })[];
+                        };
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }
