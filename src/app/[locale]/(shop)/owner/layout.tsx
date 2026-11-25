@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { OwnerNav } from "@/components/owner/owner-nav";
+import { PlanNotice } from "@/components/owner/plan-notice";
 
 // Wraps every page under /owner: one width for the tabs and all owner pages,
 // so switching tabs never moves the content sideways. The minimum height keeps the footer still.
@@ -11,6 +12,8 @@ export default function OwnerLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={<div className="h-12 border-b border-line" aria-hidden />}>
         <OwnerNav />
       </Suspense>
+      {/* "Upgrade your plan" when an action needs a bigger plan (only once subscriptions are on) */}
+      <PlanNotice />
       {children}
     </div>
   );

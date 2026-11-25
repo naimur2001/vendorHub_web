@@ -4290,5 +4290,13 @@
       "generic": "That didn't work. Try again."
     },
     "periodName": "Billing"
+  },
+  "PlanNotice": {
+    "required": "This needs a bigger plan: {feature}.",
+    "requiredAny": "This needs a bigger plan.",
+    "limit": "Your plan allows {limit} {what} ({used} used).",
+    "items": "items",
+    "seePlans": "See plans",
+    "dismiss": "Dismiss"
   }
 }

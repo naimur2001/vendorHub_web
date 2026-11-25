@@ -1,6 +1,7 @@
 "use client";
 
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { reportPlanProblem } from "@/components/owner/plan-notice";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getSessionUser, refreshSession, subscribeSession } from "@/lib/api/client";
 import { ApiError, type SessionUser } from "@/lib/api/core";
@@ -52,6 +53,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        // Plan limits (only once subscriptions are on) are explained once, on the owner pages
+        queryCache: new QueryCache({ onError: reportPlanProblem }),
+        mutationCache: new MutationCache({ onError: reportPlanProblem }),
         defaultOptions: {
           queries: {
             staleTime: 30_000,
