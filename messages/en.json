@@ -1209,6 +1209,8 @@
   },
   "OwnerNav": {
     "label": "Shop sections",
+    "scrollLeft": "Show earlier sections",
+    "scrollRight": "Show more sections",
     "dashboard": "Dashboard",
     "orders": "Orders",
     "offers": "Offers",

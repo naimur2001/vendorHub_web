@@ -1135,6 +1135,8 @@
   },
   "OwnerNav": {
     "label": "দোকানের অংশ",
+    "scrollLeft": "আগের অংশগুলো দেখুন",
+    "scrollRight": "আরও অংশ দেখুন",
     "dashboard": "ড্যাশবোর্ড",
     "orders": "অর্ডার",
     "offers": "অফার",

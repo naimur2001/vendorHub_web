@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Inbox, LayoutDashboard, PackageCheck, ShieldCheck, Settings, RotateCcw, TicketPercent, ChartColumn, BadgeCheck, type LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Boxes, Inbox, LayoutDashboard, PackageCheck, ShieldCheck, Settings, RotateCcw, TicketPercent, ChartColumn, BadgeCheck, type LucideIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/components/app-providers";
@@ -79,15 +80,72 @@ export function OwnerNav() {
   // While subscriptions are off (enabled: false) the plan tab stays hidden.
   const entitlements = useQuery({ queryKey: subKeys.entitlements(shop?.id ?? ""), queryFn: () => getEntitlements(shop?.id ?? ""), enabled: Boolean(shop), staleTime: 5 * 60_000 });
 
-  if (!isTeam) return null;
-
   const keep = shopList.length > 1 && shop ? `?shop=${shop.id}` : "";
   const tabs = TABS.filter((tab) => (!tab.ownerOnly || isOwner) && (!tab.plansOnly || entitlements.data?.enabled === true));
+
+  // The row scrolls sideways with a hidden scrollbar: show a fade + arrow where tabs are hidden.
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ left: false, right: false });
+
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const update = () =>
+      setEdges({ left: row.scrollLeft > 4, right: row.scrollLeft + row.clientWidth < row.scrollWidth - 4 });
+    update();
+    row.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(row);
+    if (row.firstElementChild) observer.observe(row.firstElementChild);
+    return () => {
+      row.removeEventListener("scroll", update);
+      observer.disconnect();
+    };
+  }, [isTeam]);
+
+  // Keep the open tab visible (e.g. My plan, the last one, on a phone).
+  useEffect(() => {
+    const row = rowRef.current;
+    const active = row?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!row || !active) return;
+    const r = row.getBoundingClientRect();
+    const a = active.getBoundingClientRect();
+    // 48px leaves room for the arrow fade on either side.
+    if (a.left < r.left + 48 || a.right > r.right - 48) row.scrollLeft += a.left - r.left - 48;
+  }, [pathname, tabs.length]);
+
+  const scrollRow = (dir: 1 | -1) => {
+    const row = rowRef.current;
+    if (!row) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    row.scrollBy({ left: dir * row.clientWidth * 0.7, behavior: reduce ? "auto" : "smooth" });
+  };
+
+  if (!isTeam) return null;
+
+  const arrow =
+    "flex h-12 w-11 items-center justify-center text-ink hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 
   return (
     <nav
       aria-label={t("label")}
-      className="scroll-row sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-4 border-b border-line bg-background px-4 md:top-[calc(4.5rem+env(safe-area-inset-top))] md:mx-0 md:px-0"    >
+      className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-4 border-b border-line bg-background md:top-[calc(4.5rem+env(safe-area-inset-top))] md:mx-0"
+    >
+      {edges.left && (
+        <div className="absolute inset-y-0 left-0 z-10 flex bg-linear-to-r from-background from-60% to-transparent pr-4">
+          <button type="button" tabIndex={-1} onClick={() => scrollRow(-1)} aria-label={t("scrollLeft")} className={arrow}>
+            <ChevronLeft className="size-5" aria-hidden />
+          </button>
+        </div>
+      )}
+      {edges.right && (
+        <div className="absolute inset-y-0 right-0 z-10 flex bg-linear-to-l from-background from-60% to-transparent pl-4">
+          <button type="button" tabIndex={-1} onClick={() => scrollRow(1)} aria-label={t("scrollRight")} className={arrow}>
+            <ChevronRight className="size-5" aria-hidden />
+          </button>
+        </div>
+      )}
+      <div ref={rowRef} className="scroll-row px-4 md:px-0">
       <ul className="flex w-max gap-6">
         {tabs.map((tab) => {
           const active = tab.exact ? pathname === tab.href : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
@@ -118,6 +176,7 @@ export function OwnerNav() {
           );
         })}
       </ul>
+      </div>
     </nav>
   );
 }
