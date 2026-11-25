@@ -2066,7 +2066,28 @@
     "cancel": "Cancel",
     "done": "Done.",
     "empty": "No shops match.",
-    "count": "{count, plural, one {# shop} other {# shops}}"
+    "count": "{count, plural, one {# shop} other {# shops}}",
+    "courier": {
+      "title": "Courier store",
+      "hide": "Hide courier store",
+      "hint": "Vendors Hub courier picks up parcels from the shop. This creates the shop pickup store at the default courier (Pathao), using the shop name, phone and address.",
+      "start": "Create or refresh store",
+      "checkAgain": "Check again",
+      "create": "Create store",
+      "cancel": "Cancel",
+      "areaLegend": "Pickup area",
+      "areaHint": "Where the courier picks up from this shop. Needed only the first time.",
+      "ready": "{name} store is ready (id {id}). The shop can take courier delivery orders now.",
+      "pending": "{name} is approving the store. Come back later and press Check again to fetch its id.",
+      "errors": {
+        "pickArea": "Choose the city, zone and area.",
+        "phone": "This shop has no phone number. Ask the owner to add one first.",
+        "area": "The courier did not accept this area. Choose again.",
+        "courier": "The courier is not answering. Try again in a few minutes.",
+        "network": "Can't reach Vendors Hub. Check your connection.",
+        "generic": "That didn't work. Try again."
+      }
+    }
   },
   "AdminCommon": {
     "loading": "Loading…",

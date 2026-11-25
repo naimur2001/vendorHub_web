@@ -11,9 +11,10 @@ import { ApiError } from "@/lib/api/core";
 import { cn } from "@/lib/utils";
 import { AdminShopPhotos } from "@/components/shop/shop-photos";
 import { refreshPublicPages } from "@/lib/refresh-public";
+import { CourierStore } from "@/components/admin/courier-store";
 
 
-function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void }) {
+function ShopRow({ s, onDone, onChanged }: { s: AdminShop; onDone: (msg: string) => void; onChanged: () => void }) {
   const t = useTranslations("AdminShops");
   const c = useTranslations("AdminCommon");
   const [open, setOpen] = useState(false);
@@ -21,6 +22,7 @@ function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void })
   const [error, setError] = useState<string | null>(null);
     const tPhotos = useTranslations("ShopPhotos");
   const [showPhotos, setShowPhotos] = useState(false);
+  const [showCourier, setShowCourier] = useState(false);
   const act = useMutation({
     mutationFn: () => setShopStatus(s.id, !s.isActive, reason.trim()),
     onSuccess: () => { setOpen(false); setReason(""); onDone(t("done")); },
@@ -38,14 +40,17 @@ function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void })
       {s.owner && <span className="type-caption text-ink-muted">{t("owner", { name: s.owner.name, email: s.owner.email })}</span>}
       {!open ? (
         <div className="flex flex-wrap gap-2">
-          <Link href={`/shops/${s.slug}`} className="type-body-medium flex h-9 items-center gap-1 rounded-sm px-2 text-brand hover:bg-subtle">{t("view")}<ExternalLink className="size-4" aria-hidden /></Link>
+          <Link href={`/shops/${s.slug}`} className="type-body-medium flex h-11 items-center gap-1 rounded-sm px-2 text-brand hover:bg-subtle">{t("view")}<ExternalLink className="size-4" aria-hidden /></Link>
 
-          <button type="button" onClick={() => setShowPhotos((v) => !v)} className="type-body-medium h-9 rounded-sm px-3 text-ink-secondary hover:bg-subtle">
+          <button type="button" onClick={() => setShowPhotos((v) => !v)} className="type-body-medium h-11 rounded-sm px-3 text-ink-secondary hover:bg-subtle">
             {showPhotos ? tPhotos("hide") : tPhotos("photos")}
+          </button>
+          <button type="button" onClick={() => setShowCourier((v) => !v)} aria-expanded={showCourier} className="type-body-medium h-11 rounded-sm px-3 text-ink-secondary hover:bg-subtle">
+            {showCourier ? t("courier.hide") : t("courier.title")}
           </button>
 
 
-          <button type="button" onClick={() => setOpen(true)} className={cn("type-body-medium h-9 rounded-sm px-3", s.isActive ? "text-error hover:bg-error-soft" : "text-success-ink hover:bg-success-soft")}>{s.isActive ? t("deactivate") : t("reactivate")}</button>
+          <button type="button" onClick={() => setOpen(true)} className={cn("type-body-medium h-11 rounded-sm px-3", s.isActive ? "text-error hover:bg-error-soft" : "text-success-ink hover:bg-success-soft")}>{s.isActive ? t("deactivate") : t("reactivate")}</button>
         </div>
       ) : (
         <form onSubmit={(e) => { e.preventDefault(); if (reason.trim().length < 5 || reason.trim().length > 500) return setError(c("reasonError")); setError(null); act.mutate(); }} className="flex flex-col gap-2 rounded-md bg-surface p-3">
@@ -57,6 +62,7 @@ function ShopRow({ s, onDone }: { s: AdminShop; onDone: (msg: string) => void })
           </div>
         </form>
       )}
+            {showCourier && <CourierStore shopId={s.id} onChanged={onChanged} />}
             {showPhotos && <AdminShopPhotos shopId={s.id} slug={s.slug} />}
     </li>
   );
@@ -84,7 +90,7 @@ export function ShopsManager() {
         <>
           <p className="type-body text-ink-secondary">{t("count", { count: shops.data?.meta?.pagination?.total ?? rows.length })}</p>
           <ul className="grid gap-3 lg:grid-cols-2">
-            {rows.map((s) => <ShopRow key={s.id} s={s}   onDone={(m) => { setNotice(m); void queryClient.invalidateQueries({ queryKey: ["admin", "shops"] }); refreshPublicPages(["shops", "markets", "products"]); }} />)}
+            {rows.map((s) => <ShopRow key={s.id} s={s} onChanged={() => void queryClient.invalidateQueries({ queryKey: ["admin", "shops"] })} onDone={(m) => { setNotice(m); void queryClient.invalidateQueries({ queryKey: ["admin", "shops"] }); refreshPublicPages(["shops", "markets", "products"]); }} />)}
           </ul>
         </>
       )}
