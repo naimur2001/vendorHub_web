@@ -341,7 +341,14 @@ export type AdminShop = {
   isActive: boolean;
   verificationLevel: VerificationLevel;
   owner?: { name: string; email: string } | null;
+  // Vendors Hub courier (admin data: the shop only learns courierReady)
+  deliveryMode?: components["schemas"]["ShopDeliveryMode"];
+  courierStoreId?: string | null;
+  courierStoreState?: CourierStoreState;
+  courierStoreLocation?: components["schemas"]["CourierStoreLocation"];
+  courierStoreRequestedAt?: string | null;
 };
+export type CourierStoreState = components["schemas"]["CourierStoreState"];
 
 export function listUsers(q: { q?: string; role?: Role; page: number }): Promise<ApiResult<AdminUser[]>> {
   return api.list<AdminUser>("/admin/users", { query: { ...q, limit: 20 } });
@@ -352,7 +359,7 @@ export function setUserStatus(id: string, isActive: boolean, reason: string): Pr
 export function setUserRole(id: string, role: Role, reason: string): Promise<unknown> {
   return api.patch<unknown>(`/admin/users/${encodeURIComponent(id)}/role`, { role, reason });
 }
-export function listAdminShops(q: { q?: string; page: number }): Promise<ApiResult<AdminShop[]>> {
+export function listAdminShops(q: { q?: string; page: number; courierStoreState?: CourierStoreState }): Promise<ApiResult<AdminShop[]>> {
   return api.list<AdminShop>("/admin/shops", { query: { ...q, limit: 20 } });
 }
 export function setShopStatus(id: string, isActive: boolean, reason: string): Promise<unknown> {

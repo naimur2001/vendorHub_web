@@ -2101,7 +2101,22 @@
         "courier": "The courier is not answering. Try again in a few minutes.",
         "network": "Can't reach Vendors Hub. Check your connection.",
         "generic": "That didn't work. Try again."
-      }
+      },
+      "state": {
+        "NONE": "No courier store",
+        "PENDING_APPROVAL": "Waiting for courier approval",
+        "READY": "Courier ready"
+      },
+      "filterLabel": "Filter by courier store",
+      "filter": {
+        "ALL": "All shops",
+        "PENDING_APPROVAL": "Waiting for approval",
+        "NONE": "No courier store",
+        "READY": "Courier ready"
+      },
+      "savedReady": "Courier store is ready (id {id}). The shop can take courier delivery orders.",
+      "savedPending": "Requested on {date}. Waiting for the courier to approve it. Press Check again to fetch its id.",
+      "pickupAt": "Pickup area: {area}"
     }
   },
   "AdminCommon": {

@@ -2,9 +2,10 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { CircleAlert, CircleCheck, Clock, LoaderCircle, Truck } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { AreaPicker, type AreaValue } from "@/components/delivery/area-picker";
+import type { AdminShop } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/core";
 import { createCourierStore, errorCode, type CourierCode } from "@/lib/api/delivery";
 
@@ -15,8 +16,9 @@ type Result = { provider: CourierCode; courierStoreId: string | null; state: "RE
  * Creates the shop's pickup store at the default courier (Pathao now), or fetches its id once the
  * courier has approved it. The pickup area is asked for only when the courier has no store yet.
  */
-export function CourierStore({ shopId, onChanged }: { shopId: string; onChanged: () => void }) {
+export function CourierStore({ shopId, saved, onChanged }: { shopId: string; saved?: AdminShop; onChanged: () => void }) {
   const t = useTranslations("AdminShops.courier");
+  const format = useFormatter();
   const [needsArea, setNeedsArea] = useState(false);
   const [loc, setLoc] = useState<AreaValue>({ city: null, zone: null, area: null });
   const [areaError, setAreaError] = useState<string | undefined>();
@@ -49,10 +51,34 @@ export function CourierStore({ shopId, onChanged }: { shopId: string; onChanged:
   }
 
   const name = result ? COURIER_NAME[result.provider] : null;
+  // What the server has saved (shown until this panel gets a fresh answer).
+  const savedState = saved?.courierStoreState ?? "NONE";
+  const ready = result ? result.state === "READY" : savedState === "READY";
+  const where = saved?.courierStoreLocation;
+  const savedLine = result
+    ? null
+    : savedState === "READY"
+      ? t("savedReady", { id: saved?.courierStoreId ?? "" })
+      : savedState === "PENDING_APPROVAL"
+        ? t("savedPending", {
+            date: saved?.courierStoreRequestedAt ? format.dateTime(new Date(saved.courierStoreRequestedAt), { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "—",
+          })
+        : null;
 
   return (
     <section aria-label={t("title")} className="flex flex-col gap-3 rounded-md bg-surface p-3">
       <p className="type-caption text-ink-secondary">{t("hint")}</p>
+
+      {savedLine && (
+        <p className={`type-body flex items-start gap-2 ${savedState === "READY" ? "text-success-ink" : "text-highlight"}`}>
+          {savedState === "READY" ? <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden /> : <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />}
+          {savedLine}
+        </p>
+      )}
+      {where && !result && (
+        // Courier names from the courier's own lists: plain text
+        <p className="type-caption text-ink-muted">{t("pickupAt", { area: [where.areaName, where.zoneName, where.cityName].join(", ") })}</p>
+      )}
 
       {result && (
         <p role="status" className={`type-body flex items-start gap-2 ${result.state === "READY" ? "text-success-ink" : "text-highlight"}`}>
@@ -75,10 +101,10 @@ export function CourierStore({ shopId, onChanged }: { shopId: string; onChanged:
           </div>
         </form>
       ) : (
-        result?.state !== "READY" && (
+        !ready && (
           <button type="button" onClick={() => create.mutate(undefined)} disabled={create.isPending} aria-busy={create.isPending} className="type-body-medium flex h-11 items-center gap-2 self-start rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:opacity-60">
             {create.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <Truck className="size-4" aria-hidden />}
-            {result ? t("checkAgain") : t("start")}
+            {result || savedState === "PENDING_APPROVAL" ? t("checkAgain") : t("start")}
           </button>
         )
       )}
