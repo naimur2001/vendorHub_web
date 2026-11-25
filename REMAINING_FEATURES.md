@@ -16,6 +16,10 @@ The backend has everything since commit `55d0c05` (2026-11-25). The admin zone f
 
 - [ ] Get **Pathao sandbox keys**, put them in the backend `.env`, run `node --env-file=.env scripts/check-pathao.mjs`, and send the output to the backend session. Keep `COURIER_MODE=mock` until it passes.
 
+## To discuss later
+
+- **Vendors Hub delivery profit:** not decided yet. The Delivery monitor keeps its Profit field (customer fee minus courier cost, for example ৳80 − ৳60 = ৳20) unchanged until then.
+
 ## Needs the backend or accounts first
 
 | Feature | What is missing | Frontend work once ready |
