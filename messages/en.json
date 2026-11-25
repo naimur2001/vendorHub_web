@@ -3657,6 +3657,63 @@
       "taken": "in {name}",
       "chosen": "{count, plural, =0 {No courier zones chosen} one {# courier zone chosen} other {# courier zones chosen}}",
       "clear": "Clear all"
+    },
+    "profit": {
+      "title": "Profit rules",
+      "text": "A target profit per courier shipment, for reports only. Customers still pay the zone fee, and the real profit stays the zone fee minus the courier cost. The Delivery monitor compares the two. The most specific active rule wins: zone + courier, then zone, then courier, then all.",
+      "add": "Add rule",
+      "newRule": "New profit rule",
+      "empty": "No profit rules yet. Add one when the target is decided.",
+      "loadError": "Couldn't load the profit rules.",
+      "retry": "Try again",
+      "active": "Active",
+      "off": "Off",
+      "scope": "{zone} · {courier}",
+      "allZones": "All zones",
+      "allCouriers": "All couriers",
+      "valueFixed": "{amount} per shipment",
+      "valuePercent": "{value}% of {base}",
+      "base": {
+        "CUSTOMER_FEE": "the customer fee",
+        "COURIER_COST": "the courier cost"
+      },
+      "edit": "Edit",
+      "switchOff": "Switch off",
+      "switchOn": "Switch on",
+      "delete": "Delete",
+      "keep": "Keep it",
+      "deleteConfirm": "Delete \"{name}\"? Reports stop using it at once.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Standard target",
+      "type": "Profit type",
+      "types": {
+        "FIXED": "Fixed amount (৳)",
+        "PERCENT": "Percentage (%)"
+      },
+      "valueTaka": "Amount in taka",
+      "valuePct": "Percent",
+      "fixedHint": "Whole taka, 0 to 5000.",
+      "percentHint": "0 to 100, up to 2 decimals.",
+      "percentOf": "Percent of",
+      "zone": "Zone",
+      "courier": "Courier",
+      "listsError": "Couldn't load the zones or couriers. Reload the page.",
+      "activeLabel": "Active (used in the reports)",
+      "preview": "Target: {value}",
+      "save": "Save rule",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "errors": {
+        "name": "Give the rule a name of 2 to 60 characters.",
+        "fixed": "Enter whole taka from 0 to 5000.",
+        "percent": "Enter a percent from 0 to 100, with at most 2 decimals.",
+        "RULE_SCOPE_TAKEN": "Another active rule already covers this zone and courier. Switch that one off first, or choose another zone or courier.",
+        "BAD_RULE": "Check the value: whole taka 0–5000, or a percent 0–100 with a base.",
+        "ZONE_NOT_FOUND": "That zone no longer exists. Reload the page.",
+        "COURIER_NOT_FOUND": "That courier no longer exists. Reload the page.",
+        "network": "Can't reach Vendors Hub. Check your connection.",
+        "generic": "That didn't work. Try again."
+      }
     }
   },
   "CourierStatus": {

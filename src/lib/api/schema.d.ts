@@ -4198,6 +4198,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/delivery/profit-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Delivery profit rules, active first (ADMIN) */
+        get: operations["adminListProfitRules"];
+        put?: never;
+        /**
+         * Add a profit rule (ADMIN, audited)
+         * @description FIXED value = whole taka 0-5000 (no percentOf). PERCENT value = 0-100 with at most 2 decimals and percentOf CUSTOMER_FEE or COURIER_COST. 400 BAD_RULE, ZONE_NOT_FOUND, COURIER_NOT_FOUND; 409 RULE_SCOPE_TAKEN when another active rule has the same zoneId and providerId.
+         */
+        post: operations["adminCreateProfitRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery/profit-rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a profit rule (ADMIN, audited) */
+        delete: operations["adminDeleteProfitRule"];
+        options?: never;
+        head?: never;
+        /**
+         * Change, switch off or on a profit rule (ADMIN, audited)
+         * @description Any field of the create body. The merged rule is checked again (400 BAD_RULE; 409 RULE_SCOPE_TAKEN when switched on in a taken scope).
+         */
+        patch: operations["adminUpdateProfitRule"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6030,6 +6074,10 @@ export interface components {
             codOwedByCourier: number;
             /** @description Delivered orders not paid to the shop yet (order total minus the delivery fee). */
             owedToShops: number;
+            /** @description Sum over shipments the courier priced (courierCost known, cancelled left out), with the CURRENT profit rules; null when none has a rule. */
+            targetProfit: number | null;
+            /** @description margin minus targetProfit (null when either is unknown). */
+            profitGap: number | null;
         };
         TimelineEntry: {
             status: components["schemas"]["ShipmentStatus"];
@@ -6090,6 +6138,13 @@ export interface components {
             courierCost: number | null;
             /** @description customerFee - courierCost */
             margin: number | null;
+            /** @description The target of the current profit rule (FIXED value, or round(base x value / 100)); null without a rule or while the courier cost is unknown. */
+            targetProfit: number | null;
+            /** @description margin minus targetProfit (null when either is unknown). */
+            profitGap: number | null;
+            /** Format: uuid */
+            ruleId: string | null;
+            ruleName: string | null;
             codAmount: number;
             codCollected: boolean;
             /** Format: date-time */
@@ -6232,6 +6287,52 @@ export interface components {
             subtotal: number;
             /** @description The VENDOR_DELIVERY fee for this shop (see GET /cart); null when unknown or not available. */
             deliveryFee: number | null;
+        };
+        /** @enum {string} */
+        ProfitRuleType: "FIXED" | "PERCENT";
+        /** @enum {string} */
+        ProfitRuleBase: "CUSTOMER_FEE" | "COURIER_COST";
+        DeliveryProfitRuleInput: {
+            name: string;
+            type: components["schemas"]["ProfitRuleType"];
+            /** @description FIXED = whole taka 0-5000; PERCENT = 0-100, at most 2 decimals. */
+            value: number;
+            /** @description PERCENT only. */
+            percentOf?: components["schemas"]["ProfitRuleBase"] | null;
+            /**
+             * Format: uuid
+             * @description A delivery zone id; null or left out = all zones.
+             */
+            zoneId?: string | null;
+            /**
+             * Format: uuid
+             * @description A courier id; null or left out = all couriers.
+             */
+            providerId?: string | null;
+            /** @default true */
+            isActive: boolean;
+        };
+        DeliveryProfitRule: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            type: components["schemas"]["ProfitRuleType"];
+            value: number;
+            percentOf: components["schemas"]["ProfitRuleBase"] | null;
+            /** Format: uuid */
+            zoneId: string | null;
+            zoneCode: components["schemas"]["DeliveryZoneCode"] | null;
+            /** @description null = all zones. */
+            zoneName: string | null;
+            /** Format: uuid */
+            providerId: string | null;
+            /** @description null = all couriers. */
+            providerName: string | null;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
     };
     responses: {
@@ -6639,6 +6740,18 @@ export interface components {
                 "application/json": {
                     success: boolean;
                     data: components["schemas"]["AdminShipmentDetail"];
+                };
+            };
+        };
+        /** @description The rule. */
+        DeliveryProfitRuleResponse: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    success: boolean;
+                    data: components["schemas"]["DeliveryProfitRule"];
                 };
             };
         };
@@ -14590,6 +14703,8 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         data: components["schemas"]["DeliveryMetrics"] & {
+                            /** @description Priced shipments whose profitGap is below 0. */
+                            belowTarget: number;
                             /** Format: date */
                             from: string;
                             /** Format: date */
@@ -14648,6 +14763,10 @@ export interface operations {
                                 margin: number;
                                 ordersPlaced: number;
                                 orderValue: number;
+                                /** @description Shipments booked that day, with the current profit rules (null when none has a rule). */
+                                targetProfit: number | null;
+                                /** @description margin minus targetProfit (null when either is unknown). */
+                                profitGap: number | null;
                             }[];
                         };
                     };
@@ -14865,6 +14984,110 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    adminListProfitRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rules. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        data: components["schemas"]["DeliveryProfitRule"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateProfitRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryProfitRuleInput"];
+            };
+        };
+        responses: {
+            201: components["responses"]["DeliveryProfitRuleResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminDeleteProfitRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataObject"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdateProfitRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["DeliveryUuid"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    type?: components["schemas"]["ProfitRuleType"];
+                    value?: number;
+                    percentOf?: components["schemas"]["ProfitRuleBase"] | null;
+                    /** Format: uuid */
+                    zoneId?: string | null;
+                    /** Format: uuid */
+                    providerId?: string | null;
+                    isActive?: boolean;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["DeliveryProfitRuleResponse"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
 }

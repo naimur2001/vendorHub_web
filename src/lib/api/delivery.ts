@@ -25,7 +25,16 @@ export const SHIPMENT_STATUSES: ShipmentStatus[] = ["PENDING", "BOOKED", "PICKUP
 
 export type RangeFilter = { from?: string; to?: string; providerId?: string; shopId?: string };
 export type Ranked = DeliveryMetrics & { shopId?: string; shopName?: string; shopSlug?: string; providerId?: string; providerCode?: CourierCode; providerName?: string };
-export type DayPoint = { day: string; booked: number; delivered: number; failed: number; customerFees: number; courierCost: number; margin: number; ordersPlaced: number; orderValue: number };
+export type DayPoint = {
+  day: string; booked: number; delivered: number; failed: number; customerFees: number; courierCost: number; margin: number; ordersPlaced: number; orderValue: number;
+  targetProfit: number | null; // shipments booked that day, with the CURRENT profit rules (null when none has a rule)
+  profitGap: number | null; // margin minus targetProfit
+};
+// Profit rules: a target for analysis only. They never change the customer fee or the real margin.
+export type ProfitRule = S["DeliveryProfitRule"];
+export type ProfitRuleInput = S["DeliveryProfitRuleInput"];
+export type ProfitRuleType = S["ProfitRuleType"];
+export type ProfitRuleBase = S["ProfitRuleBase"];
 
 const enc = encodeURIComponent;
 
@@ -41,6 +50,7 @@ export const deliveryKeys = {
   byProvider: (f: RangeFilter) => ["admin", "delivery", "by-provider", f] as const,
   shipments: (q: object) => ["admin", "shipments", q] as const,
   shipment: (id: string) => ["admin", "shipment", id] as const,
+  profitRules: ["admin", "delivery", "profit-rules"] as const,
 };
 
 // Public location lists (cached by the server for 24 hours)
@@ -60,7 +70,7 @@ export const createCourierStore = (shopId: string, loc?: { courierCityId: number
   api.post<{ shopId: string; provider: CourierCode; courierStoreId: string | null; state: "READY" | "PENDING_APPROVAL" }>(`/admin/shops/${enc(shopId)}/courier-store`, loc ?? {});
 
 // Admin: monitor
-export const getDeliverySummary = (f: RangeFilter) => api.get<DeliveryMetrics & { from: string; to: string; countsByStatus: Record<string, number> }>("/admin/delivery/summary", { query: f });
+export const getDeliverySummary = (f: RangeFilter) => api.get<DeliveryMetrics & { from: string; to: string; countsByStatus: Record<string, number>; belowTarget: number }>("/admin/delivery/summary", { query: f });
 export const getDeliverySeries = (f: RangeFilter) => api.get<{ from: string; to: string; points: DayPoint[] }>("/admin/delivery/timeseries", { query: { ...f, interval: "day" } });
 export const getDeliveryByShop = (f: RangeFilter) => api.get<{ items: Ranked[] }>("/admin/delivery/by-shop", { query: f });
 export const getDeliveryByProvider = (f: RangeFilter) => api.get<{ items: Ranked[] }>("/admin/delivery/by-provider", { query: f });
@@ -71,6 +81,12 @@ export const cancelShipment = (id: string) => api.post<unknown>(`/admin/shipment
 export const rebookShipment = (id: string) => api.post<unknown>(`/admin/shipments/${enc(id)}/rebook`);
 export const markCodRemitted = (id: string) => api.post<unknown>(`/admin/shipments/${enc(id)}/mark-cod-remitted`);
 export const markShopPaid = (id: string) => api.post<unknown>(`/admin/shipments/${enc(id)}/mark-shop-paid`);
+
+// Admin: profit rules (the most specific active rule wins: zone + courier > zone > courier > all)
+export const listProfitRules = () => api.get<ProfitRule[]>("/admin/delivery/profit-rules");
+export const createProfitRule = (input: ProfitRuleInput) => api.post<ProfitRule>("/admin/delivery/profit-rules", input);
+export const updateProfitRule = (id: string, patch: Partial<ProfitRuleInput>) => api.patch<ProfitRule>(`/admin/delivery/profit-rules/${enc(id)}`, patch);
+export const deleteProfitRule = (id: string) => api.delete<unknown>(`/admin/delivery/profit-rules/${enc(id)}`);
 
 // Shop
 export const setDeliveryMode = (shopId: string, deliveryMode: ShopDeliveryMode) =>

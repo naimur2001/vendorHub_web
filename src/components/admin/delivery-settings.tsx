@@ -18,6 +18,7 @@ import {
   type CourierProvider,
   type DeliveryZone,
 } from "@/lib/api/delivery";
+import { ProfitRules } from "@/components/admin/profit-rules";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -94,6 +95,8 @@ export function DeliverySettings() {
           </ul>
         )}
       </section>
+
+      <ProfitRules />
     </div>
   );
 }
