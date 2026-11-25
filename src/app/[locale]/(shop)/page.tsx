@@ -2,6 +2,7 @@ import { ChevronRight, Handshake, Scale, ShieldCheck } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { Arcade } from "@/components/brand/arcade";
+import { HeroGlow } from "@/components/brand/hero-glow";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
 import { CountUp } from "@/components/charts/arch-bars";
 import { Reveal } from "@/components/motion/reveal";
@@ -231,7 +232,9 @@ export default async function HomePage({ params }: Props) {
       <Suspense fallback={<div className="-mb-2 aspect-5/2 skeleton rounded-3xl sm:aspect-7/2 md:mb-0 xl:aspect-auto xl:h-80" aria-hidden />}>
         <HomeBanners />
       </Suspense>
-      <section className="flex flex-col items-center gap-6 pt-2 text-center md:gap-8 md:pt-4">
+      <section className="relative isolate flex flex-col items-center gap-6 pt-2 text-center md:gap-8 md:pt-4">
+        {/* Gold arch, glow and sparkles behind the title (decoration only) */}
+        <HeroGlow className="-top-4 md:-top-8" />
         {/* Words rise in one by one (whole words only, so Bangla letters are never split) */}
         <h1 className="type-display no-wipe max-w-3xl text-ink">
           {t("heroTitle")
