@@ -20,12 +20,12 @@ The backend has everything since commit `55d0c05` (2026-11-25). The admin zone f
 
 - **Vendors Hub delivery profit:** the amounts are not decided yet. Admins can now add, edit, switch off and delete profit rules (fixed ৳ or %, per zone and courier) in Couriers & fees, and the Delivery monitor compares the real profit with that target. Set the real rules after the discussion.
 
-## Before switching subscriptions on (frontend)
+## Subscriptions: ready to switch on
 
-Subscriptions are built for admins and switched OFF (everything free, nothing shown to shop owners). Before an admin switches them on, build:
-- [ ] **Owner → My plan** page: `GET /shops/:shopId/subscription` (plan, period end, amount due, limits used), the published plans with prices, and "Request this plan" (`POST .../subscription/request`, errors `REQUEST_PENDING`, `PLAN_NOT_AVAILABLE`).
-- [ ] **Plan errors on owner screens:** show `402 PLAN_REQUIRED` as "Upgrade your plan" (link to My plan) and `409 PLAN_LIMIT` as "Your plan allows N (N used)". The helper `planProblem()` in `src/lib/api/subscriptions.ts` reads both. The places: analytics and low stock, CSV import, deals and coupons, staff, bargaining, chat replies, courier delivery, more than 3 shop photos, new products past the limit.
-- [ ] Optionally lock or hide those features in advance from `GET /shops/:shopId/entitlements`.
+Everything is built. Subscriptions stay OFF (free for every shop) until an admin switches them on in Admin → Subscriptions.
+- Owner → **My plan** (`/owner/plan`): shows "Everything is free for now" while off. When on: plan, status, paid until, amount due, limits used, included modules, the published plans with prices, and "Request this plan". The tab appears only when subscriptions are on.
+- Any owner action that answers `402 PLAN_REQUIRED` or `409 PLAN_LIMIT` shows one notice at the top of the owner pages ("This needs a bigger plan" / "Your plan allows N (N used)") with a link to My plan.
+- [ ] Before switching on: decide the plans and prices, then test once with a test shop (turn on, start a small plan, try a locked feature, turn off).
 
 ## Needs the backend or accounts first
 
