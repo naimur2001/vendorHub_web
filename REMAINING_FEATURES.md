@@ -1,35 +1,32 @@
 # Features still to build
 
-Last updated: 2026-11-24. Everything not listed here is built and pushed on branch `naimur`.
+Last updated: 2026-11-25. Everything not listed here is built and pushed on branch `naimur`.
 
-## Tomorrow (2026-11-25): courier delivery, step 3
+## Next: courier delivery, step 3 (the rest)
 
 For now every delivery goes through **Vendors Hub courier (Pathao)**. The shop's own delivery comes later.
 
-### 1. Backend first (send this to the backend session)
+### 1. Backend first (the prompt was sent on 2026-11-25)
 
-The backend commit `678e74b` does not have these yet:
+The backend is still on commit `678e74b`. It does **not** have these yet:
 
 1. `GET /shops/mine` (and the owner's shop settings data): add `deliveryMode` and `courierReady` (true when `courierStoreId` is set).
-2. `GET /admin/shops`: add `deliveryMode`, `courierStoreId` and `courierStoreState` (NONE | PENDING_APPROVAL | READY), with filters for both.
+2. `GET /admin/shops`: add `deliveryMode`, `courierStoreId` and `courierStoreState` (NONE | PENDING_APPROVAL | READY), with filters for both. Save the PENDING_APPROVAL state, so "Check again" does not ask for the area again.
 3. Delivery fee before ordering: `deliveryQuote: { zoneCode, zoneName, fee, etaText } | null` on each address in `GET /users/me/addresses`, plus `GET /delivery/quote?addressId=`.
-4. Cart: for courier shops (`courierDelivery: true`), delivery needs `addressId` (a saved address with an area); `deliveryFee: null` until an address is chosen.
-5. Make `PLATFORM_COURIER` the default for new shops and migrate existing shops to it. Keep `OWN` in the code for later.
+4. Cart: `shop.courierDelivery` and `shop.deliveryAvailable` exist in `cart.service.js` but not in OpenAPI. For courier shops, `deliveryFee: null` until an address is chosen.
+5. Make `PLATFORM_COURIER` the default for new shops and migrate existing shops to it (all 15 local shops are `OWN` now). Keep `OWN` in the code for later.
+
+Already in the backend: checkout takes `addressId` and returns `ADDRESS_NEEDS_AREA`, `AREA_UNAVAILABLE` and `DELIVERY_UNAVAILABLE`.
 
 Before building, check the backend: run `npm run api:types` and look for `deliveryQuote` and `courierStoreState` in `src/lib/api/schema.d.ts`.
 
 ### 2. Frontend once the backend is ready
 
-- [ ] **Admin → Shops:** a "Create Pathao store" button on each shop (`POST /admin/shops/:shopId/courier-store`), its state (none, waiting for Pathao approval, ready), and a filter for shops still waiting.
-- [ ] **Shop owner → Orders:** the courier status card (`CourierStatus` with the shop extras: COD amount, paid or not, booking failed) and a **Ready for pickup** button (`POST /shops/:shopId/orders/:orderId/ship`).
 - [ ] **Checkout:** for courier shops, choose a saved address with a delivery area, show the courier fee from the server before ordering, and send `addressId`. Explain the errors `ADDRESS_NEEDS_AREA`, `AREA_UNAVAILABLE` and `DELIVERY_UNAVAILABLE`.
-- [ ] **Notification bell:** link `SHIPMENT_*` notifications to Track order (customer) or Owner → Orders (shop).
+- [ ] **Admin → Shops:** show the saved store state on each shop (none, waiting for approval, ready) and a filter for shops still waiting. The button itself is done.
+- [ ] **Owner → Orders:** test the courier card and booking with a real courier order (none exist locally until item 5).
 
-### 3. Optional, frontend only
-
-- [ ] **Zone picker in Couriers & fees:** the zone editor picks cities only. Add the courier zones inside a city, so Dhaka suburbs get their own fee instead of the outside-Dhaka fee (৳150).
-
-### 4. Your action (not code)
+### 3. Your action (not code)
 
 - [ ] Get **Pathao sandbox keys**, put them in the backend `.env`, run `node --env-file=.env scripts/check-pathao.mjs`, and send the output to the backend session. Keep `COURIER_MODE=mock` until it passes.
 
@@ -49,6 +46,12 @@ Before building, check the backend: run `npm run api:types` and look for `delive
 
 ## Recently built
 
+- **Courier delivery, step 3 part 1 (2026-11-25):**
+  - Owner → Orders: courier card (COD amount, paid or not, booking failed), "Ready for courier pickup" books the courier, "Book the courier again" while the booking is still pending, clear messages when the courier already manages the order.
+  - Notification bell: `SHIPMENT_*` open Track order (customer), Owner → Orders (shop) or the Delivery monitor (admin, for problems).
+  - Admin → Shops: "Courier store" panel creates or refreshes the shop's pickup store at the default courier, and asks for the pickup area only when needed.
+  - Couriers & fees: courier zone picker inside a city, so Dhaka suburbs (for example Savar) get their own fee.
+  - The City → Zone → Area picker is now shared: `src/components/delivery/area-picker.tsx`.
 - **Courier delivery, steps 1, 2 and 4 (2026-11-24):**
   - Admin → Couriers & fees (`/admin/delivery/settings`): couriers on/off, default, sandbox; zone fees, delivery time and cities.
   - Addresses: City → Zone → Area picker.
