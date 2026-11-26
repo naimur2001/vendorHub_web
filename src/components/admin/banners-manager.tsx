@@ -309,7 +309,7 @@ function BannerRow(props: {
       <div
         className={cn(
           "relative shrink-0 overflow-hidden rounded-xl bg-subtle",
-          b.placement === "GALLERY" ? "aspect-square w-32" : "aspect-4/1 w-full md:w-64",
+          b.placement === "GALLERY" ? "aspect-square w-32" : b.placement === "HERO" ? "aspect-2/1 w-40" : "aspect-4/1 w-full md:w-64",
         )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- media server thumbnail, already resized */}
@@ -503,7 +503,7 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
         hint={t(`mediaHint${HINT_SUFFIX[input.placement]}`)}
         current={banner ? safeMediaUrl(banner.media.thumbUrl) : null}
         preview={media?.preview ?? null}
-        aspect={input.placement === "SIDE_AD" ? "aspect-2/3 max-w-48" : gallery ? "aspect-square max-w-56" : "aspect-4/1"}
+        aspect={input.placement === "SIDE_AD" ? "aspect-2/3 max-w-48" : gallery ? "aspect-square max-w-56" : "aspect-2/1"}
         accept={typesFor(input.placement)}
         fit={input.fit}
         onPick={(f) => void pick("media", f)}

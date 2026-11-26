@@ -1,24 +1,58 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-import { getImageProps } from "next/image";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { Link } from "@/i18n/routing";
 import type { HomeBanner } from "@/lib/api/catalog-cache";
 import { safeMediaUrl } from "@/lib/api/storefront";
 import { cn } from "@/lib/utils";
 
-const AUTOPLAY_MS = 3000;
-// Gentle glide between slides (owner's choice: slower than the usual 300 ms rule).
-const SLIDE_EASE = "motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-in-out";
+// Owner's choice: a step along the curve every 7 s, gliding for 700 ms (slower than the usual 300 ms rule).
+const AUTOPLAY_MS = 7000;
+const GLIDE = "motion-safe:transition-[transform,opacity] motion-safe:duration-700 motion-safe:ease-in-out";
 const SWIPE_PX = 50;
+// At least this many cards on the curve (banners repeat to fill it), so a card that wraps
+// from one end to the other always does it out of sight.
+const MIN_SLOTS = 11;
 
-// Slim billboard: wide and low. Phones get a little more height so text still fits.
-export const BANNER_FRAME = "aspect-5/2 sm:aspect-7/2 xl:aspect-[21/8]";
+/**
+ * Where a card sits on the curve, by its distance from the centre card (|d|), per screen size.
+ * x = sideways shift (% of the slider width), s = size, r = turn towards the centre (deg), o = opacity.
+ * Wide cards grow and turn as they near the edges, like the inside of a drum seen from the front.
+ */
+type Spot = { x: number; s: number; r: number; o: number };
+const CURVE: Record<"phone" | "tablet" | "desktop", Spot[]> = {
+  // one wide card, with slivers of its neighbours at the edges
+  phone: [
+    { x: 0, s: 1, r: 0, o: 1 },
+    { x: 72, s: 1.1, r: 20, o: 1 },
+    { x: 130, s: 1.2, r: 28, o: 0 },
+  ],
+  // one card and half of each neighbour
+  tablet: [
+    { x: 0, s: 1, r: 0, o: 1 },
+    { x: 43, s: 1.12, r: 18, o: 1 },
+    { x: 82, s: 1.3, r: 28, o: 0 },
+  ],
+  // three wide cards (also fits the middle column between the side panels on wide screens)
+  desktop: [
+    { x: 0, s: 1, r: 0, o: 1 },
+    { x: 32.5, s: 1.08, r: 14, o: 1 },
+    { x: 62, s: 1.3, r: 26, o: 1 },
+    { x: 90, s: 1.5, r: 34, o: 0 },
+  ],
+};
 
-const ctaClass =
-  "group/cta type-body-medium inline-flex h-11 items-center gap-2 rounded-sm bg-gold px-5 text-brand shadow-card hover:bg-card focus-visible:ring-2 focus-visible:ring-card focus-visible:ring-offset-2 focus-visible:ring-offset-brand focus-visible:outline-none";
+function spot(table: Spot[], d: number): string {
+  const p = table[Math.min(Math.abs(d), table.length - 1)];
+  const side = Math.sign(d);
+  // Left cards turn right and right cards turn left, so every card faces the middle.
+  return `translateX(${side * p.x}cqw) perspective(100cqw) rotateY(${-side * p.r}deg) scale(${p.s})`;
+}
+function opacity(table: Spot[], d: number): number {
+  return table[Math.min(Math.abs(d), table.length - 1)].o;
+}
 
 // Internal paths and https links only (the backend checks too).
 function safeLink(value: string | null): { href: string; external: boolean } | null {
@@ -45,30 +79,19 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
+const ctaClass =
+  "group/cta type-body-medium inline-flex h-11 items-center gap-2 rounded-sm bg-action px-5 text-primary-foreground shadow-card hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none";
+const arrowButton =
+  "flex size-11 shrink-0 items-center justify-center rounded-full border border-line-strong bg-card text-ink shadow-card hover:border-brand hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 
-function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean; first: boolean }) {
-  const t = useTranslations("Banners");
-  const bn = useLocale() === "bn";
-  const title = (bn && banner.titleBn) || banner.titleEn;
-  const subtitle = (bn && banner.subtitleBn) || banner.subtitleEn;
-  const cta = (bn && banner.ctaLabelBn) || banner.ctaLabelEn || t("open");
-  const link = safeLink(banner.linkUrl);
-
+/** One card's picture (the whole image with a soft blurred fill when the admin chose "show whole image"). */
+function CardImage({ banner, title, eager }: { banner: HomeBanner; title: string; eager: boolean }) {
   const src = safeMediaUrl(banner.media.url);
   const still = safeMediaUrl(banner.media.thumbUrl);
-  const mobile = safeMediaUrl(banner.mobileMedia?.url);
   if (!src) return null;
-
-  const { props: img } = getImageProps({ src, alt: title, fill: true, unoptimized: true, priority: first, sizes: "(min-width: 1280px) 1200px, 100vw" });
-  const showText = Boolean(subtitle || link);
   const contain = banner.fit === "CONTAIN";
-  // Enter effect for the visible slide: transform + opacity only, 300 ms.
-  const enter = cn("motion-safe:transition motion-safe:duration-300 motion-safe:ease-out", active ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0");
-  const arrow = <ArrowRight className="size-4 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover/cta:translate-x-1" aria-hidden />;
-
   return (
-    <div className="relative size-full overflow-hidden">
-      {/* "Show whole image": a soft blurred copy fills the empty sides, the image itself is never cropped */}
+    <>
       {contain && (
         // eslint-disable-next-line @next/next/no-img-element -- decorative backdrop of the same media file
         <img src={still ?? src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover opacity-70 blur-2xl" />
@@ -76,63 +99,38 @@ function Slide({ banner, active, first }: { banner: HomeBanner; active: boolean;
       <picture>
         {/* Animated banners stay still for people who turn motion off */}
         {banner.mediaType === "GIF" && still && <source media="(prefers-reduced-motion: reduce)" srcSet={still} />}
-        {mobile && <source media="(max-width: 639px)" srcSet={mobile} />}
         <img
-          {...img}
+          src={src}
           alt={title}
           draggable={false}
-          className={cn(contain ? "object-contain" : "object-cover", "motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out", active ? "scale-100" : "scale-105")}
+          loading={eager ? "eager" : "lazy"}
+          fetchPriority={eager ? "high" : undefined}
+          className={cn("absolute inset-0 size-full", contain ? "object-contain" : "object-cover")}
         />
       </picture>
-
-      {showText && (
-        <>
-          <div aria-hidden className="absolute inset-0 bg-linear-to-t from-brand/85 via-brand/35 to-transparent sm:bg-linear-to-r sm:from-brand/90 sm:via-brand/45" />
-          <div className="absolute inset-0 flex items-end p-4 pb-12 sm:items-center sm:p-8 md:px-14">
-            <div className="flex max-w-lg flex-col items-start gap-1.5 md:gap-2.5">
-              {/* Gold keystone line: the brand's arch detail */}
-              <span aria-hidden className={cn("flex items-center gap-2", enter)}>
-                <span className="h-px w-8 bg-gold" />
-                <span className="size-2 rotate-45 bg-gold" />
-              </span>
-              <p className={cn("type-h2 line-clamp-2 text-primary-foreground drop-shadow-sm", enter, "motion-safe:delay-75")}>{title}</p>
-              {subtitle && (
-                <p className={cn("type-body hidden max-w-md text-primary-foreground/90 md:line-clamp-2", enter, "motion-safe:delay-100")}>{subtitle}</p>
-              )}
-              {link && (
-                <span className={cn("mt-1", enter, "motion-safe:delay-150")}>
-                  {link.external ? (
-                    <a href={link.href} target="_blank" rel="noopener noreferrer" className={ctaClass}>
-                      {cta}
-                      {arrow}
-                    </a>
-                  ) : (
-                    <Link href={link.href} className={ctaClass}>
-                      {cta}
-                      {arrow}
-                    </Link>
-                  )}
-                </span>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+    </>
   );
 }
 
-/** Home page billboard: sliding admin banners. Always auto-slides; pauses only for keyboard focus, a hidden tab and reduced motion. */
+/**
+ * Home page billboard: admin banners on a curved strip (cards grow and turn towards the edges).
+ * Steps one card every 7 s; pauses on hover, keyboard focus, a hidden tab and reduced motion.
+ * The centre banner's title and button show under the curve. Arrows, dots, swipe and ←/→ move it.
+ */
 export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
   const t = useTranslations("Banners");
+  const bn = useLocale() === "bn";
   const reduced = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [focused, setFocused] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const startX = useRef<number | null>(null);
   const count = banners.length;
+  // Banners repeat to fill the curve; slot i shows banner i % count.
+  const slots = count === 0 ? 0 : count * Math.ceil(MIN_SLOTS / count);
+  const [active, setActive] = useState(0);
+  const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const drag = useRef<{ x: number; moved: boolean } | null>(null);
 
-  const go = useCallback((next: number) => setIndex(((next % count) + count) % count), [count]);
+  const go = useCallback((next: number) => setActive(((next % slots) + slots) % slots), [slots]);
 
   useEffect(() => {
     const update = () => setHidden(document.hidden);
@@ -140,32 +138,51 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
 
-  const playing = count > 1 && !reduced && !focused && !hidden;
+  const playing = count > 1 && !reduced && !focused && !hovered && !hidden;
   useEffect(() => {
     if (!playing) return;
-    const id = window.setTimeout(() => go(index + 1), AUTOPLAY_MS);
+    const id = window.setTimeout(() => go(active + 1), AUTOPLAY_MS);
     return () => window.clearTimeout(id);
-  }, [playing, index, go]);
+  }, [playing, active, go]);
 
   if (count === 0) return null;
 
+  const current = banners[active % count];
+  const title = (bn && current.titleBn) || current.titleEn;
+  const subtitle = (bn && current.subtitleBn) || current.subtitleEn;
+  const cta = (bn && current.ctaLabelBn) || current.ctaLabelEn || t("open");
+  const link = safeLink(current.linkUrl);
+  const arrow = <ArrowRight className="size-4 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover/cta:translate-x-1" aria-hidden />;
+
+  // Signed distance of a slot from the centre, the short way round.
+  const offset = (i: number) => {
+    let d = (((i - active) % slots) + slots) % slots;
+    if (d > slots / 2) d -= slots;
+    return d;
+  };
+  // Move to a banner by the shortest way (used by the dots).
+  const goToBanner = (b: number) => {
+    let step = (((b - (active % count)) % count) + count) % count;
+    if (step > count / 2) step -= count;
+    go(active + step);
+  };
+
   function onKeyDown(e: KeyboardEvent<HTMLElement>) {
-    if (e.key === "ArrowLeft") go(index - 1);
-    else if (e.key === "ArrowRight") go(index + 1);
+    if (e.key === "ArrowLeft") go(active - 1);
+    else if (e.key === "ArrowRight") go(active + 1);
     else return;
     e.preventDefault();
   }
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
-    startX.current = e.clientX;
-    // Keep getting pointer events while a mouse drag leaves the banner.
-    // (Not on a link, so its click still works.)
-    if (!(e.target as Element).closest("a, button")) e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { x: e.clientX, moved: false };
   }
   function onPointerUp(e: PointerEvent) {
-    if (startX.current === null) return;
-    const dx = e.clientX - startX.current;
-    startX.current = null;
-    if (Math.abs(dx) > SWIPE_PX) go(index + (dx < 0 ? 1 : -1));
+    if (!drag.current) return;
+    const dx = e.clientX - drag.current.x;
+    if (Math.abs(dx) > SWIPE_PX) {
+      drag.current.moved = true; // the click that follows a swipe is ignored
+      go(active + (dx < 0 ? 1 : -1));
+    }
   }
 
   return (
@@ -173,60 +190,144 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
       aria-roledescription={t("carousel")}
       aria-label={t("label")}
       onKeyDown={onKeyDown}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       // Only keyboard focus pauses; a mouse click on a control must not stop the slideshow.
       onFocus={(e) => setFocused(e.target.matches(":focus-visible"))}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setFocused(false)}
-      className="group/slider relative rounded-3xl shadow-card"
+      className="flex flex-col items-center gap-4 md:gap-5"
     >
-      <div className="relative overflow-hidden rounded-3xl">
-        <div
-          className={cn("flex touch-pan-y cursor-grab select-none active:cursor-grabbing", SLIDE_EASE, BANNER_FRAME)}
-          style={{ transform: `translateX(-${index * 100}%)` }}
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => (startX.current = null)}
-          aria-live={playing ? "off" : "polite"}
-        >
-          {banners.map((b, i) => (
+      {/* The curve: reaches into the page margins; the far cards are cut off at the edges and fade out */}
+      <div
+        className="@container relative -mx-4 aspect-5/2 w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-4/1 md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-5/1 xl:mx-0 xl:w-full"
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => (drag.current = null)}
+      >
+        {Array.from({ length: slots }, (_, i) => {
+          const banner = banners[i % count];
+          const d = offset(i);
+          const centre = d === 0;
+          const name = (bn && banner.titleBn) || banner.titleEn;
+          const style = {
+            "--t0": spot(CURVE.phone, d),
+            "--t1": spot(CURVE.tablet, d),
+            "--t2": spot(CURVE.desktop, d),
+            "--o0": opacity(CURVE.phone, d),
+            "--o1": opacity(CURVE.tablet, d),
+            "--o2": opacity(CURVE.desktop, d),
+            zIndex: 20 - Math.abs(d),
+          } as CSSProperties;
+          return (
             <div
-              key={b.id}
-              role="group"
-              aria-roledescription={t("slide")}
-              aria-label={t("slideOf", { n: i + 1, total: count })}
-              aria-hidden={i !== index}
-              inert={i !== index}
-              className="relative h-full w-full shrink-0 bg-subtle"
+              key={i}
+              aria-hidden={!centre}
+              onClick={() => {
+                if (drag.current?.moved) return;
+                if (!centre) go(active + d);
+              }}
+              style={style}
+              className={cn(
+                // Card size per screen (in % of the slider width), positioned from the middle
+                "absolute top-1/2 left-1/2 aspect-2/1 w-[70cqw] -translate-x-1/2 -translate-y-1/2 sm:w-[40cqw] lg:w-[30cqw]",
+                "[opacity:var(--o0)] [transform:var(--t0)] sm:[opacity:var(--o1)] sm:[transform:var(--t1)] lg:[opacity:var(--o2)] lg:[transform:var(--t2)]",
+                GLIDE,
+                !centre && "cursor-pointer",
+              )}
             >
-              <Slide banner={b} active={i === index} first={i === 0} />
-            </div>
-          ))}
-        </div>
-
-        {count > 1 && (
-          // Arch notch cut into the bottom edge (brand motif) holding gold keystone diamonds.
-          <div className="absolute bottom-0 left-1/2 flex h-9 -translate-x-1/2 items-end rounded-t-full bg-surface px-3 sm:h-10 sm:px-4">
-            {banners.map((b, i) => (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => go(i)}
-                aria-label={t("goTo", { n: i + 1 })}
-                aria-current={i === index ? "true" : undefined}
-                className="group/dot relative flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
+              <div
+                className={cn(
+                  "relative size-full overflow-hidden rounded-2xl bg-subtle shadow-card",
+                  centre && "ring-2 ring-gold ring-offset-2 ring-offset-background",
+                )}
               >
-                <span aria-hidden className="absolute size-2 rotate-45 border border-gold motion-safe:transition motion-safe:duration-200 group-hover/dot:scale-125" />
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute size-2.5 rotate-45 bg-brand motion-safe:transition motion-safe:duration-300 motion-safe:ease-out",
-                    i === index ? "scale-100 opacity-100" : "scale-50 opacity-0",
-                  )}
-                />
-              </button>
-            ))}
-          </div>
+                <CardImage banner={banner} title={name} eager={i < 3 || i > slots - 3} />
+                {/* The centre card is the banner's link (also reachable with the button under the curve) */}
+                {centre &&
+                  link &&
+                  (link.external ? (
+                    <a href={link.href} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden className="absolute inset-0" draggable={false} />
+                  ) : (
+                    <Link href={link.href} tabIndex={-1} aria-hidden className="absolute inset-0" draggable={false} />
+                  ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* The centre banner's words (admin text, plain text) */}
+      <div
+        role="group"
+        aria-roledescription={t("slide")}
+        aria-label={t("slideOf", { n: (active % count) + 1, total: count })}
+        aria-live={playing ? "off" : "polite"}
+        className="flex max-w-2xl flex-col items-center gap-2 text-center"
+      >
+        <span aria-hidden className="flex items-center gap-2">
+          <span className="h-px w-8 bg-gold" />
+          <span className="size-2 rotate-45 bg-gold" />
+          <span className="h-px w-8 bg-gold" />
+        </span>
+        <p key={`t${active}`} className="type-h2 line-clamp-2 text-ink motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
+          {title}
+        </p>
+        {subtitle && (
+          <p key={`s${active}`} className="type-body line-clamp-2 text-ink-secondary motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300">
+            {subtitle}
+          </p>
         )}
       </div>
+
+      <div className="flex items-center gap-3">
+        {count > 1 && (
+          <button type="button" onClick={() => go(active - 1)} aria-label={t("previous")} className={arrowButton}>
+            <ArrowLeft className="size-5" aria-hidden />
+          </button>
+        )}
+        {link &&
+          (link.external ? (
+            <a href={link.href} target="_blank" rel="noopener noreferrer" className={ctaClass}>
+              {cta}
+              {arrow}
+            </a>
+          ) : (
+            <Link href={link.href} className={ctaClass}>
+              {cta}
+              {arrow}
+            </Link>
+          ))}
+        {count > 1 && (
+          <button type="button" onClick={() => go(active + 1)} aria-label={t("next")} className={arrowButton}>
+            <ArrowRight className="size-5" aria-hidden />
+          </button>
+        )}
+      </div>
+
+      {count > 1 && (
+        // Gold keystone diamonds: which banner is in the middle
+        <div className="-mt-2 flex flex-wrap justify-center">
+          {banners.map((b, i) => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => goToBanner(i)}
+              aria-label={t("goTo", { n: i + 1 })}
+              aria-current={i === active % count ? "true" : undefined}
+              className="group/dot relative flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
+            >
+              <span aria-hidden className="absolute size-2 rotate-45 border border-gold motion-safe:transition motion-safe:duration-200 group-hover/dot:scale-125" />
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute size-2.5 rotate-45 bg-brand motion-safe:transition motion-safe:duration-300 motion-safe:ease-out",
+                  i === active % count ? "scale-100 opacity-100" : "scale-50 opacity-0",
+                )}
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
