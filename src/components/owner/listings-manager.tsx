@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, FileUp, LoaderCircle, PackagePlus, PackageSearch, TriangleAlert } from "lucide-react";
+import { CircleCheck, FileUp, LoaderCircle, PackagePlus, PackageSearch, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,7 +10,7 @@ import { useSession } from "@/components/app-providers";
 import { AvailabilityBadge } from "@/components/catalog/availability-badge";
 import { CategoryIcon } from "@/components/catalog/product-card";
 import { ListingForm, ProductPicker } from "@/components/owner/listing-form";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Link, useRouter } from "@/i18n/routing";
 import { listingKeys, listOwnerListings, updateListing, type CatalogPick, type OwnerListing } from "@/lib/api/listings";
 import { getMyShops, shopKeys } from "@/lib/api/shops";
@@ -252,13 +252,28 @@ export function ListingsManager() {
         </>
       )}
 
-      <Sheet open={panel !== null} onOpenChange={(isOpen) => !isOpen && setPanel(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : panel?.kind === "new" ? tNew("title") : panel?.kind === "import" ? t("importTitle") : t("addTitle")}</SheetTitle>
-            <SheetDescription className="type-body text-ink-secondary">{panel?.kind === "edit" ? "" : panel?.kind === "import" ? t("importText") : t("addText")}</SheetDescription>
-          </SheetHeader>
-          <div className="flex flex-col gap-4 px-4">
+      {/* Add / edit / import opens as a modal in the middle of the page */}
+      <Dialog open={panel !== null} onOpenChange={(isOpen) => !isOpen && setPanel(null)}>
+        <DialogContent
+          showCloseButton={false}
+          className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0 shadow-modal ring-1 ring-gold/40 sm:max-w-2xl motion-reduce:animate-none"
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
+            <div className="flex min-w-0 flex-col gap-1">
+            <DialogTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : panel?.kind === "new" ? tNew("title") : panel?.kind === "import" ? t("importTitle") : t("addTitle")}</DialogTitle>
+            <DialogDescription className="type-body text-ink-secondary">{panel?.kind === "edit" ? "" : panel?.kind === "import" ? t("importText") : t("addText")}</DialogDescription>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPanel(null)}
+              aria-label={t("close")}
+              className="flex size-11 shrink-0 items-center justify-center rounded-full text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+            >
+              <X className="size-5" aria-hidden />
+            </button>
+          </div>
+          {/* The form scrolls inside the modal */}
+          <div className="flex flex-col gap-4 overflow-y-auto px-5 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
           
             {panel?.kind === "add" && !panel.product && (
               <ProductPicker listedIds={listedIds} onPick={(product) => setPanel({ kind: "add", product })} onAddNew={() => setPanel({ kind: "new" })} />
@@ -327,8 +342,8 @@ export function ListingsManager() {
 
 
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
