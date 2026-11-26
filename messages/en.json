@@ -355,7 +355,8 @@
     },
     "sortTrending": "Trending this week",
     "sortPopular": "Best sellers",
-    "sortOldest": "Oldest first"
+    "sortOldest": "Oldest first",
+    "eyebrow": "Find it in a real shop"
   },
   "Product": {
     "breadcrumb": "Breadcrumb",
@@ -506,7 +507,8 @@
     "clearFind": "Clear search",
     "floorsLabel": "Jump to a floor",
     "findResults": "{count, plural, =0 {No shops found} one {# shop found} other {# shops found}}",
-    "findNone": "No shop matches \"{query}\"."
+    "findNone": "No shop matches \"{query}\".",
+    "eyebrow": "The halls of Dhaka"
   },
   "Cart": {
     "add": "Add to cart",

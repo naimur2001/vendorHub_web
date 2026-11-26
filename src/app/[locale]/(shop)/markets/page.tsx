@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
+import { PageHero } from "@/components/brand/page-hero";
 import { MarketBrowser, type DistrictChoice } from "@/components/shop/market-browser";
 import { getMarkets } from "@/lib/api/catalog-cache";
 import type { Market } from "@/lib/api/shops";
@@ -74,10 +75,8 @@ export default async function MarketsPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2 border-b border-gold pb-5">
-        <h1 className="type-display text-ink">{t("title")}</h1>
-        <p className="type-body max-w-2xl text-ink-secondary">{t("subtitle")}</p>
-      </header>
+      {/* Bordeaux hall with gold arches: the markets are the halls of the city */}
+      <PageHero tone="bordeaux" eyebrow={t("eyebrow")} title={t("title")} text={t("subtitle")} />
       <Suspense fallback={<MarketListSkeleton />}>
         <MarketList searchParams={searchParams} />
       </Suspense>

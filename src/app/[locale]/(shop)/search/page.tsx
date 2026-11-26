@@ -1,3 +1,4 @@
+import { PageHero } from "@/components/brand/page-hero";
 import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight, SearchX, Search as SearchIcon } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -210,9 +211,11 @@ async function SearchContent({ locale, searchParams }: { locale: string; searchP
 
   return (
     <div className="flex flex-col gap-5">
-      <SearchForm locale={locale} state={state} label={t("searchPlaceholder")} button={t("searchButton")} />
-      <h1 className="type-h2 wrap-break-word text-ink">{heading}</h1>
-            {/* Matching shops above the products: text searches, first page only */}
+      {/* Ivory card under a gold arch, with the search box in it */}
+      <PageHero tone="ivory" eyebrow={t("eyebrow")} title={heading}>
+        <SearchForm locale={locale} state={state} label={t("searchPlaceholder")} button={t("searchButton")} />
+      </PageHero>
+      {/* Matching shops above the products: text searches, first page only */}
       {state.q && state.page === 1 && (
         <Suspense key={`shops-${state.q}-${state.marketId ?? ""}`} fallback={null}>
           <ShopResults q={state.q} marketId={state.marketId} />

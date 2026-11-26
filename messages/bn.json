@@ -271,7 +271,8 @@
     },
     "sortTrending": "এই সপ্তাহে ট্রেন্ডিং",
     "sortPopular": "সবচেয়ে বেশি বিক্রি",
-    "sortOldest": "পুরনো আগে"
+    "sortOldest": "পুরনো আগে",
+    "eyebrow": "আসল দোকানে খুঁজে নিন"
   },
   "Product": {
     "breadcrumb": "পথ",
@@ -422,7 +423,8 @@
     "clearFind": "খোঁজা মুছুন",
     "floorsLabel": "তলায় যান",
     "findResults": "{count, plural, =0 {কোনো দোকান পাওয়া যায়নি} other {#টি দোকান পাওয়া গেছে}}",
-    "findNone": "\"{query}\"-এর সাথে কোনো দোকান মেলেনি।"
+    "findNone": "\"{query}\"-এর সাথে কোনো দোকান মেলেনি।",
+    "eyebrow": "ঢাকার মার্কেটগুলো"
   },
   "ShopSearch": {
     "title": "“{q}”-এর সাথে মেলে এমন দোকান",
