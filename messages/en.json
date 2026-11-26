@@ -4361,6 +4361,11 @@
     "moreShops": "{count, plural, one {# more shop has it} other {# more shops have it}}",
     "noListings": "No shop is selling this right now.",
     "viewProduct": "View product",
-    "keepBrowsing": "Keep browsing"
+    "keepBrowsing": "Keep browsing",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "maxQuantity": "You can buy up to {max} of one item at a time.",
+    "pictureLabel": "Gallery picture"
   }
 }

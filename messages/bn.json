@@ -3227,6 +3227,11 @@
     "moreShops": "{count, plural, other {আরও #টি দোকানে আছে}}",
     "noListings": "এখন কোনো দোকান এটি বিক্রি করছে না।",
     "viewProduct": "পণ্য দেখুন",
-    "keepBrowsing": "আরও দেখুন"
+    "keepBrowsing": "আরও দেখুন",
+    "quantity": "পরিমাণ",
+    "decrease": "পরিমাণ কমান",
+    "increase": "পরিমাণ বাড়ান",
+    "maxQuantity": "একবারে একটি পণ্যের সর্বোচ্চ {max}টি কেনা যায়।",
+    "pictureLabel": "গ্যালারির ছবি"
   }
 }

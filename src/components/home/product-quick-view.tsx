@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Store, X } from "lucide-react";
+import { ArrowRight, Minus, Plus, Store, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type MouseEvent, type ReactNode } from "react";
 import { AvailabilityBadge } from "@/components/catalog/availability-badge";
@@ -9,6 +9,7 @@ import { PriceTicket } from "@/components/brand/price-ticket";
 import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
+import { MAX_QTY_PER_ITEM } from "@/lib/api/cart";
 import { getProduct } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
@@ -20,6 +21,8 @@ const primary =
   "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-action px-5 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none";
 const outline =
   "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm border border-brand px-5 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
+const step =
+  "flex size-11 items-center justify-center text-ink-secondary hover:bg-subtle focus-visible:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:text-ink-disabled disabled:hover:bg-transparent";
 const ghost =
   "type-body-medium inline-flex h-11 items-center justify-center rounded-sm px-4 text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 
@@ -53,6 +56,7 @@ export function ProductQuickView({ slug, className, children }: { slug: string; 
 function QuickViewContent({ slug, onClose }: { slug: string; onClose: () => void }) {
   const t = useTranslations("QuickView");
   const [photo, setPhoto] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   // Prices always come fresh from the server (a short reuse only while the modal is reopened).
   const query = useQuery({ queryKey: ["product-quick-view", slug], queryFn: () => getProduct(slug), staleTime: 30_000 });
 
@@ -193,12 +197,44 @@ function QuickViewContent({ slug, onClose }: { slug: string; onClose: () => void
 
           <div className="mt-auto flex flex-col gap-3 border-t border-gold pt-4">
             {/* Same button as the product page: login, stock and price are checked by the server */}
+            {listing && listing.availability !== "OUT_OF_STOCK" && (
+              <div className="flex items-center justify-between gap-3">
+                <span className="type-body-medium text-ink">{t("quantity")}</span>
+                <div role="group" aria-label={t("quantity")} className="flex items-center rounded-sm border border-line-strong">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    aria-label={t("decrease")}
+                    className={step}
+                  >
+                    <Minus className="size-4" aria-hidden />
+                  </button>
+                  <output aria-live="polite" className="type-body-medium flex w-10 justify-center tabular-nums text-ink">
+                    {quantity}
+                  </output>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.min(MAX_QTY_PER_ITEM, q + 1))}
+                    disabled={quantity >= MAX_QTY_PER_ITEM}
+                    aria-label={t("increase")}
+                    className={step}
+                  >
+                    <Plus className="size-4" aria-hidden />
+                  </button>
+                </div>
+              </div>
+            )}
+            {listing && quantity >= MAX_QTY_PER_ITEM && (
+              <p className="type-caption -mt-1 text-ink-muted">{t("maxQuantity", { max: MAX_QTY_PER_ITEM })}</p>
+            )}
             {listing && (
               <AddToCartButton
                 listingId={listing.id}
                 productSlug={product.slug}
                 disabled={listing.availability === "OUT_OF_STOCK"}
                 image={product.images[0] ?? null}
+                quantity={quantity}
               />
             )}
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -214,5 +250,39 @@ function QuickViewContent({ slug, onClose }: { slug: string; onClose: () => void
         </div>
       </div>
     </DialogContent>
+  );
+}
+
+/** A gallery picture without a product: tapping it shows the picture large in a modal. */
+export function PictureView({ src, title, className, children }: { src: string; title: string; className?: string; children: ReactNode }) {
+  const t = useTranslations("QuickView");
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" className={cn("text-left", className)}>
+        {children}
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden rounded-2xl bg-card p-0 shadow-modal ring-1 ring-gold/40 sm:max-w-4xl motion-reduce:animate-none"
+        >
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label={t("close")}
+            className="absolute top-2 right-2 z-10 flex size-11 items-center justify-center rounded-full bg-card/90 text-ink shadow-card backdrop-blur-sm hover:bg-card focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element -- processed image from the media server */}
+          <img src={src} alt={title} className="block max-h-[75dvh] w-full bg-subtle object-contain" />
+          <div className="border-t border-gold px-4 py-3">
+            <DialogTitle className="type-h3 text-ink">{title}</DialogTitle>
+            <DialogDescription className="sr-only">{t("pictureLabel")}</DialogDescription>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
