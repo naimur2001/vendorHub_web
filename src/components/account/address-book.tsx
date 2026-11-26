@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { TextField } from "@/components/ui/text-field";
 import { Link } from "@/i18n/routing";
 import { AreaPicker, type AreaValue as Loc } from "@/components/delivery/area-picker";
@@ -180,17 +180,16 @@ export function AddressBook() {
         </ul>
       )}
 
-      <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.address ? t("form.editTitle") : t("form.addTitle")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("subtitle")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">
-            {panel && <AddressForm key={panel.address?.id ?? "new"} address={panel.address} onCancel={() => setPanel(null)} onSaved={() => { setPanel(null); refresh(t("saved")); }} />}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <FormModal
+        open={panel !== null}
+        onClose={() => setPanel(null)}
+        title={panel?.address ? t("form.editTitle") : t("form.addTitle")}
+        description={t("subtitle")}
+        srOnlyDescription
+        size="sm:max-w-lg"
+      >
+        {panel && <AddressForm key={panel.address?.id ?? "new"} address={panel.address} onCancel={() => setPanel(null)} onSaved={() => { setPanel(null); refresh(t("saved")); }} />}
+      </FormModal>
     </div>
   );
 }

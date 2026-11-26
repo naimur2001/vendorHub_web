@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { ArchFrame } from "@/components/brand/arch-frame";
 import { PriceTicket } from "@/components/brand/price-ticket";
 import { AvailabilityBadge } from "@/components/catalog/availability-badge";
+import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { Reveal } from "@/components/motion/reveal";
 import { Link } from "@/i18n/routing";
 import type { ProductCardData } from "@/lib/api/catalog";
@@ -60,13 +61,16 @@ export function CategoryIcon({ categorySlug, ...props }: { categorySlug: string 
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const t = useTranslations("Catalog");
+  const outOfStock = product.availability === "OUT_OF_STOCK";
+  const chooseHref = product.bestListingId ? `/products/${product.slug}?listing=${product.bestListingId}` : `/products/${product.slug}`;
 
   return (
     // Reveal: rises in on scroll, neighbours one after another. The link lifts on hover (.lift).
     <Reveal className="relative flex">
+    <div className="peer lift flex w-full flex-col rounded-md border border-line bg-card shadow-card transition-colors hover:border-line-strong">
     <Link
       href={`/products/${product.slug}`}
-      className="peer group lift flex w-full flex-col gap-2 rounded-md border border-line bg-card p-2 pb-3 shadow-card transition-colors hover:border-line-strong focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+      className="group flex w-full flex-1 flex-col gap-2 rounded-md p-2 pb-3 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
     >
       <ArchFrame className="arch-reveal bg-highlight-soft">
         {product.image ? (
@@ -122,6 +126,30 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         <span className="type-caption text-ink-muted">{t("shops", { count: product.shopCount })}</span>
       </div>
     </Link>
+      {/* Buy now and Add to cart (the cheapest shop in stock). A product with sizes / colours opens its page to choose one. */}
+      {product.bestListingId && (
+        // One row at every width: a wide "Buy now" pill and a round cart button
+        <div className="mx-2 mb-2 flex items-center gap-2 border-t border-line pt-2">
+          <AddToCartButton
+            listingId={product.bestListingId}
+            productSlug={product.slug}
+            image={product.image}
+            disabled={outOfStock}
+            chooseHref={chooseHref}
+            buyNow
+            compact
+          />
+          <AddToCartButton
+            listingId={product.bestListingId}
+            productSlug={product.slug}
+            image={product.image}
+            disabled={outOfStock}
+            chooseHref={chooseHref}
+            iconOnly
+          />
+        </div>
+      )}
+    </div>
       {/* Outside the link (a button can't sit inside a link); floats over the photo */}
       {product.bestListingId && (
         <ProductHeart productId={product.id} listingId={product.bestListingId} title={product.title} className="absolute top-3 right-3 z-10 motion-safe:transition-transform motion-safe:duration-300 motion-safe:peer-hover:-translate-y-1" />

@@ -23,6 +23,9 @@ type Props = {
   options?: Record<string, string>; // the chosen variation (size, colour)
   needsChoice?: boolean; // a variation is still missing: the button waits (guests can still tap to log in)
   outline?: boolean; // outlined look (when "Buy now" is the main button)
+  compact?: boolean; // smaller button for product cards (no "Added" line under it)
+  iconOnly?: boolean; // round cart icon only (product cards); the label is read by screen readers
+  chooseHref?: string; // when the listing needs a size / colour: go here to choose it
 };
 
 // Fixed, friendly messages only; the server never reveals stock numbers anyway.
@@ -62,7 +65,28 @@ function visibleCartTarget(): DOMRect | null {
   return null;
 }
 
-export function AddToCartButton({ listingId, productSlug, disabled = false, image = null, buyNow = false, outline = false, options, needsChoice = false }: Props) {
+// Card size: a rounded pill, still a 44px touch target; gold icon on the bordeaux button.
+const compactClass =
+  "h-11 min-w-0 gap-1.5 rounded-full px-3 text-sm whitespace-nowrap shadow-card motion-safe:transition-transform motion-safe:duration-150 active:scale-95 [&_svg]:size-4 [&_svg]:shrink-0";
+const compactSolid = "[&_svg]:text-gold";
+// Card cart button: a round icon button with a gold ring.
+const iconClass =
+  "flex size-11 shrink-0 items-center justify-center rounded-full border border-gold bg-card text-brand shadow-card hover:bg-brand hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition motion-safe:duration-150 active:scale-95 [&_svg]:size-5";
+
+export function AddToCartButton({
+  listingId,
+  productSlug,
+  disabled = false,
+  image = null,
+  buyNow = false,
+  outline = false,
+  options,
+  needsChoice = false,
+  compact: compactProp = false,
+  iconOnly = false,
+  chooseHref,
+}: Props) {
+  const compact = compactProp || iconOnly;
   const t = useTranslations("Cart");
   const { status } = useSession();
   const queryClient = useQueryClient();
@@ -73,7 +97,8 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
   const [flight, setFlight] = useState<Flight | null>(null);
   const photo = safeMediaUrl(image);
   const router = useRouter();
-  const look = outline ? outlineClass : buttonClass;
+  const look = iconOnly ? iconClass : cn(outline ? outlineClass : buttonClass, compact && compactClass, compact && !outline && compactSolid);
+  const label = buyNow ? t("buyNow") : t("add");
 
   const pendingLand = useRef<(() => void) | null>(null);
 
@@ -134,10 +159,17 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
         router.push("/checkout");
         return;
       }
-      setMessage({ kind: "ok", text: t("added") });
+      if (!compact) setMessage({ kind: "ok", text: t("added") });
       celebrate(cart);
     },
-    onError: (err) => setMessage({ kind: "error", text: t(errorKey(err)) }),
+    onError: (err) => {
+      // A size / colour is needed: open the product page to choose it.
+      if (chooseHref && errorKey(err) === "errors.chooseOptions") {
+        router.push(chooseHref);
+        return;
+      }
+      setMessage({ kind: "error", text: t(errorKey(err)) });
+    },
   });
 
   // Guests see the same button; tapping it goes to login and comes back to this product.
@@ -147,22 +179,26 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
       <Link
         href={`/auth/login?next=${encodeURIComponent(next)}`}
         aria-disabled={status === "loading" || disabled}
+        aria-label={iconOnly ? label : undefined}
+        title={iconOnly ? label : undefined}
         className={cn(look, disabled && "pointer-events-none opacity-50")}
       >
         {buyNow ? <Zap className="size-5" aria-hidden /> : <ShoppingCart className="size-5" aria-hidden />}
-        {buyNow ? t("buyNow") : t("add")}
+        {!iconOnly && <span className="truncate">{label}</span>}
       </Link>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn("flex flex-col gap-2", compact && "relative min-w-0", compact && !iconOnly && "flex-1")}>
       <button
         ref={buttonRef}
         type="button"
         onClick={() => add.mutate()}
         disabled={disabled || needsChoice || add.isPending}
         aria-busy={add.isPending}
+        aria-label={iconOnly ? (done ? t("added") : label) : undefined}
+        title={iconOnly ? label : undefined}
         className={look}
       >
         {add.isPending ? (
@@ -177,7 +213,9 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
         ) : (
           <ShoppingCart className="size-5" aria-hidden />
         )}
-        {buyNow ? (add.isPending ? t("buying") : t("buyNow")) : add.isPending ? t("adding") : done ? t("added") : t("add")}
+        {!iconOnly && (
+          <span className="truncate">{buyNow ? (add.isPending ? t("buying") : t("buyNow")) : add.isPending ? t("adding") : done ? t("added") : t("add")}</span>
+        )}
       </button>
 
       {/* A tiny arch (the product photo when there is one) arcs to the cart icon.
@@ -218,7 +256,14 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
         </p>
       )}
       {message?.kind === "error" && (
-        <p role="alert" className="type-body flex items-start gap-2 text-error">
+        <p
+          role="alert"
+          className={cn(
+            "flex items-start gap-2 text-error",
+            // On cards: a small note floating under the buttons, so the card does not change size
+            compact ? "type-caption absolute top-full right-0 z-20 mt-1 w-44 rounded-sm border border-error/40 bg-card p-2 shadow-modal" : "type-body",
+          )}
+        >
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           {message.text}
         </p>

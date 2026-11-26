@@ -5,7 +5,7 @@ import { BadgeCheck, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, GitMer
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { TextField } from "@/components/ui/text-field";
 import {
   createProduct,
@@ -500,15 +500,14 @@ export function ProductsManager() {
         </nav>
       )}
 
-      <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">
-              {panel?.kind === "edit" ? t("form.editTitle") : panel?.kind === "merge" ? tR("mergeTitle") : panel?.kind === "photos" ? tPhotos("title") : t("form.addTitle")}
-            </SheetTitle>
-            <SheetDescription className="type-caption text-ink-muted">{t("subtitle")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">
+      <FormModal
+        open={panel !== null}
+        onClose={() => setPanel(null)}
+        title={panel?.kind === "edit" ? t("form.editTitle") : panel?.kind === "merge" ? tR("mergeTitle") : panel?.kind === "photos" ? tPhotos("title") : t("form.addTitle")}
+        description={t("subtitle")}
+        size="sm:max-w-2xl"
+      >
+          <div>
             {panel?.kind === "add" && <ProductForm categories={categories} brands={brands} onSaved={() => closeAnd(t("saved"))} onCancel={() => setPanel(null)} />}
             {panel?.kind === "edit" && (
               <ProductForm key={panel.product.id} product={panel.product} categories={categories} brands={brands} onSaved={() => closeAnd(t("saved"))} onCancel={() => setPanel(null)} />
@@ -516,8 +515,7 @@ export function ProductsManager() {
             {panel?.kind === "merge" && <MergePanel product={panel.product} onCancel={() => setPanel(null)} onDone={() => closeAnd(tR("merged"))} />}
             {panel?.kind === "photos" && <ProductPhotos key={panel.product.id} product={panel.product} onChanged={() => setNotice(t("saved"))} />}
           </div>
-        </SheetContent>
-      </Sheet>
+      </FormModal>
     </div>
   );
 }

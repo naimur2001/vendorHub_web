@@ -95,7 +95,15 @@ export type ShopOrder = {
   total: number;
   createdAt: string;
   customer: { name: string; phone: string | null };
-  items: { id: string; title: string; unitPrice: number; quantity: number; lineTotal: number; bargained: boolean }[];
+  items: {
+    id: string;
+    title: string;
+    unitPrice: number;
+    quantity: number;
+    lineTotal: number;
+    bargained: boolean;
+    options?: Record<string, string> | null; // the size / colour to pack, e.g. { Size: "M" } (null = none)
+  }[];
   nextStatuses: NextStatus[]; // which buttons to show, decided by the backend
   statusEvents?: OrderStatusEvent[]; // only on the single-order endpoint (oldest first)
   shipment?: ShopShipment | null; // Vendors Hub courier orders only (no courier cost or margin)

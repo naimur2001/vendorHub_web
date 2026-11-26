@@ -7,7 +7,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
 import { useSession } from "@/components/app-providers";
 import { OrderTimeline } from "@/components/orders/order-timeline";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { Link, useRouter } from "@/i18n/routing";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/api/checkout";
 import { ApiError } from "@/lib/api/core";
@@ -256,15 +256,15 @@ export function OrderQueue() {
         </nav>
       )}
 
-      <Sheet open={openOrder !== null} onOpenChange={(isOpen) => !isOpen && setOpenOrder(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{t("sheetTitle", { number: openOrder?.orderNumber ?? "" })}</SheetTitle>
-            <SheetDescription className="sr-only">{t("subtitle")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">{openOrder && <OrderDetail shopId={shop.id} initial={openOrder} />}</div>
-        </SheetContent>
-      </Sheet>
+      <FormModal
+        open={openOrder !== null}
+        onClose={() => setOpenOrder(null)}
+        title={t("sheetTitle", { number: openOrder?.orderNumber ?? "" })}
+        description={t("subtitle")}
+        srOnlyDescription
+      >
+        {openOrder && <OrderDetail shopId={shop.id} initial={openOrder} />}
+      </FormModal>
     </div>
   );
 }
@@ -418,18 +418,22 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
     <div className="flex flex-col gap-4">
       <Pills order={o} />
 
-      <section className="flex flex-col gap-1">
+      {/* Customer details: name, phone and where it goes, together */}
+      <section className="flex flex-col gap-3 rounded-md border border-line bg-subtle/50 p-3">
+      <div className="flex flex-col gap-1">
         <h3 className="type-caption text-ink-muted">{t("customer")}</h3>
         <p className="type-body-medium text-ink">{o.customer.name}</p>
-        {o.customer.phone && (
-          <a href={telHref(o.customer.phone)} className="type-body-medium flex items-center gap-2 self-start text-brand underline-offset-4 hover:underline">
+        {o.customer.phone ? (
+          <a href={telHref(o.customer.phone)} className="type-body-medium flex min-h-11 items-center gap-2 self-start text-brand underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
             <Phone className="size-4" aria-hidden />
             {t("call", { phone: o.customer.phone })}
           </a>
+        ) : (
+          <p className="type-caption text-ink-muted">{t("customerEmpty")}</p>
         )}
-      </section>
+      </div>
 
-      <section className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1">
         <h3 className="type-caption text-ink-muted">{o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickup") : courier ? t("courier.deliverTo") : t("deliverTo")}</h3>
         <p className="type-body flex items-start gap-2 text-ink">
           {o.deliveryMethod !== "VENDOR_DELIVERY" ? (
@@ -440,6 +444,7 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
           {/* Customer text: plain text, React escapes it */}
           {o.deliveryMethod !== "VENDOR_DELIVERY" ? t("pickupNote") : (o.deliveryAddress ?? "")}
         </p>
+      </div>
       </section>
 
       {courier && <CourierStatus shipment={courier} shop={{ codAmount: courier.codAmount, shopPaid: courier.shopPaid, bookingFailed: courier.bookingFailed }} />}
@@ -465,10 +470,22 @@ function OrderDetail({ shopId, initial }: { shopId: string; initial: ShopOrder }
         <ul className="flex flex-col gap-1.5">
           {o.items.map((item) => (
             <li key={item.id} className="type-body flex justify-between gap-3 text-ink-secondary">
-              <span className="min-w-0">
-                {item.quantity} × {item.title}
-                {item.bargained && (
-                  <span className="type-caption ml-2 rounded-sm bg-highlight-soft px-1.5 py-0.5 text-highlight">🤝 {t("bargained")}</span>
+              <span className="flex min-w-0 flex-col gap-1">
+                <span>
+                  {item.quantity} × {item.title}
+                  {item.bargained && (
+                    <span className="type-caption ml-2 rounded-sm bg-highlight-soft px-1.5 py-0.5 text-highlight">🤝 {t("bargained")}</span>
+                  )}
+                </span>
+                {/* The size / colour to pack (customer's choice, plain text) */}
+                {item.options && Object.keys(item.options).length > 0 && (
+                  <span className="flex flex-wrap gap-1.5" aria-label={t("options")}>
+                    {Object.entries(item.options).map(([name, value]) => (
+                      <span key={name} className="type-caption rounded-full border border-gold/60 bg-card px-2.5 py-0.5 text-ink">
+                        {name}: <span className="font-medium">{String(value)}</span>
+                      </span>
+                    ))}
+                  </span>
                 )}
               </span>
               <span className="type-price shrink-0">{money(item.lineTotal)}</span>
