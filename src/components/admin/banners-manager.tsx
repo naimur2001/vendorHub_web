@@ -155,14 +155,32 @@ export function BannersManager() {
     onError: (err) => setMessage(t(errorKey(err))),
   });
 
-  if (list.isPending) return <div className="h-64 skeleton rounded-md" aria-hidden />;
+  // The page heading follows the chosen tab.
+  const heading = (
+    <header className="flex flex-col gap-1">
+      <h1 className="type-display text-ink">{t(`title${HINT_SUFFIX[placement]}`)}</h1>
+      <p className="type-body text-ink-secondary">{t(`subtitle${HINT_SUFFIX[placement]}`)}</p>
+    </header>
+  );
+
+  if (list.isPending) {
+    return (
+      <div className="flex flex-col gap-6">
+        {heading}
+        <div className="h-64 skeleton rounded-md" aria-hidden />
+      </div>
+    );
+  }
   if (list.isError) {
     return (
-      <div role="alert" className="flex flex-col items-center gap-4 py-12 text-center">
-        <p className="type-h3 text-ink">{t("loadError")}</p>
-        <button type="button" onClick={() => list.refetch()} className={outline}>
-          {t("retry")}
-        </button>
+      <div className="flex flex-col gap-6">
+        {heading}
+        <div role="alert" className="flex flex-col items-center gap-4 py-12 text-center">
+          <p className="type-h3 text-ink">{t("loadError")}</p>
+          <button type="button" onClick={() => list.refetch()} className={outline}>
+            {t("retry")}
+          </button>
+        </div>
       </div>
     );
   }
@@ -182,6 +200,7 @@ export function BannersManager() {
 
   return (
     <div className="flex flex-col gap-5">
+      {heading}
       <div role="group" aria-label={t("placementLabel")} className="flex gap-2">
         {PLACEMENTS.map((p) => (
           <button

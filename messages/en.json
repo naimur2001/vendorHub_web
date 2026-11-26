@@ -2639,7 +2639,11 @@
     "productHint": "Tapping the picture on the home page opens this product. Type at least 2 letters, then press Enter.",
     "productRemove": "Remove product",
     "productLoadError": "Products couldn’t load. Try again.",
-    "productNone": "No products found."
+    "productNone": "No products found.",
+    "titleSide": "Side advert",
+    "subtitleSide": "The tall advert beside the slider on wide screens (under it on phones). Only the first live advert shows.",
+    "titleGallery": "Image gallery",
+    "subtitleGallery": "The picture gallery under the slider. Each picture opens a product; use the arrows to change the order."
   },
   "BannerSides": {
     "yourCorner": "Your corner",
