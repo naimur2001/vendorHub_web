@@ -94,14 +94,17 @@ async function HomeBanners() {
 }
 
 // The gallery under the banner row. When the shop-to-let card hangs below the side advert
-// (wide screens), the gallery leaves that column free so the card never covers a picture.
+// (wide screens), the gallery's top mosaic leaves that column free so the card never covers a picture;
+// otherwise the gallery uses the same width as the banner row.
 async function HomeGallery() {
   const [banners, sideAds, toLet] = await Promise.all([
     getBanners().catch(() => []),
     getSideAds().catch(() => []),
     getHomeToLet().catch(() => []),
   ]);
-  return <ImageGallery leaveRoom={banners.length > 0 && Boolean(sideAds[0] && toLet[0])} />;
+  if (banners.length === 0) return <ImageGallery />; // no banner row: normal page width
+  const right = Boolean(sideAds[0] || toLet[0]);
+  return <ImageGallery edges={right ? "both" : "left"} hanging={Boolean(sideAds[0] && toLet[0])} />;
 }
 
 // The markets with the most shops, from the 10-minute market cache: 8 (two full rows on desktop)

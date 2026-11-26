@@ -97,12 +97,12 @@ const MOSAIC: Record<number, number[]> = {
   7: [1, 2, 3, 1],
 };
 
-function Mosaic({ pictures }: { pictures: Picture[] }) {
+function Mosaic({ pictures, className }: { pictures: Picture[]; className?: string }) {
   const columns = MOSAIC[pictures.length] ?? MOSAIC[7];
   // Where each column starts in the list
   const starts = columns.map((_, c) => columns.slice(0, c).reduce((sum, n) => sum + n, 0));
   return (
-    <div className="flex h-72 gap-3 lg:h-80 lg:gap-4 xl:h-96">
+    <div className={cn("flex h-72 gap-3 lg:h-80 lg:gap-4 xl:h-96", className)}>
       {columns.map((size, c) => {
         const group = pictures.slice(starts[c], starts[c] + size);
         return (
@@ -141,12 +141,21 @@ function Row({ pictures, tall }: { pictures: Picture[]; tall?: boolean }) {
   );
 }
 
+// Wide screens: the gallery lines up with the banner row above it, which reaches into the page margins
+// ("both": left panel and right column; "left": left panel only, ending where the slider ends).
+type Edges = "page" | "left" | "both";
+const EDGES: Record<Edges, string> = {
+  page: "",
+  left: "xl:-ml-6 xl:pr-10 2xl:-ml-24 2xl:pr-20",
+  both: "xl:-mx-6 2xl:-mx-24",
+};
+
 /**
  * Admin image gallery under the slider (pictures only, 1-minute cache).
  * Phones: two columns with every third picture full width. Tablets and up: the designed mosaic.
  * Renders nothing when there are no pictures or the API is down.
  */
-export async function ImageGallery({ leaveRoom = false }: { leaveRoom?: boolean }) {
+export async function ImageGallery({ edges = "page", hanging = false }: { edges?: Edges; hanging?: boolean }) {
   let banners: HomeBanner[];
   try {
     banners = await getGallery();
@@ -176,10 +185,7 @@ export async function ImageGallery({ leaveRoom = false }: { leaveRoom?: boolean 
 
   return (
     <Reveal>
-      {/* leaveRoom: wide screens keep the right column free for the shop-to-let card that hangs below
-          the side advert (the banner row reaches 1.5rem / 6rem past the page edge, its right column is
-          13rem wide with a 2.5rem gap, so the gallery stops 14rem / 9.5rem before the page edge). */}
-      <section aria-label={t("label")} className={cn(leaveRoom && "xl:pr-56 2xl:pr-[9.5rem]")}>
+      <section aria-label={t("label")} className={EDGES[edges]}>
         {/* Phones */}
         <div className="grid grid-cols-2 gap-3 md:hidden">
           {pictures.map((p, i) => {
@@ -197,7 +203,9 @@ export async function ImageGallery({ leaveRoom = false }: { leaveRoom?: boolean 
         </div>
         {/* Tablets and up */}
         <div className="hidden flex-col gap-3 md:flex lg:gap-4">
-          <Mosaic pictures={top} />
+          {/* The shop-to-let card hangs 9rem into the gallery from the right column; only the mosaic
+              (24rem tall) keeps that column (13rem + 2.5rem gap) free, the rows below use the full width. */}
+          <Mosaic pictures={top} className={cn(hanging && "xl:pr-[15.5rem]")} />
           <Row pictures={middle} />
           <Row pictures={bottom} tall />
         </div>
