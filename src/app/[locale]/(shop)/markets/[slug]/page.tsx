@@ -295,7 +295,7 @@ async function MarketView({ params, searchParams }: Props) {
         {market.shops.length > 0 && (
           <MarketProductFilters
             marketSlug={market.slug}
-            floors={floors.map(([floor, shops]) => ({ floor, shops: shops.map((s) => ({ id: s.id, name: s.name })) }))}
+            floors={floors.map(([floor, shops]) => ({ floor, shops: shops.map((s) => ({ id: s.id, name: s.name, slug: s.slug })) }))}
             shopId={view.shopId}
             sort={view.sort}
           />
