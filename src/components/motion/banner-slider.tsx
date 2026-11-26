@@ -19,28 +19,27 @@ const MIN_SLOTS = 11;
 /**
  * Where a card sits on the curve, by its distance from the centre card (|d|), per screen size.
  * x = sideways shift (% of the slider width), s = size, r = turn towards the centre (deg), o = opacity.
- * Wide cards grow and turn as they near the edges, like the inside of a drum seen from the front.
+ * The middle card is the big, highlighted one; its neighbours are smaller, faded and turned towards it.
  */
 type Spot = { x: number; s: number; r: number; o: number };
 const CURVE: Record<"phone" | "tablet" | "desktop", Spot[]> = {
-  // one wide card, with slivers of its neighbours at the edges
+  // a big middle card, with slivers of its neighbours at the edges
   phone: [
     { x: 0, s: 1, r: 0, o: 1 },
-    { x: 72, s: 1.1, r: 20, o: 1 },
-    { x: 130, s: 1.2, r: 28, o: 0 },
+    { x: 64, s: 0.8, r: 24, o: 0.6 },
+    { x: 110, s: 0.7, r: 30, o: 0 },
   ],
-  // one card and half of each neighbour
+  // a big middle card and half of each neighbour
   tablet: [
     { x: 0, s: 1, r: 0, o: 1 },
-    { x: 43, s: 1.12, r: 18, o: 1 },
-    { x: 82, s: 1.3, r: 28, o: 0 },
+    { x: 50, s: 0.8, r: 22, o: 0.65 },
+    { x: 85, s: 0.7, r: 30, o: 0 },
   ],
-  // three wide cards (also fits the middle column between the side panels on wide screens)
+  // a big middle card and most of each neighbour (fits the middle column between the side panels)
   desktop: [
     { x: 0, s: 1, r: 0, o: 1 },
-    { x: 32.5, s: 1.08, r: 14, o: 1 },
-    { x: 62, s: 1.3, r: 26, o: 1 },
-    { x: 90, s: 1.5, r: 34, o: 0 },
+    { x: 41, s: 0.8, r: 20, o: 0.7 },
+    { x: 70, s: 0.65, r: 30, o: 0 },
   ],
 };
 
@@ -184,7 +183,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     >
       {/* The curve: reaches into the page margins; the far cards are cut off at the edges and fade out */}
       <div
-        className="@container relative -mx-4 aspect-5/2 w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-4/1 md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-5/1 xl:mx-0 xl:w-full"
+        className="@container relative -mx-4 aspect-[20/9] w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-3/1 md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-7/2 xl:mx-0 xl:w-full"
         tabIndex={0}
         role="group"
         aria-roledescription={t("slide")}
@@ -219,7 +218,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
               style={style}
               className={cn(
                 // Card size per screen (in % of the slider width), positioned from the middle
-                "absolute top-1/2 left-1/2 aspect-2/1 w-[70cqw] -translate-x-1/2 -translate-y-1/2 sm:w-[40cqw] lg:w-[30cqw]",
+                "absolute top-1/2 left-1/2 aspect-2/1 w-[80cqw] -translate-x-1/2 -translate-y-1/2 sm:w-[58cqw] lg:w-[46cqw]",
                 "[opacity:var(--o0)] [transform:var(--t0)] sm:[opacity:var(--o1)] sm:[transform:var(--t1)] lg:[opacity:var(--o2)] lg:[transform:var(--t2)]",
                 GLIDE,
                 !centre && "cursor-pointer",
@@ -228,7 +227,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
               <div
                 className={cn(
                   "relative size-full overflow-hidden rounded-2xl bg-subtle shadow-card",
-                  centre && "ring-2 ring-gold ring-offset-2 ring-offset-background",
+                  centre && "shadow-modal ring-2 ring-gold ring-offset-4 ring-offset-background",
                 )}
               >
                 <CardImage banner={banner} title={name} eager={i < 3 || i > slots - 3} />
