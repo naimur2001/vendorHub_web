@@ -2232,7 +2232,8 @@ export interface paths {
          * Live home page banners (no login)
          * @description Active banners of one placement whose schedule includes now (startsAt null or <= now, endsAt null or > now),
          *     ordered by sortOrder then createdAt. HERO (the slider, the default): at most 12. SIDE_AD (the side
-         *     advertisement): at most 3; the web shows the first. Sent with `Cache-Control: public, max-age=60`.
+         *     advertisement): at most 3; the web shows the first. GALLERY (the home page image gallery): at most 16.
+         *     Sent with `Cache-Control: public, max-age=60`.
          */
         get: operations["listBanners"];
         put?: never;
@@ -2252,7 +2253,7 @@ export interface paths {
         };
         /**
          * All banners, including inactive, scheduled and expired ones (admin)
-         * @description Optionally only one placement. meta.total always counts every placement (the limit of 12 is shared).
+         * @description Optionally only one placement. meta { total, max } is the limit of the requested placement: GALLERY -> its own { total, max: 16 }; HERO or SIDE_AD -> the 12 shared by HERO + SIDE_AD; no filter -> the shared numbers plus meta.gallery { total, max: 16 }.
          */
         get: operations["adminListBanners"];
         put?: never;
@@ -2262,10 +2263,13 @@ export interface paths {
          *     Size rules per placement:
          *     - HERO (default): recommended 3:1, e.g. 1800 x 600; at least 900 x 300.
          *     - SIDE_AD: recommended 2:3, e.g. 600 x 900; at least 300 x 400.
-         *     - Phone version (either placement): at least 400 x 300.
+         *     - GALLERY: pictures only (JPG, PNG, WebP; no GIF), any shape (the web crops with object-fit cover),
+         *       recommended 1200 x 1200, at least 600 x 600. No phone version (mobileMedia -> 422 GALLERY_NO_MOBILE);
+         *       subtitles and CTA labels are not kept; linkUrl is optional.
+         *     - Phone version (HERO or SIDE_AD): at least 400 x 300.
          *     A smaller image returns 422. A new banner goes to the end of its placement unless sortOrder is given.
-         *     At most 12 banners in total, both placements together (active or not):
-         *     the 13th returns 409 with error.details.code BANNER_LIMIT and no file is kept. Writes an audit log entry.
+         *     Limits (active or not): at most 12 HERO + SIDE_AD together (the 13th -> 409 BANNER_LIMIT) and,
+         *     separately, 16 GALLERY images (the 17th -> 409 GALLERY_LIMIT); no file is kept. Writes an audit log entry.
          */
         post: operations["adminCreateBanner"];
         delete?: never;
@@ -2290,7 +2294,7 @@ export interface paths {
         /**
          * Set the order of banners (admin)
          * @description Sets sortOrder 0, 1, 2 ... in the given order; banners not listed keep theirs. All ids must belong to
-         *     ONE placement (mixing HERO and SIDE_AD is a 400). Returns that placement's banners. Writes an audit log entry.
+         *     ONE placement (mixing placements, e.g. HERO and GALLERY, is a 400). Returns that placement's banners. Writes an audit log entry.
          */
         patch: operations["adminReorderBanners"];
         trace?: never;
@@ -2317,7 +2321,9 @@ export interface paths {
         /**
          * Update a banner's fields and/or replace its media (admin)
          * @description Changing `placement` without a new `media` keeps the current image only when it meets the new
-         *     placement's minimum size (else 422), and moves the banner to the end of that placement.
+         *     placement's minimum size (else 422), and moves the banner to the end of that placement. Moving into or out
+         *     of GALLERY must fit the other limit (409 GALLERY_LIMIT / BANNER_LIMIT); moving into GALLERY drops the phone
+         *     version, subtitles and CTA labels.
          *     JSON or multipart. In multipart, a new `media` or `mobileMedia` replaces the old file (the old
          *     file is deleted). An empty string clears an optional field. `removeMobileMedia: true` removes
          *     the phone version. Writes an audit log entry.
@@ -5680,11 +5686,13 @@ export interface components {
         /**
          * @description HERO = the home page slider (landscape; recommended 1800 x 600, at least 900 x 300).
          *     SIDE_AD = the home page side advertisement (tall; recommended 600 x 900, at least 300 x 400).
-         *     Both placements share the limit of 12 banners.
+         *     HERO and SIDE_AD share the limit of 12 banners.
+         *     GALLERY = the home page image gallery (pictures only, any shape; recommended 1200 x 1200, at least
+         *     600 x 600; no phone version). Its own limit of 16, not counted in the 12.
          * @default HERO
          * @enum {string}
          */
-        BannerPlacement: "HERO" | "SIDE_AD";
+        BannerPlacement: "HERO" | "SIDE_AD" | "GALLERY";
         /**
          * @description COVER fills the slide and crops the edges (CSS object-fit cover); CONTAIN shows the whole image.
          * @default COVER
@@ -5693,15 +5701,21 @@ export interface components {
         BannerFit: "COVER" | "CONTAIN";
         BannerListMeta: {
             /**
-             * @description All banners, active or not.
+             * @description The banners counted by this limit, active or not (HERO + SIDE_AD, or GALLERY).
              * @example 8
              */
             total: number;
             /**
-             * @description The limit; disable "Add banner" when total reaches it.
+             * @description The limit (12 for HERO + SIDE_AD, 16 for GALLERY); disable "Add" when total reaches it.
              * @example 12
              */
             max: number;
+            /** @description Only without a placement filter, the gallery's own limit. */
+            gallery?: {
+                total: number;
+                /** @example 16 */
+                max: number;
+            };
         };
         BannerLimitError: {
             /** @example false */
@@ -5711,7 +5725,7 @@ export interface components {
                 message: string;
                 details: {
                     /** @enum {string} */
-                    code: "BANNER_LIMIT";
+                    code: "BANNER_LIMIT" | "GALLERY_LIMIT";
                 };
             };
         };

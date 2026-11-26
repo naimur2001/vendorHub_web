@@ -64,6 +64,14 @@ export async function getSideAds(): Promise<HomeBanner[]> {
   return (await publicGet<HomeBanner[]>("/banners", { placement: "SIDE_AD" }, { fresh: false })).data;
 }
 
+/** Home page image gallery under the slider: live GALLERY pictures (at most 16). Same cache rules as the slider. */
+export async function getGallery(): Promise<HomeBanner[]> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 600 });
+  cacheTag("banners");
+  return (await publicGet<HomeBanner[]>("/banners", { placement: "GALLERY" }, { fresh: false })).data;
+}
+
 export type PublicDeal = components["schemas"]["PublicDeal"];
 
 /**

@@ -31,9 +31,15 @@ type Panel = { kind: "add" } | { kind: "edit"; banner: AdminBanner } | null;
 const MIN = {
   HERO: { width: 900, height: 300 },
   SIDE_AD: { width: 300, height: 400 },
+  GALLERY: { width: 600, height: 600 },
   mobile: { width: 400, height: 300 },
 };
-const PLACEMENTS = ["HERO", "SIDE_AD"] as const;
+const PLACEMENTS = ["HERO", "SIDE_AD", "GALLERY"] as const;
+// Gallery pictures: no GIF (the server refuses it too).
+const GALLERY_TYPES = BANNER_TYPES.filter((type) => type !== "image/gif");
+const typesFor = (placement: BannerPlacement) => (placement === "GALLERY" ? GALLERY_TYPES : BANNER_TYPES);
+// Per-placement texts (the slider uses the plain keys).
+const HINT_SUFFIX: Record<BannerPlacement, string> = { HERO: "", SIDE_AD: "Side", GALLERY: "Gallery" };
 
 const outline =
   "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm border border-brand px-3 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50";
@@ -46,6 +52,7 @@ function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
     const code = (err.details as { code?: string } | undefined)?.code;
     if (err.status === 409 && code === "BANNER_LIMIT") return "errors.limit";
+    if (err.status === 409 && code === "GALLERY_LIMIT") return "errors.galleryLimit";
     if (err.status === 413) return "errors.size";
     if (err.status === 415) return "errors.type";
     if (err.status === 404) return "errors.gone";
@@ -65,8 +72,12 @@ function imageSize(src: string): Promise<{ width: number; height: number }> {
 }
 
 // Quick checks in the browser (the server checks again). A preview URL, or an error key.
-async function prepareFile(file: File, min: { width: number; height: number }): Promise<{ preview: string } | { error: string }> {
-  if (!BANNER_TYPES.includes(file.type)) return { error: "errors.type" };
+async function prepareFile(
+  file: File,
+  min: { width: number; height: number },
+  types: string[],
+): Promise<{ preview: string } | { error: string }> {
+  if (!types.includes(file.type)) return { error: types === GALLERY_TYPES ? "errors.typeGallery" : "errors.type" };
   if (file.size > BANNER_MAX_BYTES) return { error: "errors.size" };
   const preview = URL.createObjectURL(file);
   try {
@@ -186,6 +197,7 @@ export function BannersManager() {
           </button>
         ))}
       </div>
+      {placement === "GALLERY" && <p className="type-body -mt-2 text-ink-secondary">{t("galleryIntro")}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="type-body text-ink-secondary">
           <span className={cn("type-body-medium", full ? "text-error" : "text-ink")}>{t("count", { total: meta.total, max: meta.max })}</span>
@@ -233,7 +245,7 @@ export function BannersManager() {
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-lg">
           <SheetHeader>
             <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : t("addTitle")}</SheetTitle>
-            <SheetDescription className="type-caption text-ink-muted">{t(placement === "SIDE_AD" ? "sizeHintSide" : "sizeHint")}</SheetDescription>
+            <SheetDescription className="type-caption text-ink-muted">{t(`sizeHint${HINT_SUFFIX[placement]}`)}</SheetDescription>
           </SheetHeader>
           {panel && (
             <BannerForm
@@ -274,7 +286,12 @@ function BannerRow(props: {
 
   return (
     <li className="flex flex-col gap-3 rounded-md border border-line bg-card p-3 shadow-card md:flex-row md:items-center md:gap-4">
-      <div className="relative aspect-4/1 w-full shrink-0 overflow-hidden rounded-xl bg-subtle md:w-64">
+      <div
+        className={cn(
+          "relative shrink-0 overflow-hidden rounded-xl bg-subtle",
+          b.placement === "GALLERY" ? "aspect-square w-32" : "aspect-4/1 w-full md:w-64",
+        )}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element -- media server thumbnail, already resized */}
         {thumb && <img src={thumb} alt="" className="size-full object-cover" loading="lazy" />}
       </div>
@@ -357,6 +374,7 @@ function FilePicker(props: {
   current: string | null;
   preview: string | null;
   aspect: string;
+  accept: string[];
   fit?: BannerInput["fit"];
   onPick: (file: File | undefined) => void;
 }) {
@@ -374,7 +392,7 @@ function FilePicker(props: {
       <input
         id={id}
         type="file"
-        accept={BANNER_TYPES.join(",")}
+        accept={props.accept.join(",")}
         onChange={(e) => props.onPick(e.target.files?.[0])}
         className="type-body text-ink-secondary file:mr-3 file:h-11 file:rounded-sm file:border file:border-brand file:bg-card file:px-4 file:text-brand hover:file:bg-subtle"
       />
@@ -428,7 +446,7 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
 
   async function pick(kind: "media" | "mobile", file: File | undefined) {
     if (!file) return;
-    const result = await prepareFile(file, kind === "media" ? MIN[input.placement] : MIN.mobile);
+    const result = await prepareFile(file, kind === "media" ? MIN[input.placement] : MIN.mobile, typesFor(input.placement));
     if ("error" in result) {
       setError(t(result.error));
       return;
@@ -453,62 +471,76 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
   }
 
   const currentMobile = banner?.mobileMedia && !removeMobile ? safeMediaUrl(banner.mobileMedia.thumbUrl) : null;
+  // Gallery pictures are images only: no phone version, fit, subtitle or button.
+  const gallery = input.placement === "GALLERY";
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4 px-4 pb-4">
       <FilePicker
         label={t("media")}
-        hint={t(input.placement === "SIDE_AD" ? "mediaHintSide" : "mediaHint")}
+        hint={t(`mediaHint${HINT_SUFFIX[input.placement]}`)}
         current={banner ? safeMediaUrl(banner.media.thumbUrl) : null}
         preview={media?.preview ?? null}
-        aspect={input.placement === "SIDE_AD" ? "aspect-2/3 max-w-48" : "aspect-4/1"}
+        aspect={input.placement === "SIDE_AD" ? "aspect-2/3 max-w-48" : gallery ? "aspect-square max-w-56" : "aspect-4/1"}
+        accept={typesFor(input.placement)}
         fit={input.fit}
         onPick={(f) => void pick("media", f)}
       />
-      <FilePicker
-        label={t("mobileMedia")}
-        hint={t("mobileHint")}
-        current={currentMobile}
-        preview={mobile?.preview ?? null}
-        aspect="aspect-5/2"
-        onPick={(f) => void pick("mobile", f)}
-      />
-      {banner?.mobileMedia && !mobile && !removeMobile && (
-        <button type="button" onClick={() => setRemoveMobile(true)} className={cn(outline, "self-start border-error text-error hover:bg-error-soft")}>
-          {t("removeMobile")}
-        </button>
-      )}
+      {!gallery && (
+        <>
+          <FilePicker
+            label={t("mobileMedia")}
+            hint={t("mobileHint")}
+            current={currentMobile}
+            preview={mobile?.preview ?? null}
+            aspect="aspect-5/2"
+            accept={BANNER_TYPES}
+            onPick={(f) => void pick("mobile", f)}
+          />
+          {banner?.mobileMedia && !mobile && !removeMobile && (
+            <button type="button" onClick={() => setRemoveMobile(true)} className={cn(outline, "self-start border-error text-error hover:bg-error-soft")}>
+              {t("removeMobile")}
+            </button>
+          )}
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="type-body-medium mb-1 text-ink">{t("fit")}</legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {(["COVER", "CONTAIN"] as const).map((f) => (
-            <label
-              key={f}
-              className={cn(
-                "flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
-                input.fit === f ? "border-brand bg-subtle" : "border-line",
-              )}
-            >
-              <input type="radio" name="fit" value={f} checked={input.fit === f} onChange={() => setInput((v) => ({ ...v, fit: f }))} className="mt-1 size-4 accent-brand" />
-              <span className="flex flex-col">
-                <span className="type-body-medium text-ink">{t(`fitOptions.${f}.label`)}</span>
-                <span className="type-caption text-ink-muted">{t(`fitOptions.${f}.hint`)}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="type-body-medium mb-1 text-ink">{t("fit")}</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(["COVER", "CONTAIN"] as const).map((f) => (
+                <label
+                  key={f}
+                  className={cn(
+                    "flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
+                    input.fit === f ? "border-brand bg-subtle" : "border-line",
+                  )}
+                >
+                  <input type="radio" name="fit" value={f} checked={input.fit === f} onChange={() => setInput((v) => ({ ...v, fit: f }))} className="mt-1 size-4 accent-brand" />
+                  <span className="flex flex-col">
+                    <span className="type-body-medium text-ink">{t(`fitOptions.${f}.label`)}</span>
+                    <span className="type-caption text-ink-muted">{t(`fitOptions.${f}.hint`)}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </>
+      )}
 
       <TextField label={t("titleEn")} value={input.titleEn} onChange={set("titleEn")} maxLength={120} required hint={t("titleHint")} />
       <TextField label={t("titleBn")} value={input.titleBn} onChange={set("titleBn")} maxLength={120} lang="bn" />
-      <TextField label={t("subtitleEn")} value={input.subtitleEn} onChange={set("subtitleEn")} maxLength={200} />
-      <TextField label={t("subtitleBn")} value={input.subtitleBn} onChange={set("subtitleBn")} maxLength={200} lang="bn" />
+      {!gallery && (
+        <>
+          <TextField label={t("subtitleEn")} value={input.subtitleEn} onChange={set("subtitleEn")} maxLength={200} />
+          <TextField label={t("subtitleBn")} value={input.subtitleBn} onChange={set("subtitleBn")} maxLength={200} lang="bn" />
+        </>
+      )}
       <TextField label={t("linkUrl")} value={input.linkUrl} onChange={set("linkUrl")} maxLength={500} hint={t("linkHint")} inputMode="url" />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <TextField label={t("ctaEn")} value={input.ctaLabelEn} onChange={set("ctaLabelEn")} maxLength={40} />
-        <TextField label={t("ctaBn")} value={input.ctaLabelBn} onChange={set("ctaLabelBn")} maxLength={40} lang="bn" />
-      </div>
+      {!gallery && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField label={t("ctaEn")} value={input.ctaLabelEn} onChange={set("ctaLabelEn")} maxLength={40} />
+          <TextField label={t("ctaBn")} value={input.ctaLabelBn} onChange={set("ctaLabelBn")} maxLength={40} lang="bn" />
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label={t("startsAt")} type="datetime-local" value={input.startsAt} onChange={set("startsAt")} />
         <TextField label={t("endsAt")} type="datetime-local" value={input.endsAt} onChange={set("endsAt")} />

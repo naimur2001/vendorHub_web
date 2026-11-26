@@ -2585,7 +2585,9 @@
       "title": "Enter an English title.",
       "media": "Choose a banner image.",
       "link": "Use a path starting with / or an https:// address.",
-      "dates": "\"Show until\" must be after \"Show from\"."
+      "dates": "\"Show until\" must be after \"Show from\".",
+      "galleryLimit": "The gallery can have at most 16 pictures. Delete one first.",
+      "typeGallery": "Use a JPG, PNG or WebP image (GIFs are not allowed in the gallery)."
     },
     "fit": "How the image fits",
     "fitOptions": {
@@ -2601,10 +2603,14 @@
     "placementLabel": "Where it shows",
     "placements": {
       "HERO": "Main slider",
-      "SIDE_AD": "Side advert"
+      "SIDE_AD": "Side advert",
+      "GALLERY": "Gallery"
     },
     "sizeHintSide": "JPG, PNG, WebP or animated GIF, up to 5 MB. Best size 600 × 900 (2:3, tall).",
-    "mediaHintSide": "At least 300 × 400. A tall image works best; it shows beside the banner on wide screens only."
+    "mediaHintSide": "At least 300 × 400. A tall image works best; it shows beside the banner on wide screens only.",
+    "galleryIntro": "Pictures in the image gallery under the slider. Up to 16, shown in this order: the first 7 make the top mosaic (big, stacked, big), the next 5 a row, the rest a wide row at the bottom.",
+    "sizeHintGallery": "JPG, PNG or WebP (no GIF), up to 5 MB. Best size 1200 × 1200; any shape works, the edges are cropped to fit.",
+    "mediaHintGallery": "At least 600 × 600. Keep the main subject in the middle; tiles of different shapes crop the edges."
   },
   "BannerSides": {
     "yourCorner": "Your corner",
@@ -4304,5 +4310,8 @@
     "items": "items",
     "seePlans": "See plans",
     "dismiss": "Dismiss"
+  },
+  "Gallery": {
+    "label": "Gallery"
   }
 }

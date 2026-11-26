@@ -14,6 +14,7 @@ import { getBanners, getCategories, getHomeToLet, getLatestProducts, getMarkets,
 import { BannerSlider } from "@/components/motion/banner-slider";
 import { BannerLeft, ToLetAd } from "@/components/home/banner-sides";
 import { SideAd } from "@/components/home/side-ad";
+import { ImageGallery } from "@/components/home/image-gallery";
 import { ShopsNearYou } from "@/components/shop/shops-near-you";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
@@ -231,6 +232,10 @@ export default async function HomePage({ params }: Props) {
       {/* Admin banners (1-minute cache); nothing shows when there are none or the API is down */}
       <Suspense fallback={<div className="-mb-2 aspect-5/2 skeleton rounded-3xl sm:aspect-7/2 md:mb-0 xl:aspect-auto xl:h-80" aria-hidden />}>
         <HomeBanners />
+      </Suspense>
+      {/* Admin image gallery under the slider (1-minute cache); nothing when there are no pictures */}
+      <Suspense>
+        <ImageGallery />
       </Suspense>
       <section className="relative isolate flex flex-col items-center gap-6 pt-2 text-center md:gap-8 md:pt-4">
         {/* Gold arch, glow and sparkles behind the title (decoration only) */}
