@@ -49,7 +49,7 @@ export function StorefrontTabs({ shop, state }: { shop: Storefront; state: Store
   return (
     <nav
       aria-label={t("tabsLabel")}
-      className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-4 overflow-x-auto border-b border-line bg-background px-4 md:top-[calc(4.5rem+env(safe-area-inset-top))] md:mx-0 md:px-0"
+      className="sticky top-[env(safe-area-inset-top)] z-30 -mx-4 overflow-x-auto border-b border-line bg-background px-4 md:mx-0 md:px-0"
     >
       <ul className="flex w-max gap-6">
         {tabs.map(({ tab, label, count }) => {

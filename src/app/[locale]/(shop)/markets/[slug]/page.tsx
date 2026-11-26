@@ -283,7 +283,7 @@ async function MarketView({ params, searchParams }: Props) {
       </div>
 
       {/* Every product in the market, or one shop's, picked from the dropdown */}
-      <section id="products" aria-labelledby="products-heading" className="flex scroll-mt-28 flex-col gap-6">
+      <section id="products" aria-labelledby="products-heading" className="flex scroll-mt-6 flex-col gap-6">
         <div className="relative flex flex-col gap-1 pb-3">
           <h2 id="products-heading" className="type-h2 text-ink">
             {t("productsTitle", { market: market.name })}

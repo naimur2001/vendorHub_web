@@ -129,7 +129,7 @@ export function OwnerNav() {
   return (
     <nav
       aria-label={t("label")}
-      className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-4 border-b border-line bg-background md:top-[calc(4.5rem+env(safe-area-inset-top))] md:mx-0"
+      className="sticky top-[env(safe-area-inset-top)] z-30 -mx-4 border-b border-line bg-background md:mx-0"
     >
       {edges.left && (
         <div className="absolute inset-y-0 left-0 z-10 flex bg-linear-to-r from-background from-60% to-transparent pr-4">

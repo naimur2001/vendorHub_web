@@ -227,7 +227,7 @@ function FilterForm({ state, markets, brands, onApplied }: FilterProps & { onApp
 export function DesktopFilters(props: FilterProps) {
   const t = useTranslations("Search");
   return (
-    <section aria-labelledby="filters-heading" className="sticky top-24 flex flex-col gap-4 rounded-md border border-line bg-card p-4">
+    <section aria-labelledby="filters-heading" className="sticky top-6 flex flex-col gap-4 rounded-md border border-line bg-card p-4">
       <h2 id="filters-heading" className="type-h3 text-ink">
         {t("filtersTitle")}
       </h2>

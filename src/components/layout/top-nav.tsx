@@ -126,14 +126,14 @@ const ON_DARK =
   "[--color-ink-secondary:var(--color-surface)] [--color-subtle:color-mix(in_srgb,var(--color-surface)_14%,transparent)] [--color-brand:var(--color-gold)] [--color-card:var(--color-brand-alt)] [--color-primary-foreground:var(--color-ink)]";
 
 /**
- * Site header: a bordeaux tab hanging from the top of the screen, its upper corners curving out into
+ * Site header (not sticky: it scrolls away with the page): a bordeaux tab hanging from the top of the screen, its upper corners curving out into
  * the top edge (wide screens). Phones get the same tab across the full width.
  */
 export function TopNav() {
   const t = useTranslations("Nav");
 
   return (
-    <header className="pointer-events-none sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
+    <header className="pointer-events-none relative z-40 pt-[env(safe-area-inset-top)]">
       <a
         href="#main"
         className="type-body-medium pointer-events-auto sr-only rounded-md bg-brand px-4 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
