@@ -1237,7 +1237,8 @@
     "import": "Import CSV",
     "importTitle": "Import listings from a CSV",
     "importText": "Add or update many listings at once.",
-    "imported": "Import done: {created} added, {updated} updated."
+    "imported": "Import done: {created} added, {updated} updated.",
+    "close": "Close"
   },
   "OwnerNav": {
     "label": "Shop sections",
@@ -4375,5 +4376,33 @@
   },
   "Gallery": {
     "label": "Gallery"
+  },
+  "ListingOptionsEditor": {
+    "title": "Sizes & colours (optional)",
+    "hint": "Add the choices customers must make, like size or colour. Tap a value to mark it sold out; × removes it.",
+    "size": "Size",
+    "colour": "Colour",
+    "addSize": "Add sizes",
+    "addColour": "Add colours",
+    "addOther": "Add another option",
+    "groupName": "Option name",
+    "groupPlaceholder": "e.g. Size, Colour, Storage",
+    "thisGroup": "this option",
+    "removeGroup": "Remove {name}",
+    "valuesOf": "Values of {name}",
+    "markSoldOut": "{value}: in stock. Tap to mark sold out",
+    "markInStock": "{value}: sold out. Tap to mark in stock",
+    "removeValue": "Remove {value}",
+    "addValueLabel": "New value",
+    "valuePlaceholder": "e.g. M, or S, M, L",
+    "add": "Add",
+    "valueHint": "Separate several values with commas. Up to 20 values, 30 characters each.",
+    "skipped": "Some values were skipped: repeated, too long, contained = or |, or more than {max}.",
+    "errors": {
+      "name": "Give every option a name (up to 30 characters, without = or |).",
+      "sameName": "Two options have the same name.",
+      "noValues": "Every option needs at least one value.",
+      "sameValue": "An option has the same value twice."
+    }
   }
 }

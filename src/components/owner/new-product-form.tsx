@@ -5,6 +5,8 @@ import { CircleAlert, ImagePlus, LoaderCircle, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 import { TextField } from "@/components/ui/text-field";
+import { OptionsEditor, optionsForApi, optionsProblem } from "@/components/owner/options-editor";
+import type { ListingOptionGroup } from "@/lib/api/catalog";
 import { listBrands, listCategories, productKeys } from "@/lib/api/admin";
 import { parseAmount } from "@/lib/api/bargains";
 import { ApiError } from "@/lib/api/core";
@@ -155,6 +157,8 @@ export function NewProductForm({ shopId, onUseExisting, onDone, onCancel }: Prop
   const [offers, setOffers] = useState(false);
   const [minOffer, setMinOffer] = useState("92");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [groups, setGroups] = useState<ListingOptionGroup[]>([]);
+  const tOpt = useTranslations("ListingOptionsEditor");
 
   // Suggest existing catalog products while typing the name (prevents duplicates).
   useEffect(() => {
@@ -203,6 +207,8 @@ export function NewProductForm({ shopId, onUseExisting, onDone, onCancel }: Prop
     if (track && (stockValue === null || stockValue > 100_000)) next.stock = tL("errors.stock");
     const minValue = parseAmount(minOffer);
     if (offers && (minValue === null || minValue < 50 || minValue > 100)) next.minOffer = tL("errors.minOffer");
+    const optionsError = optionsProblem(groups);
+    if (optionsError) next.options = tOpt(optionsError);
     setErrors(next);
     if (Object.keys(next).length > 0 || priceValue === null) return;
 
@@ -219,6 +225,7 @@ export function NewProductForm({ shopId, onUseExisting, onDone, onCancel }: Prop
         ...(!track && { availability: manual }),
         bargainEnabled: offers,
         minOfferPercent: offers ? (minValue ?? 92) : 92,
+        ...(groups.length > 0 && { options: optionsForApi(groups) }),
       },
     });
   }
@@ -326,6 +333,9 @@ export function NewProductForm({ shopId, onUseExisting, onDone, onCancel }: Prop
       {offers && (
         <TextField label={tL("form.minOffer")} hint={tL("form.minOfferHint")} inputMode="numeric" maxLength={3} value={minOffer} onChange={(e) => setMinOffer(e.target.value)} error={errors.minOffer} />
       )}
+
+      <OptionsEditor value={groups} onChange={setGroups} />
+      {errors.options && <p className="type-caption -mt-2 text-error">{errors.options}</p>}
 
       {errors.form && (
         <p role="alert" className="type-body flex items-start gap-2 text-error">

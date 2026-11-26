@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
 import { CategoryIcon } from "@/components/catalog/product-card";
+import { OptionsEditor, optionsForApi, optionsProblem } from "@/components/owner/options-editor";
+import type { ListingOptionGroup } from "@/lib/api/catalog";
 import { parseAmount } from "@/lib/api/bargains";
 import { ApiError } from "@/lib/api/core";
 import {
@@ -167,7 +169,9 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
   const [minOffer, setMinOffer] = useState(String(listing?.minOfferPercent ?? 92));
   // low-stock alert level (default 3 on the server); empty = no alert
   const [lowAt, setLowAt] = useState(listing ? (listing.lowStockAt === null || listing.lowStockAt === undefined ? "" : String(listing.lowStockAt)) : "3");
-  const [errors, setErrors] = useState<Partial<Record<"price" | "stock" | "lowAt" | "minOffer" | "form", string>>>({});
+  const [groups, setGroups] = useState<ListingOptionGroup[]>(listing?.options ?? []);
+  const tOpt = useTranslations("ListingOptionsEditor");
+  const [errors, setErrors] = useState<Partial<Record<"price" | "stock" | "lowAt" | "minOffer" | "options" | "form", string>>>({});
 
   const save = useMutation({
     mutationFn: (input: ListingInput) => (listing ? updateListing(shopId, listing.id, input) : createListing(shopId, product.id, input)),
@@ -195,10 +199,14 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
     if (track && lowAt.trim() !== "" && (lowValue === null || lowValue > 10000)) next.lowAt = t("errors.lowAt");
     const minValue = parseAmount(minOffer);
     if (offers && (minValue === null || minValue < 50 || minValue > 100)) next.minOffer = t("errors.minOffer");
+    const optionsError = optionsProblem(groups);
+    if (optionsError) next.options = tOpt(optionsError);
     setErrors(next);
     if (Object.keys(next).length > 0 || priceValue === null) return;
 
     save.mutate({
+      // editing always sends them (null removes them); a new listing only when there are some
+      ...(listing ? { options: optionsForApi(groups) } : groups.length > 0 && { options: optionsForApi(groups) }),
       price: priceValue,
       stockQty: track ? (stockValue ?? 0) : null,
       ...(track && { lowStockAt: lowValue }),
@@ -335,6 +343,9 @@ export function ListingForm({ shopId, product, listing, onSaved, onCancel }: For
           {errors.minOffer && <p className="type-caption text-error">{errors.minOffer}</p>}
         </div>
       )}
+
+      <OptionsEditor value={groups} onChange={setGroups} />
+      {errors.options && <p className="type-caption -mt-2 text-error">{errors.options}</p>}
 
       {errors.form && (
         <p role="alert" className="type-body flex items-start gap-2 text-error">

@@ -1,6 +1,7 @@
 import "client-only";
 import { api } from "./client";
 import { publicGet } from "./public";
+import type { ListingOptionGroup } from "./catalog";
 import type { components } from "./schema";
 
 type Availability = components["schemas"]["Availability"];
@@ -19,6 +20,7 @@ export type OwnerListing = {
   bargainEnabled: boolean;
   minOfferPercent: number;
   lowStockAt?: number | null; // alert when stockQty falls to this or below; null = no alert
+  options?: ListingOptionGroup[] | null; // sizes, colours... (null = none)
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -42,6 +44,7 @@ export type ListingInput = {
   bargainEnabled: boolean;
   minOfferPercent: number;
   lowStockAt?: number | null;
+  options?: ListingOptionGroup[] | null; // null removes the variations
 };
 
 export const listingKeys = {
