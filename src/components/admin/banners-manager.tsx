@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, CircleAlert, ImagePlus, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useEffect, useId, useState, type FormEvent } from "react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { TextField } from "@/components/ui/text-field";
 import { ProductLinkPicker, productSlugOf } from "@/components/admin/product-link-picker";
 import {
@@ -261,12 +261,13 @@ export function BannersManager() {
         </ol>
       )}
 
-      <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{t(`${panel?.kind === "edit" ? "editTitle" : "addTitle"}${HINT_SUFFIX[placement]}`)}</SheetTitle>
-            <SheetDescription className="type-caption text-ink-muted">{t(`sizeHint${HINT_SUFFIX[placement]}`)}</SheetDescription>
-          </SheetHeader>
+      <FormModal
+        open={panel !== null}
+        onClose={() => setPanel(null)}
+        title={t(`${panel?.kind === "edit" ? "editTitle" : "addTitle"}${HINT_SUFFIX[placement]}`)}
+        description={t(`sizeHint${HINT_SUFFIX[placement]}`)}
+        size="sm:max-w-lg"
+      >
           {panel && (
             <BannerForm
               key={panel.kind === "edit" ? panel.banner.id : "new"}
@@ -278,8 +279,7 @@ export function BannersManager() {
               }}
             />
           )}
-        </SheetContent>
-      </Sheet>
+        </FormModal>
     </div>
   );
 }
@@ -497,7 +497,7 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
   const gallery = input.placement === "GALLERY";
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4 px-4 pb-4">
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
       <FilePicker
         label={t(`media${HINT_SUFFIX[input.placement]}`)}
         hint={t(`mediaHint${HINT_SUFFIX[input.placement]}`)}

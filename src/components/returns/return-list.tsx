@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useSession } from "@/components/app-providers";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
 import { ReturnDetail, ReturnStatusPill } from "@/components/returns/return-detail";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { Link } from "@/i18n/routing";
 import { listReturns, returnKeys, RETURN_STATUSES, type ReturnFilter, type ReturnRequest, type ReturnScope } from "@/lib/api/returns";
 import { getMyShops, shopKeys } from "@/lib/api/shops";
@@ -73,15 +73,16 @@ export function ReturnList({ scope, defaultFilter = "ALL" }: { scope: ReturnScop
         </nav>
       )}
 
-      <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{t("sheetTitle", { number: open?.order.orderNumber ?? "" })}</SheetTitle>
-            <SheetDescription className="sr-only">{t("thread")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">{open && <ReturnDetail key={open.id} id={open.id} />}</div>
-        </SheetContent>
-      </Sheet>
+      <FormModal
+        open={open !== null}
+        onClose={() => setOpen(null)}
+        title={t("sheetTitle", { number: open?.order.orderNumber ?? "" })}
+        description={t("thread")}
+        srOnlyDescription
+        size="sm:max-w-md"
+      >
+          <div>{open && <ReturnDetail key={open.id} id={open.id} />}</div>
+        </FormModal>
     </div>
   );
 }

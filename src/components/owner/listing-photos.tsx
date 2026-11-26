@@ -5,7 +5,7 @@ import { CircleCheck, ImagePlus, Images, LoaderCircle } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { ApiError } from "@/lib/api/core";
 import { uploadShopProductPhoto, type OwnerListing } from "@/lib/api/listings";
 import { safeMediaUrl } from "@/lib/api/storefront";
@@ -51,17 +51,19 @@ export function ListingPhotosButton({ shopId, listing }: { shopId: string; listi
   }
 
   return (
-    <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setFile(null); setNote(null); } }}>
-      <button type="button" onClick={() => setOpen(true)} className="type-body-medium flex h-10 items-center gap-1.5 rounded-sm px-3 text-ink-secondary hover:bg-subtle">
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="type-body-medium flex h-11 items-center gap-1.5 rounded-sm px-3 text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
         <Images className="size-4" aria-hidden />
         {t("button")}
       </button>
-      <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle className="type-h3 text-ink">{t("title", { product: listing.product.title })}</SheetTitle>
-          <SheetDescription className="type-caption text-ink-muted">{t("text")}</SheetDescription>
-        </SheetHeader>
-        <div className="flex flex-col gap-4 px-4">
+      <FormModal
+        open={open}
+        onClose={() => { setOpen(false); setFile(null); setNote(null); }}
+        title={t("title", { product: listing.product.title })}
+        description={t("text")}
+        size="sm:max-w-lg"
+      >
+        <div className="flex flex-col gap-4">
           {images.length === 0 ? (
             <p className="type-body text-ink-muted">{t("none")}</p>
           ) : (
@@ -95,7 +97,7 @@ export function ListingPhotosButton({ shopId, listing }: { shopId: string; listi
             </p>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </FormModal>
+    </>
   );
 }

@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState, type DragEvent, type FormEvent } from "react";
 import { OwnerSkeleton } from "@/components/owner/owner-skeleton";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { TextField } from "@/components/ui/text-field";
 import { Link } from "@/i18n/routing";
 import {
@@ -641,13 +641,14 @@ export function MarketsManager() {
         </>
       )}
 
-      <Sheet open={panel !== null} onOpenChange={(isOpen) => !isOpen && setPanel(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("form.editTitle") : t("form.addTitle")}</SheetTitle>
-            <SheetDescription className="type-caption text-ink-muted">{t("subtitle")}</SheetDescription>
-          </SheetHeader>
-          <div className="flex flex-col gap-4 px-4">
+      <FormModal
+        open={panel !== null}
+        onClose={() => setPanel(null)}
+        title={panel?.kind === "edit" ? t("form.editTitle") : t("form.addTitle")}
+        description={t("subtitle")}
+        size="sm:max-w-md"
+      >
+          <div className="flex flex-col gap-4">
             {panel?.kind === "add" && <MarketForm onSaved={(saved, photo) => afterSave(saved, true, photo)} onCancel={() => setPanel(null)} />}
             {panel?.kind === "edit" && (
               <>
@@ -674,8 +675,7 @@ export function MarketsManager() {
               </>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </FormModal>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { ChevronRight, LoaderCircle, LocateFixed } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useMemo, useState } from "react";
 import { OtherShopRow } from "@/components/product/listing-card";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { getListingDistances, type Listing } from "@/lib/api/catalog";
 
 const SHOWN_ON_PAGE = 3;
@@ -104,17 +104,18 @@ export function OtherShops({ slug, listings }: { slug: string; listings: Listing
       </ul>
 
       {listings.length > SHOWN_ON_PAGE && (
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger className="type-body-medium inline-flex h-11 items-center gap-1 self-start rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
+        <>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-haspopup="dialog"
+            className="type-body-medium inline-flex h-11 items-center gap-1 self-start rounded-sm border border-brand px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          >
             {t("compareAll", { count: listings.length })}
             <ChevronRight className="size-4" aria-hidden />
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle className="type-h3 text-ink">{t("compareTitle")}</SheetTitle>
-              <SheetDescription className="type-body text-ink-secondary">{t("compareText")}</SheetDescription>
-            </SheetHeader>
-            <div className="flex flex-col gap-3 px-4">
+          </button>
+          <FormModal open={open} onClose={() => setOpen(false)} title={t("compareTitle")} description={t("compareText")} size="sm:max-w-xl">
+            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <label htmlFor={sortId} className="type-body-medium text-ink">
                   {t("sortBy")}
@@ -139,8 +140,8 @@ export function OtherShops({ slug, listings }: { slug: string; listings: Listing
                 ))}
               </ul>
             </div>
-          </SheetContent>
-        </Sheet>
+          </FormModal>
+        </>
       )}
     </section>
   );

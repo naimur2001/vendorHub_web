@@ -7,7 +7,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { PrivateDocument } from "@/components/admin/private-document";
 import { ToLetThread } from "@/components/to-let/to-let-thread";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { Link } from "@/i18n/routing";
 import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
@@ -109,15 +109,16 @@ export function ToLetAdmin() {
         </nav>
       )}
 
-      <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-2xl">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{t("detailTitle")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("detailText")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">{open && <Detail key={open} id={open} />}</div>
-        </SheetContent>
-      </Sheet>
+      <FormModal
+        open={open !== null}
+        onClose={() => setOpen(null)}
+        title={t("detailTitle")}
+        description={t("detailText")}
+        srOnlyDescription
+        size="sm:max-w-2xl"
+      >
+          <div>{open && <Detail key={open} id={open} />}</div>
+        </FormModal>
     </div>
   );
 }

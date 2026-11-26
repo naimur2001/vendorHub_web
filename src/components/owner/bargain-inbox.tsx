@@ -9,7 +9,7 @@ import { useId, useState } from "react";
 import { useSession } from "@/components/app-providers";
 import { Negotiation } from "@/components/bargain/negotiation";
 import { CategoryIcon } from "@/components/catalog/product-card";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { Link, useRouter } from "@/i18n/routing";
 import type { BargainStatus } from "@/lib/api/bargains";
 import { listShopBargains, ownerKeys, type InboxFilter, type ShopBargain } from "@/lib/api/owner";
@@ -225,15 +225,16 @@ export function BargainInbox() {
       )}
 
       {/* The shop's side of the negotiation */}
-      <Sheet open={open !== null} onOpenChange={(isOpen) => !isOpen && setOpen(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{t("sheetTitle", { name: open?.customer?.name ?? "" })}</SheetTitle>
-            <SheetDescription className="sr-only">{t("subtitle")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">{open && <Negotiation bargainId={open.id} side="SHOP" />}</div>
-        </SheetContent>
-      </Sheet>
+      <FormModal
+        open={open !== null}
+        onClose={() => setOpen(null)}
+        title={t("sheetTitle", { name: open?.customer?.name ?? "" })}
+        description={t("subtitle")}
+        srOnlyDescription
+        size="sm:max-w-md"
+      >
+          <div>{open && <Negotiation bargainId={open.id} side="SHOP" />}</div>
+        </FormModal>
     </div>
   );
 }

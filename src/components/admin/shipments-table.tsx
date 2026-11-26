@@ -4,7 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { ChevronLeft, ChevronRight, Clock, Search } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState, type FormEvent } from "react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormModal } from "@/components/ui/form-modal";
 import { ApiError } from "@/lib/api/core";
 import {
   cancelShipment,
@@ -120,15 +120,16 @@ export function ShipmentsTable({ filter }: { filter: RangeFilter }) {
         </nav>
       )}
 
-      <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-xl">
-          <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{t("detailTitle")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("detailText")}</SheetDescription>
-          </SheetHeader>
-          <div className="px-4">{open && <Detail key={open} id={open} />}</div>
-        </SheetContent>
-      </Sheet>
+      <FormModal
+        open={open !== null}
+        onClose={() => setOpen(null)}
+        title={t("detailTitle")}
+        description={t("detailText")}
+        srOnlyDescription
+        size="sm:max-w-xl"
+      >
+          <div>{open && <Detail key={open} id={open} />}</div>
+        </FormModal>
     </section>
   );
 }
