@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight, MapPin, PackageSearch, Store } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -7,12 +6,10 @@ import { Suspense } from "react";
 import { ProductCard, ProductCardSkeleton } from "@/components/catalog/product-card";
 import { MarketProductFilters } from "@/components/shop/market-product-filters";
 import { MARKET_SORTS, type MarketSort } from "@/lib/market-sorts";
-import { MarketShopFinder } from "@/components/shop/market-shop-finder";
 import { Link } from "@/i18n/routing";
 import { listProducts, type ProductCardData } from "@/lib/api/catalog";
-import { ApiError } from "@/lib/api/core";
-import { publicGet } from "@/lib/api/public";
-import type { MarketDetail, MarketShop } from "@/lib/api/storefront";
+import type { MarketDetail } from "@/lib/api/storefront";
+import { marketData, validSlug } from "@/lib/market-data";
 import { externalLinkProps } from "@/lib/security";
 import Image from "next/image";
 import { safeMediaUrl } from "@/lib/api/storefront";
@@ -20,25 +17,10 @@ import { safeMediaUrl } from "@/lib/api/storefront";
 type RawParams = Record<string, string | string[] | undefined>;
 type Props = { params: Promise<{ locale: string; slug: string }>; searchParams: Promise<RawParams> };
 
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const validSlug = (slug: string) => slug.length <= 200 && SLUG.test(slug);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PER_PAGE = 24;
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
-
-// Markets change rarely: cached 5 minutes. "Not found" is cached too (null), so invented names don't hit the API.
-async function marketData(slug: string): Promise<MarketDetail | null> {
-  "use cache";
-  cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
-  cacheTag("markets");
-  try {
-    return (await publicGet<MarketDetail>(`/markets/${encodeURIComponent(slug)}`, undefined, { fresh: false })).data;
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 404) return null;
-    throw err; // other errors are not cached
-  }
-}
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { slug } = await params;
@@ -53,23 +35,6 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   } catch {
     return {};
   }
-}
-
-// "Level 2" -> 2, "Ground floor" -> 0, no floor -> last.
-function floorRank(floor: string | null): number {
-  if (!floor) return Number.POSITIVE_INFINITY;
-  if (/ground/i.test(floor)) return 0;
-  const n = floor.match(/-?\d+/);
-  return n ? Number(n[0]) : 999;
-}
-
-function groupByFloor(shops: MarketShop[]): [string | null, MarketShop[]][] {
-  const groups = new Map<string | null, MarketShop[]>();
-  for (const shop of shops) {
-    const key = shop.levelFloor?.trim() || null;
-    groups.set(key, [...(groups.get(key) ?? []), shop]);
-  }
-  return [...groups.entries()].sort(([a], [b]) => floorRank(a) - floorRank(b) || (a ?? "").localeCompare(b ?? ""));
 }
 
 type View = { shopId: string | null; sort: MarketSort; page: number };
@@ -203,7 +168,6 @@ async function MarketView({ params, searchParams }: Props) {
   // The map link is built by us from numbers only, never from typed text.
   const hasMap = typeof market.latitude === "number" && typeof market.longitude === "number";
   const mapHref = hasMap ? `https://www.google.com/maps/search/?api=1&query=${market.latitude},${market.longitude}` : null;
-  const floors = groupByFloor(market.shops);
   const banner = safeMediaUrl(market.image?.url ?? null);
   const place = [market.address, market.city].filter(Boolean).join(", ");
 
@@ -295,7 +259,7 @@ async function MarketView({ params, searchParams }: Props) {
         {market.shops.length > 0 && (
           <MarketProductFilters
             marketSlug={market.slug}
-            floors={floors.map(([floor, shops]) => ({ floor, shops: shops.map((s) => ({ id: s.id, name: s.name, slug: s.slug })) }))}
+            shopCount={market.shops.length}
             shopId={view.shopId}
             sort={view.sort}
           />
@@ -305,13 +269,6 @@ async function MarketView({ params, searchParams }: Props) {
         <Suspense key={viewHref(market.slug, view)} fallback={<ProductsSkeleton />}>
           <MarketProducts market={market} view={view} />
         </Suspense>
-      </section>
-
-      <section aria-labelledby="shops-heading" className="flex flex-col gap-6">
-        <h2 id="shops-heading" className="type-h2 text-ink">
-          {t("shopsTitle", { market: market.name })}
-        </h2>
-        <MarketShopFinder floors={floors} />
       </section>
     </div>
   );

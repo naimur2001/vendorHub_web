@@ -529,7 +529,14 @@
     "productsEmpty": "No products in this market yet.",
     "productsEmptyShop": "This shop has no products listed yet.",
     "showAllShops": "Show all shops",
-    "productsError": "Products couldn’t load. Check your connection and try again."
+    "productsError": "Products couldn’t load. Check your connection and try again.",
+    "shopsCrumb": "Shops",
+    "shopsEyebrow": "Shop directory",
+    "floorCount": "{count, plural, one {# floor} other {# floors}}",
+    "seeProducts": "See all products",
+    "floorFilter": "Floor",
+    "allFloors": "All floors",
+    "showEveryShop": "Show every shop"
   },
   "Cart": {
     "add": "Add to cart",
@@ -1145,7 +1152,9 @@
       "bookingFailed": "The courier could not be booked. We will try again shortly.",
       "managed": "The courier moves this order on from here. To cancel it, message Vendors Hub.",
       "cancelBooked": "The courier is already booked. Ask Vendors Hub to cancel the shipment first."
-    }
+    },
+    "options": "Chosen options",
+    "customerEmpty": "No phone number given"
   },
   "OwnerListings": {
     "metaTitle": "Your listings",
@@ -4404,5 +4413,8 @@
       "noValues": "Every option needs at least one value.",
       "sameValue": "An option has the same value twice."
     }
+  },
+  "Modal": {
+    "close": "Close"
   }
 }
