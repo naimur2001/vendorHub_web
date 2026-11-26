@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, type MouseEvent, type ReactNode } from "react";
 import { AvailabilityBadge } from "@/components/catalog/availability-badge";
 import { PriceTicket } from "@/components/brand/price-ticket";
+import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
 import { getProduct } from "@/lib/api/catalog";
@@ -17,6 +18,8 @@ const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const primary =
   "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-action px-5 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none";
+const outline =
+  "type-body-medium inline-flex h-11 items-center justify-center gap-1.5 rounded-sm border border-brand px-5 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 const ghost =
   "type-body-medium inline-flex h-11 items-center justify-center rounded-sm px-4 text-ink-secondary hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
 
@@ -188,14 +191,25 @@ function QuickViewContent({ slug, onClose }: { slug: string; onClose: () => void
             <DialogDescription className="sr-only">{product.title}</DialogDescription>
           )}
 
-          <div className="mt-auto flex flex-col gap-2 border-t border-gold pt-4 sm:flex-row">
-            <Link href={href} onClick={onClose} className={primary}>
-              {t("viewProduct")}
-              <ArrowRight className="size-4" aria-hidden />
-            </Link>
-            <button type="button" onClick={onClose} className={ghost}>
-              {t("keepBrowsing")}
-            </button>
+          <div className="mt-auto flex flex-col gap-3 border-t border-gold pt-4">
+            {/* Same button as the product page: login, stock and price are checked by the server */}
+            {listing && (
+              <AddToCartButton
+                listingId={listing.id}
+                productSlug={product.slug}
+                disabled={listing.availability === "OUT_OF_STOCK"}
+                image={product.images[0] ?? null}
+              />
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Link href={href} onClick={onClose} className={cn(listing ? outline : primary, "sm:flex-1")}>
+                {t("viewProduct")}
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
+              <button type="button" onClick={onClose} className={ghost}>
+                {t("keepBrowsing")}
+              </button>
+            </div>
           </div>
         </div>
       </div>
