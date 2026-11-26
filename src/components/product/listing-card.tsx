@@ -2,9 +2,8 @@ import { ChevronRight, MapPin, Store, Truck, Zap } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { PriceTicket } from "@/components/brand/price-ticket";
 import { VerificationSeal } from "@/components/brand/verification-seal";
-import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { AvailabilityBadge } from "@/components/catalog/availability-badge";
-import { MakeOfferButton } from "@/components/bargain/offer-sheet";
+import { ListingActions } from "@/components/product/listing-actions";
 import { Link } from "@/i18n/routing";
 import type { Listing, ListingShop } from "@/lib/api/catalog";
 import { cn } from "@/lib/utils";
@@ -138,20 +137,16 @@ export function SelectedListingCard({
         </a>
       )}
 
-        <div className="flex flex-col gap-2 border-t border-line pt-4">
-        {/* Buy now is the main action; Add to cart and Make an offer sit under it */}
-        <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} image={image} buyNow />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-          <div className="flex-1">
-            <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} image={image} outline />
-          </div>
-          {listing.bargainEnabled && !outOfStock && (
-            <div className="flex-1">
-              <MakeOfferButton listingId={listing.id} productSlug={productSlug} />
-            </div>
-          )}
-        </div>
-        {outOfStock && <p className="type-caption text-ink-muted">{t("outOfStock")}</p>}
+      {/* Size / colour chips, then Buy now, Add to cart and Make an offer */}
+      <div className="border-t border-line pt-4">
+        <ListingActions
+          listingId={listing.id}
+          productSlug={productSlug}
+          options={listing.options ?? []}
+          bargainEnabled={listing.bargainEnabled}
+          outOfStock={outOfStock}
+          image={image}
+        />
       </div>
     </section>
   );

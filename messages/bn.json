@@ -324,7 +324,9 @@
     "zoomLevel": "জুম {percent}%",
     "zoomHint": "জুম করতে স্ক্রল, পিঞ্চ বা দুবার ট্যাপ করুন; সরাতে টেনে নিন",
     "prevPhoto": "আগের ছবি",
-    "nextPhoto": "পরের ছবি"
+    "nextPhoto": "পরের ছবি",
+    "optionSoldOut": "{value} (শেষ)",
+    "chooseFirst": "এগোতে {groups} বেছে নিন।"
   },
   "Shop": {
     "bannerAlt": "{name}-এর ছবি",

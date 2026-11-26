@@ -408,7 +408,9 @@
     "zoomLevel": "Zoom {percent}%",
     "zoomHint": "Scroll, pinch or double tap to zoom; drag to move",
     "prevPhoto": "Previous photo",
-    "nextPhoto": "Next photo"
+    "nextPhoto": "Next photo",
+    "optionSoldOut": "{value} (sold out)",
+    "chooseFirst": "Choose {groups} to continue."
   },
   "Shop": {
     "bannerAlt": "Photo of {name}",
