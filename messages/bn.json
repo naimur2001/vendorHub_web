@@ -424,7 +424,17 @@
     "floorsLabel": "তলায় যান",
     "findResults": "{count, plural, =0 {কোনো দোকান পাওয়া যায়নি} other {#টি দোকান পাওয়া গেছে}}",
     "findNone": "\"{query}\"-এর সাথে কোনো দোকান মেলেনি।",
-    "eyebrow": "ঢাকার মার্কেটগুলো"
+    "eyebrow": "ঢাকার মার্কেটগুলো",
+    "heroEyebrow": "সব দোকান, সব পণ্য, এক ছাদের নিচে",
+    "shopPick": "দোকান",
+    "allShops": "সব দোকান ({count})",
+    "productsTitle": "{market}-এর সব পণ্য",
+    "productsText": "এই মার্কেটের সব দোকানের পণ্য এক জায়গায়। শুধু একটি দোকানের পণ্য দেখতে দোকান বেছে নিন।",
+    "productsCount": "{count, plural, =0 {কোনো পণ্য নেই} other {#টি পণ্য}}",
+    "productsEmpty": "এই মার্কেটে এখনো কোনো পণ্য নেই।",
+    "productsEmptyShop": "এই দোকানে এখনো কোনো পণ্য নেই।",
+    "showAllShops": "সব দোকান দেখুন",
+    "productsError": "পণ্য লোড হয়নি। সংযোগ দেখে আবার চেষ্টা করুন।"
   },
   "ShopSearch": {
     "title": "“{q}”-এর সাথে মেলে এমন দোকান",
