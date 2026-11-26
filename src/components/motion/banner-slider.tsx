@@ -19,7 +19,7 @@ const MIN_SLOTS = 11;
 /**
  * Where a card sits on the curve, by its distance from the centre card (|d|), per screen size.
  * x = sideways shift (% of the slider width), s = size, r = turn towards the centre (deg), o = opacity.
- * The middle card is the big, highlighted one; its neighbours are smaller, faded and turned towards it.
+ * The middle card is the big one (with a deeper shadow); its neighbours are smaller, faded and turned towards it.
  */
 type Spot = { x: number; s: number; r: number; o: number };
 const CURVE: Record<"phone" | "tablet" | "desktop", Spot[]> = {
@@ -227,7 +227,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
               <div
                 className={cn(
                   "relative size-full overflow-hidden rounded-2xl bg-subtle shadow-card",
-                  centre && "shadow-modal ring-2 ring-gold ring-offset-4 ring-offset-background",
+                  centre && "shadow-modal",
                 )}
               >
                 <CardImage banner={banner} title={name} eager={i < 3 || i > slots - 3} />
