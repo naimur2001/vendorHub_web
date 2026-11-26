@@ -10,22 +10,23 @@ import { AccountMenu } from "@/components/layout/account-menu";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { LanguageSwitch } from "@/components/layout/language-switch";
-
-
-
-
-
-
-
+import { cn } from "@/lib/utils";
 
 const SEARCH_MAX_LENGTH = 100;
 
 // Brand mark: an arch with a gold keystone (same drawing as the app icon) + wordmark.
-export function Logo() {
+// onDark: for the bordeaux nav tab (ivory wordmark, a gold edge so the icon still shows).
+export function Logo({ onDark = false }: { onDark?: boolean }) {
   return (
     <span className="flex items-center gap-2.5">
       <svg viewBox="0 0 512 512" className="size-8" aria-hidden="true">
-        <rect width="512" height="512" rx="72" className="fill-brand" />
+        <rect
+          width="512"
+          height="512"
+          rx="72"
+          className={onDark ? "fill-brand-alt stroke-gold" : "fill-brand"}
+          strokeWidth={onDark ? 16 : undefined}
+        />
         <path
           d="M176 400 V256 A80 80 0 0 1 336 256 V400"
           fill="none"
@@ -35,7 +36,9 @@ export function Logo() {
         <path d="M240 160 H272 L266 192 H246 Z" className="fill-gold" />
         <rect x="152" y="400" width="208" height="16" className="fill-gold" />
       </svg>
-      <span className="font-heading text-[1.3125rem] leading-none font-semibold text-brand">Vendors Hub</span>
+      <span className={cn("font-heading text-[1.3125rem] leading-none font-semibold", onDark ? "text-primary-foreground" : "text-brand")}>
+        Vendors Hub
+      </span>
     </span>
   );
 }
@@ -116,25 +119,43 @@ function CartLink() {
   );
 }
 
+// Inside the bordeaux tab the shared buttons (cart, language, bell, account) read light:
+// their theme colours are swapped here, so the components themselves stay unchanged.
+// (Their menus and panels open in portals outside the tab, with the normal colours.)
+const ON_DARK =
+  "[--color-ink-secondary:var(--color-surface)] [--color-subtle:color-mix(in_srgb,var(--color-surface)_14%,transparent)] [--color-brand:var(--color-gold)] [--color-card:var(--color-brand-alt)] [--color-primary-foreground:var(--color-ink)]";
+
+/**
+ * Site header: a bordeaux tab hanging from the top of the screen, its upper corners curving out into
+ * the top edge (wide screens). Phones get the same tab across the full width.
+ */
 export function TopNav() {
   const t = useTranslations("Nav");
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-card pt-[env(safe-area-inset-top)]">
+    <header className="pointer-events-none sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
       <a
         href="#main"
-        className="type-body-medium sr-only rounded-md bg-brand px-4 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+        className="type-body-medium pointer-events-auto sr-only rounded-md bg-brand px-4 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
       >
         {t("skipToContent")}
       </a>
 
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 md:h-[72px] md:gap-6 md:px-10">
+      <div
+        className={cn(
+          "pointer-events-auto relative mx-auto flex h-14 w-full items-center gap-4 rounded-b-2xl bg-brand px-4 shadow-modal",
+          "md:h-16 md:w-[calc(100%-5rem)] md:max-w-5xl md:gap-6 md:rounded-b-3xl md:px-6",
+          // The inward curves where the tab meets the top edge (wide screens)
+          "md:before:absolute md:before:top-0 md:before:-left-6 md:before:size-6 md:before:bg-[radial-gradient(circle_at_0_100%,transparent_1.5rem,var(--color-brand)_calc(1.5rem+0.5px))] md:before:content-['']",
+          "md:after:absolute md:after:top-0 md:after:-right-6 md:after:size-6 md:after:bg-[radial-gradient(circle_at_100%_100%,transparent_1.5rem,var(--color-brand)_calc(1.5rem+0.5px))] md:after:content-['']",
+        )}
+      >
         <Link
           href="/"
           aria-label={t("homeLink")}
-          className="shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          className="shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
         >
-          <Logo />
+          <Logo onDark />
         </Link>
 
         {/* Desktop search (phones use the Search tab in the bottom bar) */}
@@ -142,17 +163,12 @@ export function TopNav() {
           <SearchBar />
         </div>
 
-        <div className="ml-auto flex items-center gap-2 md:ml-0">
+        <div className={cn("ml-auto flex items-center gap-1 md:ml-0", ON_DARK)}>
           <CartLink />
-        
-        
-        
           <Suspense>
             <LanguageSwitch />
           </Suspense>
-          
-          
-                      {/* The bell reads the current time ("2 min ago"), so it renders after the page shell */}
+          {/* The bell reads the current time ("2 min ago"), so it renders after the page shell */}
           <Suspense fallback={<span className="size-11" aria-hidden />}>
             <NotificationBell />
           </Suspense>
