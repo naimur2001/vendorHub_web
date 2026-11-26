@@ -15,6 +15,7 @@ import { BannerSlider } from "@/components/motion/banner-slider";
 import { BannerLeft, ToLetAd } from "@/components/home/banner-sides";
 import { SideAd } from "@/components/home/side-ad";
 import { ImageGallery } from "@/components/home/image-gallery";
+import { HomeRoleScope } from "@/components/home/home-role-scope";
 import { ShopsNearYou } from "@/components/shop/shops-near-you";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import type { Market } from "@/lib/api/shops";
@@ -51,20 +52,22 @@ async function HomeBanners() {
   const topCategories = [...categories].filter((c) => !c.parentId).sort((a, b) => b.productCount - a.productCount).slice(0, 3);
   const topMarkets = [...markets].sort((a, b) => b.shopCount - a.shopCount).slice(0, 3);
   return (
-    // Wide screens: [your corner + markets | banner | advert]. Smaller screens: the banner alone.
+    // Admins, shop owners and staff (see HomeRoleScope): wide screens [your corner + markets | banner | advert],
+    // smaller screens the banner with the advert and shop-to-let cards under it.
+    // Customers and guests: the banner alone, no side panels.
     <div
       className={cn(
-        "-mb-2 md:mb-0 xl:-ml-6 xl:grid xl:gap-10 2xl:-ml-24",
-        right ? "xl:-mr-6 xl:grid-cols-[14rem_minmax(0,1fr)_13rem] 2xl:-mr-24" : "xl:grid-cols-[14rem_minmax(0,1fr)] xl:pr-10 2xl:pr-20",
+        "-mb-2 md:mb-0 group-data-[team=true]/home:xl:-ml-6 group-data-[team=true]/home:xl:grid group-data-[team=true]/home:xl:gap-10 group-data-[team=true]/home:2xl:-ml-24",
+        right ? "group-data-[team=true]/home:xl:-mr-6 group-data-[team=true]/home:xl:grid-cols-[14rem_minmax(0,1fr)_13rem] group-data-[team=true]/home:2xl:-mr-24" : "group-data-[team=true]/home:xl:grid-cols-[14rem_minmax(0,1fr)] group-data-[team=true]/home:xl:pr-10 group-data-[team=true]/home:2xl:pr-20",
       )}
     >
-      <div className="hidden xl:block">
+      <div className="hidden group-data-[team=true]/home:xl:block">
         <BannerLeft categories={topCategories} markets={topMarkets} />
       </div>
       <BannerSlider banners={banners} />
       {/* Phones and tablets: the advert and the shop-to-let card as a small row under the slider */}
       {right && (
-        <div className={cn("mt-3 grid gap-3 xl:hidden", ad && toLet[0] ? "grid-cols-2" : "grid-cols-1")}>
+        <div className={cn("mt-3 hidden gap-3 group-data-[team=true]/home:grid group-data-[team=true]/home:xl:hidden", ad && toLet[0] ? "grid-cols-2" : "grid-cols-1")}>
           {ad && (
             <div className="h-36 sm:h-44">
               <SideAd ad={ad} />
@@ -80,7 +83,7 @@ async function HomeBanners() {
       {right && (
         // The advert keeps the full banner height; the shop-to-let card hangs just below it,
         // in the empty space beside the centred hero (it never covers the page text).
-        <div className="relative hidden xl:block">
+        <div className="relative hidden group-data-[team=true]/home:xl:block">
           {ad && <SideAd ad={ad} />}
           {toLet[0] && (
             // Under the advert it is a taller card (18rem)
@@ -241,6 +244,7 @@ export default async function HomePage({ params }: Props) {
   const stepNumber = new Intl.NumberFormat(locale);
 
   return (
+    <HomeRoleScope>
     <div className="flex flex-col gap-14 md:gap-20">
             {/* Owners and staff only: their shop's to-dos (renders nothing for everyone else) */}
       <OwnerStrip />
@@ -435,5 +439,6 @@ export default async function HomePage({ params }: Props) {
         </section>
       </Reveal>
     </div>
+    </HomeRoleScope>
   );
 }

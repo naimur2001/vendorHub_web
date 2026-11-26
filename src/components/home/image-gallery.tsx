@@ -142,13 +142,13 @@ function Row({ pictures, tall }: { pictures: Picture[]; tall?: boolean }) {
   );
 }
 
-// Wide screens: the gallery lines up with the banner row above it, which reaches into the page margins
+// Wide screens, admins / shop owners / staff only (the side panels are theirs): the gallery lines up with the banner row above it, which reaches into the page margins
 // ("both": left panel and right column; "left": left panel only, ending where the slider ends).
 type Edges = "page" | "left" | "both";
 const EDGES: Record<Edges, string> = {
   page: "",
-  left: "xl:-ml-6 xl:pr-10 2xl:-ml-24 2xl:pr-20",
-  both: "xl:-mx-6 2xl:-mx-24",
+  left: "group-data-[team=true]/home:xl:-ml-6 group-data-[team=true]/home:xl:pr-10 group-data-[team=true]/home:2xl:-ml-24 group-data-[team=true]/home:2xl:pr-20",
+  both: "group-data-[team=true]/home:xl:-mx-6 group-data-[team=true]/home:2xl:-mx-24",
 };
 
 /**
@@ -206,7 +206,7 @@ export async function ImageGallery({ edges = "page", hanging = false }: { edges?
         <div className="hidden flex-col gap-3 md:flex lg:gap-4">
           {/* The shop-to-let card (18rem) hangs about 14rem into the gallery from the right column; only the mosaic
               (24rem tall) keeps that column (13rem + 2.5rem gap) free, the rows below use the full width. */}
-          <Mosaic pictures={top} className={cn(hanging && "xl:pr-[15.5rem]")} />
+          <Mosaic pictures={top} className={cn(hanging && "group-data-[team=true]/home:xl:pr-[15.5rem]")} />
           <Row pictures={middle} />
           <Row pictures={bottom} tall />
         </div>
