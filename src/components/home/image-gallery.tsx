@@ -204,7 +204,7 @@ export async function ImageGallery({ edges = "page", hanging = false }: { edges?
         </div>
         {/* Tablets and up */}
         <div className="hidden flex-col gap-3 md:flex lg:gap-4">
-          {/* The shop-to-let card hangs 9rem into the gallery from the right column; only the mosaic
+          {/* The shop-to-let card (18rem) hangs about 14rem into the gallery from the right column; only the mosaic
               (24rem tall) keeps that column (13rem + 2.5rem gap) free, the rows below use the full width. */}
           <Mosaic pictures={top} className={cn(hanging && "xl:pr-[15.5rem]")} />
           <Row pictures={middle} />

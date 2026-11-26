@@ -83,8 +83,9 @@ async function HomeBanners() {
         <div className="relative hidden xl:block">
           {ad && <SideAd ad={ad} />}
           {toLet[0] && (
-            <div className={ad ? "absolute inset-x-0 top-full z-10 mt-4" : "h-full"}>
-              <ToLetAd listing={toLet[0]} count={toLet.length} tall={!ad} />
+            {/* Under the advert it is a taller card (18rem) */}
+            <div className={ad ? "absolute inset-x-0 top-full z-10 mt-4 h-72" : "h-full"}>
+              <ToLetAd listing={toLet[0]} count={toLet.length} tall />
             </div>
           )}
         </div>
