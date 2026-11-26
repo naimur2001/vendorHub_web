@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 import { useSession } from "@/components/app-providers";
 import { CART_LANDED_EVENT } from "@/components/cart/cart-badge";
 import { Link } from "@/i18n/routing";
-import { addToCart, cartKeys, MAX_QTY_PER_ITEM, type Cart } from "@/lib/api/cart";
+import { addToCart, cartKeys, type Cart } from "@/lib/api/cart";
 import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
 
@@ -18,7 +18,6 @@ type Props = {
   productSlug: string; // to come back to this product (and this shop) after login
   disabled?: boolean; // out of stock
   image?: string | null; // product photo: a tiny copy flies to the cart icon
-  quantity?: number; // how many to add (1 to MAX_QTY_PER_ITEM; the server checks too)
 };
 
 // Fixed, friendly messages only; the server never reveals stock numbers anyway.
@@ -51,7 +50,7 @@ function visibleCartTarget(): DOMRect | null {
   return null;
 }
 
-export function AddToCartButton({ listingId, productSlug, disabled = false, image = null, quantity = 1 }: Props) {
+export function AddToCartButton({ listingId, productSlug, disabled = false, image = null }: Props) {
   const t = useTranslations("Cart");
   const { status } = useSession();
   const queryClient = useQueryClient();
@@ -113,7 +112,7 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
 
   const add = useMutation({
     // Only the listing and quantity are sent; the price is decided by the server.
-    mutationFn: () => addToCart(listingId, Math.min(Math.max(Math.trunc(quantity), 1), MAX_QTY_PER_ITEM)),
+    mutationFn: () => addToCart(listingId, 1),
     onMutate: () => setMessage(null),
     onSuccess: (cart) => {
       setMessage({ kind: "ok", text: t("added") });

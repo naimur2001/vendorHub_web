@@ -1,6 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { Reveal } from "@/components/motion/reveal";
-import { PictureView, ProductQuickView } from "@/components/home/product-quick-view";
 import { Link } from "@/i18n/routing";
 import { getGallery, type HomeBanner } from "@/lib/api/catalog-cache";
 import { safeMediaUrl } from "@/lib/api/storefront";
@@ -69,23 +68,8 @@ function Tile({
     "focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
     className,
   );
-  // No link: tapping shows the picture large in a modal.
-  if (!picture.link) {
-    return (
-      <PictureView src={picture.src} title={picture.alt} className={frame}>
-        {body}
-      </PictureView>
-    );
-  }
-  // A product picture opens the product preview modal (still a real link for new tabs).
-  const product = picture.link.external ? null : /^\/products\/([a-z0-9-]+)$/.exec(picture.link.href)?.[1];
-  if (product) {
-    return (
-      <ProductQuickView slug={product} className={frame}>
-        {body}
-      </ProductQuickView>
-    );
-  }
+  // A product picture goes straight to the product page (e.g. /products/t-shirt).
+  if (!picture.link) return <figure className={frame}>{body}</figure>;
   return picture.link.external ? (
     <a
       href={picture.link.href}

@@ -14,6 +14,22 @@ export function productPath(slug: string): string | null {
   return SLUG.test(slug) ? `/products/${slug}` : null;
 }
 
+/** The slug in a pasted product link: "/products/t-shirt", "/bn/products/t-shirt" or a full
+ *  "http://localhost:3000/products/t-shirt" (any host; only the path is kept). Else null. */
+export function slugFromPasted(text: string): string | null {
+  const value = text.trim();
+  let path = value;
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      path = new URL(value).pathname;
+    } catch {
+      return null;
+    }
+  }
+  const match = /^(?:\/(?:en|bn))?\/products\/([a-z0-9-]+)\/?$/.exec(path);
+  return match && SLUG.test(match[1]) && match[1].length <= 200 ? match[1] : null;
+}
+
 /** The slug inside a "/products/<slug>" link, or null for any other link. */
 export function productSlugOf(link: string): string | null {
   const match = /^\/products\/([a-z0-9-]+)$/.exec(link);
@@ -42,7 +58,19 @@ export function ProductLinkPicker({ value, onChange }: { value: string; onChange
     queryFn: () => searchCatalog(searched),
   });
 
-  const search = () => setSearched(term.trim().slice(0, 100));
+  // A pasted product link is used as it is; anything else is a search.
+  const search = () => {
+    const pasted = slugFromPasted(term);
+    const path = pasted ? productPath(pasted) : null;
+    if (path) {
+      onChange(path);
+      setPickedTitle(null);
+      setTerm("");
+      setSearched("");
+      return;
+    }
+    setSearched(term.trim().slice(0, 100));
+  };
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault(); // don't submit the banner form
@@ -86,7 +114,7 @@ export function ProductLinkPicker({ value, onChange }: { value: string; onChange
           value={term}
           onChange={(e) => setTerm(e.target.value)}
           onKeyDown={onKey}
-          maxLength={100}
+          maxLength={500}
           placeholder={t(slug ? "productChange" : "productSearch")}
           className={field}
         />
