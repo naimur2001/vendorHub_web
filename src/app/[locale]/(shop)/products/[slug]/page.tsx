@@ -202,7 +202,7 @@ async function ProductView({ params, searchParams }: Props) {
 function ProductSkeleton() {
   return (
     <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)] lg:gap-12" aria-hidden>
-      <div className="aspect-[4/5] w-full skeleton rounded-t-full rounded-b-sm lg:max-w-[560px]" />
+      <div className="aspect-square w-full skeleton rounded-2xl lg:max-w-[560px]" />
       <div className="flex flex-col gap-4">
         <div className="h-4 w-24 skeleton rounded-sm" />
         <div className="h-10 w-3/4 skeleton rounded-sm" />

@@ -315,7 +315,16 @@
     "locationUnavailable": "আপনার লোকেশন পাওয়া যায়নি।",
     "distanceError": "দূরত্ব লোড হয়নি। আবার চেষ্টা করুন।",
     "flashDeal": "ফ্ল্যাশ ডিল",
-    "dealLeft": "এই দামে মাত্র {count}টি বাকি"
+    "dealLeft": "এই দামে মাত্র {count}টি বাকি",
+    "zoomOpen": "জুম করতে ছবি {n} পূর্ণ স্ক্রিনে খুলুন",
+    "zoomClose": "বন্ধ করুন",
+    "zoomIn": "জুম ইন",
+    "zoomOut": "জুম আউট",
+    "zoomReset": "জুম আগের মতো",
+    "zoomLevel": "জুম {percent}%",
+    "zoomHint": "জুম করতে স্ক্রল, পিঞ্চ বা দুবার ট্যাপ করুন; সরাতে টেনে নিন",
+    "prevPhoto": "আগের ছবি",
+    "nextPhoto": "পরের ছবি"
   },
   "Shop": {
     "bannerAlt": "{name}-এর ছবি",

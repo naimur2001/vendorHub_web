@@ -399,7 +399,16 @@
     "locationUnavailable": "We couldn't get your location.",
     "distanceError": "Distances couldn't load. Try again.",
     "flashDeal": "Flash deal",
-    "dealLeft": "Only {count} left at this price"
+    "dealLeft": "Only {count} left at this price",
+    "zoomOpen": "Open photo {n} full screen to zoom",
+    "zoomClose": "Close",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset zoom",
+    "zoomLevel": "Zoom {percent}%",
+    "zoomHint": "Scroll, pinch or double tap to zoom; drag to move",
+    "prevPhoto": "Previous photo",
+    "nextPhoto": "Next photo"
   },
   "Shop": {
     "bannerAlt": "Photo of {name}",
