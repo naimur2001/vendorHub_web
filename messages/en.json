@@ -2589,7 +2589,8 @@
       "galleryLimit": "The gallery can have at most 16 pictures. Delete one first.",
       "typeGallery": "Use a JPG, PNG or WebP image (GIFs are not allowed in the gallery).",
       "mediaSide": "Choose an advert image.",
-      "mediaGallery": "Choose a gallery image."
+      "mediaGallery": "Choose a gallery image.",
+      "product": "Pick the product this picture opens."
     },
     "fit": "How the image fits",
     "fitOptions": {
@@ -2610,7 +2611,7 @@
     },
     "sizeHintSide": "JPG, PNG, WebP or animated GIF, up to 5 MB. Best size 600 × 900 (2:3, tall).",
     "mediaHintSide": "At least 300 × 400. A tall image works best; it shows beside the banner on wide screens only.",
-    "galleryIntro": "Pictures in the image gallery under the slider. Up to 16, shown in this order: the first 7 make the top mosaic (big, stacked, big), the next 5 a row, the rest a wide row at the bottom.",
+    "galleryIntro": "Pictures in the image gallery under the slider. Up to 16, shown in this order: the first 7 make the top mosaic (big, stacked, big), the next 5 a row, the rest a wide row at the bottom. Each picture opens the product you pick.",
     "sizeHintGallery": "JPG, PNG or WebP (no GIF), up to 5 MB. Best size 1200 × 1200; any shape works, the edges are cropped to fit.",
     "mediaHintGallery": "At least 600 × 600. Keep the main subject in the middle; tiles of different shapes crop the edges.",
     "countSide": "{total} / {max} (slider banners and adverts share this limit)",
@@ -2630,7 +2631,15 @@
     "emptyTitleSide": "No adverts yet",
     "emptyTextSide": "Add an advert and it shows beside the slider on wide screens and under it on phones.",
     "emptyTitleGallery": "No gallery images yet",
-    "emptyTextGallery": "Add images and they appear in the gallery under the slider."
+    "emptyTextGallery": "Add images and they appear in the gallery under the slider.",
+    "product": "Product it opens",
+    "productSearch": "Search products by name",
+    "productChange": "Search to pick a different product",
+    "productSearchButton": "Search products",
+    "productHint": "Tapping the picture on the home page opens this product. Type at least 2 letters, then press Enter.",
+    "productRemove": "Remove product",
+    "productLoadError": "Products couldn’t load. Try again.",
+    "productNone": "No products found."
   },
   "BannerSides": {
     "yourCorner": "Your corner",

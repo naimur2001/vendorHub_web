@@ -6,6 +6,7 @@ import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TextField } from "@/components/ui/text-field";
+import { ProductLinkPicker, productSlugOf } from "@/components/admin/product-link-picker";
 import {
   BANNER_MAX_BYTES,
   BANNER_TYPES,
@@ -465,6 +466,8 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
     if (!title) return setError(t("errors.title"));
     if (!banner && !media) return setError(t(`errors.media${HINT_SUFFIX[input.placement]}`));
     const link = input.linkUrl.trim();
+    // Every gallery picture opens a product.
+    if (input.placement === "GALLERY" && !productSlugOf(link)) return setError(t("errors.product"));
     if (link && !(/^\/(?!\/)[^\s\\]*$/.test(link) || /^https:\/\/[^\s]+$/.test(link))) return setError(t("errors.link"));
     if (input.startsAt && input.endsAt && new Date(input.endsAt) <= new Date(input.startsAt)) return setError(t("errors.dates"));
     save.mutate();
@@ -534,7 +537,11 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
           <TextField label={t("subtitleBn")} value={input.subtitleBn} onChange={set("subtitleBn")} maxLength={200} lang="bn" />
         </>
       )}
-      <TextField label={t("linkUrl")} value={input.linkUrl} onChange={set("linkUrl")} maxLength={500} hint={t("linkHint")} inputMode="url" />
+      {gallery ? (
+        <ProductLinkPicker value={input.linkUrl} onChange={(linkUrl) => setInput((v) => ({ ...v, linkUrl }))} />
+      ) : (
+        <TextField label={t("linkUrl")} value={input.linkUrl} onChange={set("linkUrl")} maxLength={500} hint={t("linkHint")} inputMode="url" />
+      )}
       {!gallery && (
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField label={t("ctaEn")} value={input.ctaLabelEn} onChange={set("ctaLabelEn")} maxLength={40} />
