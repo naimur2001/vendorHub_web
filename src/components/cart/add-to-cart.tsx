@@ -20,12 +20,18 @@ type Props = {
   disabled?: boolean; // out of stock
   image?: string | null; // product photo: a tiny copy flies to the cart icon
   buyNow?: boolean; // add, then go straight to checkout
+  options?: Record<string, string>; // the chosen variation (size, colour)
+  needsChoice?: boolean; // a variation is still missing: the button waits (guests can still tap to log in)
   outline?: boolean; // outlined look (when "Buy now" is the main button)
 };
 
 // Fixed, friendly messages only; the server never reveals stock numbers anyway.
 function errorKey(err: unknown): string {
   if (err instanceof ApiError) {
+    const code = (err.details as { code?: string } | undefined)?.code;
+    if (code === "OPTIONS_REQUIRED") return "errors.chooseOptions";
+    if (code === "OPTION_OUT_OF_STOCK") return "errors.optionSoldOut";
+    if (code === "OPTION_INVALID") return "errors.optionGone";
     if (err.status === 409) return "errors.stock";
     if (err.status === 400) return "errors.limit";
     if (err.status === 404) return "errors.gone";
@@ -56,7 +62,7 @@ function visibleCartTarget(): DOMRect | null {
   return null;
 }
 
-export function AddToCartButton({ listingId, productSlug, disabled = false, image = null, buyNow = false, outline = false }: Props) {
+export function AddToCartButton({ listingId, productSlug, disabled = false, image = null, buyNow = false, outline = false, options, needsChoice = false }: Props) {
   const t = useTranslations("Cart");
   const { status } = useSession();
   const queryClient = useQueryClient();
@@ -120,7 +126,7 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
 
   const add = useMutation({
     // Only the listing and quantity are sent; the price is decided by the server.
-    mutationFn: () => addToCart(listingId, 1),
+    mutationFn: () => addToCart(listingId, 1, options),
     onMutate: () => setMessage(null),
     onSuccess: (cart) => {
       if (buyNow) {
@@ -155,7 +161,7 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
         ref={buttonRef}
         type="button"
         onClick={() => add.mutate()}
-        disabled={disabled || add.isPending}
+        disabled={disabled || needsChoice || add.isPending}
         aria-busy={add.isPending}
         className={look}
       >

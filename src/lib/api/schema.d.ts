@@ -450,7 +450,7 @@ export interface paths {
         put?: never;
         /**
          * Sell a catalog product in this shop
-         * @description If availability is left out it is derived from stockQty (0 = OUT_OF_STOCK, 1-5 = LIMITED, 6 or more = IN_STOCK). minOfferPercent is the lowest offer (as a percent of the price) that is accepted automatically.
+         * @description If availability is left out it is derived from stockQty (0 = OUT_OF_STOCK, 1-5 = LIMITED, 6 or more = IN_STOCK). minOfferPercent is the lowest offer (as a percent of the price) that is accepted automatically. options adds variations (sizes, colours) that customers must choose from.
          */
         post: operations["createListing"];
         delete?: never;
@@ -510,6 +510,8 @@ export interface paths {
         /**
          * Add a shop listing to my cart (adds to the quantity if already there)
          * @description Maximum 10 per item. An item with an applied bargain price is limited to 1 unit.
+         *     For a listing with variations, options is required (see ChosenOptions; 422 when missing, unknown or
+         *     sold out). The same listing with another choice is a separate cart line; the same choice adds up.
          */
         post: operations["addCartItem"];
         delete?: never;
@@ -819,7 +821,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Put an ACCEPTED deal in my cart (1 unit, at the agreed price or the current price if lower) */
+        /**
+         * Put an ACCEPTED deal in my cart (1 unit, at the agreed price or the current price if lower)
+         * @description For a listing with variations the customer chooses them now (options, see ChosenOptions; 422 when missing, unknown or sold out). The body may be empty otherwise.
+         */
         post: operations["bargainAddToCart"];
         delete?: never;
         options?: never;
@@ -4872,6 +4877,7 @@ export interface components {
             price?: number;
             availability?: components["schemas"]["Availability"];
             bargainEnabled?: boolean;
+            options?: components["schemas"]["ListingOptions"];
             discountPercent?: number | null;
             shop?: components["schemas"]["ListingShop"];
             deal?: components["schemas"]["ListingDeal"];
@@ -5088,6 +5094,34 @@ export interface components {
              */
             fileUrl: string;
         };
+        /**
+         * @description Variations of a listing (e.g. Size and Colour). Up to 3 groups; each group has 1 to 20 values.
+         *     Names and values: 1 to 30 characters, no "=" or "|", unique (ignoring case) within their list.
+         *     A value with inStock false is shown but cannot be chosen. Stock counts and prices stay per listing.
+         */
+        ListingOptions: {
+            /** @example Size */
+            name: string;
+            values: {
+                /** @example M */
+                value: string;
+                /** @default true */
+                inStock: boolean;
+            }[];
+        }[];
+        /**
+         * @description The customer's choice: one value per group of the listing's options, e.g. { "Size": "M", "Colour": "Black" }.
+         *     Names and values are matched ignoring case and stored with the listing's own spelling.
+         *     Required when the listing has options: 422 with error.details.code OPTIONS_REQUIRED (a group has no
+         *     value), OPTION_INVALID (unknown group or value) or OPTION_OUT_OF_STOCK (the value is sold out).
+         * @example {
+         *       "Size": "M",
+         *       "Colour": "Black"
+         *     }
+         */
+        ChosenOptions: {
+            [key: string]: string;
+        };
         /** @description The shop's own view of a listing (includes stockQty and minOfferPercent, never shown publicly). */
         ShopListing: {
             /** Format: uuid */
@@ -5098,6 +5132,8 @@ export interface components {
             bargainEnabled?: boolean;
             minOfferPercent?: number;
             isActive?: boolean;
+            /** @description Variations (null = none). */
+            options?: components["schemas"]["ListingOptions"] | null;
             product?: {
                 [key: string]: unknown;
             };
@@ -5152,6 +5188,7 @@ export interface components {
             discount?: components["schemas"]["OrderDiscount"];
             couponCode?: components["schemas"]["OrderCouponCode"];
             creditUsed?: components["schemas"]["OrderCreditUsed"];
+            /** @description Each item carries options, the chosen variation (e.g. { "Size": "M" }) or null. */
             items?: {
                 [key: string]: unknown;
             }[];
@@ -5447,6 +5484,7 @@ export interface components {
                 bargainEnabled: boolean;
                 /** @default 92 */
                 minOfferPercent: number;
+                options?: components["schemas"]["ListingOptions"] | null;
             };
         };
         ShopProductUpdate: {
@@ -5500,6 +5538,7 @@ export interface components {
             bargainEnabled: boolean;
             minOfferPercent: number;
             isActive: boolean;
+            options?: components["schemas"]["ListingOptions"] | null;
         };
         CustomerOrderItem: {
             /** Format: uuid */
@@ -5516,6 +5555,10 @@ export interface components {
             quantity: number;
             lineTotal: number;
             bargained: boolean;
+            /** @description The chosen variation, e.g. { "Size": "M", "Colour": "Black" }; null when the listing had none. */
+            options?: {
+                [key: string]: string;
+            } | null;
         };
         CustomerOrder: {
             /** Format: uuid */
@@ -6191,6 +6234,10 @@ export interface components {
                 lineTotal: number;
                 bargained: boolean;
                 flashDeal: boolean;
+                /** @description The chosen variation (null = none). */
+                options?: {
+                    [key: string]: string;
+                } | null;
             }[];
             subtotal: number;
             couponCode: string | null;
@@ -8752,6 +8799,7 @@ export interface operations {
                 "application/json": {
                     /** Format: uuid */
                     productId: string;
+                    options?: components["schemas"]["ListingOptions"] | null;
                     price: number;
                     availability?: components["schemas"]["Availability"];
                     stockQty?: number | null;
@@ -8825,6 +8873,8 @@ export interface operations {
                     minOfferPercent?: number;
                     isActive?: boolean;
                     lowStockAt?: components["schemas"]["LowStockAt"];
+                    /** @description The variations; null or [] removes them. Cart lines whose choice no longer exists get the problem OPTION_UNAVAILABLE. */
+                    options?: components["schemas"]["ListingOptions"] | null;
                 };
             };
         };
@@ -8904,6 +8954,7 @@ export interface operations {
                     listingId: string;
                     /** @default 1 */
                     quantity?: number;
+                    options?: components["schemas"]["ChosenOptions"];
                 };
             };
         };
@@ -8921,6 +8972,13 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            /** @description A variation is missing, unknown or sold out (error.details.code OPTIONS_REQUIRED, OPTION_INVALID or OPTION_OUT_OF_STOCK). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     removeCartItem: {
@@ -9504,7 +9562,13 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": {
+                    options?: components["schemas"]["ChosenOptions"];
+                };
+            };
+        };
         responses: {
             /** @description The updated cart. */
             200: {

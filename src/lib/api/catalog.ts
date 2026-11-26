@@ -67,8 +67,14 @@ export type ListingShop = {
   rating: { average: number | null; count: number };
 };
 
+/** A listing's variations, e.g. Size: S M L (a value can be sold out). */
+export type ListingOptionGroup = components["schemas"]["ListingOptions"][number];
+/** A chosen variation: { Size: "M", Colour: "Black" }. */
+export type ChosenOptions = Record<string, string>;
+
 export type Listing = {
   id: string;
+  options?: ListingOptionGroup[]; // empty or missing: nothing to choose
   price: number;
   availability: Availability;
   bargainEnabled: boolean;

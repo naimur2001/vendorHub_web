@@ -543,7 +543,10 @@
       "gone": "This offer is no longer available. Reload the page to see the current shops.",
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "tooMany": "Too many requests. Wait a moment, then try again.",
-      "generic": "Couldn't add to your cart. Try again in a moment."
+      "generic": "Couldn't add to your cart. Try again in a moment.",
+      "chooseOptions": "Choose a size / colour first.",
+      "optionSoldOut": "That choice is sold out at this shop. Pick another one.",
+      "optionGone": "That choice is no longer offered. Reload the page and choose again."
     },
     "metaTitle": "Your cart",
     "title": "Your cart",
@@ -568,7 +571,8 @@
     "problems": {
       "UNAVAILABLE": "No longer sold by this shop. Remove it to continue.",
       "OUT_OF_STOCK": "Out of stock at this shop. Remove it, or look for it in another shop.",
-      "INSUFFICIENT_STOCK": "The shop can't supply this many. Lower the quantity."
+      "INSUFFICIENT_STOCK": "The shop can't supply this many. Lower the quantity.",
+      "OPTION_UNAVAILABLE": "This size / colour is no longer available at this shop. Remove it and choose again."
     },
     "subtotal": "Subtotal",
     "options": "At checkout: {options}",

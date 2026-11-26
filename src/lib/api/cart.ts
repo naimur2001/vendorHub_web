@@ -7,13 +7,14 @@ type VerificationLevel = components["schemas"]["VerificationLevel"];
 
 export const MAX_QTY_PER_ITEM = 10; // same as the backend
 
-export type CartProblem = "UNAVAILABLE" | "OUT_OF_STOCK" | "INSUFFICIENT_STOCK";
+export type CartProblem = "UNAVAILABLE" | "OUT_OF_STOCK" | "INSUFFICIENT_STOCK" | "OPTION_UNAVAILABLE";
 
 // Exact shape of cart.service.js getCart(). Prices come from the server only.
 export type CartItem = {
   id: string;
   listingId: string;
   quantity: number;
+  options?: Record<string, string>; // the chosen variation, e.g. { Size: "M" } ({} = none)
   product: { id: string; slug: string; title: string; image: string | null };
   msrp: number | null;
   unitPrice: number;
@@ -63,8 +64,9 @@ export function getCartFor(addressId: string): Promise<Cart> {
   return api.get<Cart>("/cart", { query: { addressId } });
 }
 
-export function addToCart(listingId: string, quantity = 1): Promise<Cart> {
-  return api.post<Cart>("/cart/items", { listingId, quantity });
+// options: the chosen size / colour when the listing has variations (the server checks them).
+export function addToCart(listingId: string, quantity = 1, options?: Record<string, string>): Promise<Cart> {
+  return api.post<Cart>("/cart/items", { listingId, quantity, ...(options && Object.keys(options).length > 0 && { options }) });
 }
 
 export function updateCartItem(itemId: string, quantity: number): Promise<Cart> {
