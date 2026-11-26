@@ -206,7 +206,7 @@ function OfferPanel({ listingId }: { listingId: string }) {
   );
 }
 
-/** "Make an offer" on the product page: guests log in first; others open the offer sheet. */
+/** "Make an offer" on the product page: guests tap it and log in first; others open the offer sheet. */
 export function MakeOfferButton({ listingId, productSlug }: { listingId: string; productSlug: string }) {
   const t = useTranslations("Bargain");
   const { status } = useSession();
@@ -220,7 +220,7 @@ export function MakeOfferButton({ listingId, productSlug }: { listingId: string;
         className={triggerClass}
       >
         <span aria-hidden>🤝</span>
-        {t("loginToOffer")}
+        {t("makeOffer")}
       </Link>
     );
   }

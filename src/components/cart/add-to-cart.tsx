@@ -1,23 +1,26 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, CircleAlert, CircleCheck, LoaderCircle, ShoppingCart } from "lucide-react";
+import { Check, CircleAlert, CircleCheck, LoaderCircle, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useSession } from "@/components/app-providers";
 import { CART_LANDED_EVENT } from "@/components/cart/cart-badge";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { addToCart, cartKeys, type Cart } from "@/lib/api/cart";
 import { ApiError } from "@/lib/api/core";
 import { safeMediaUrl } from "@/lib/api/storefront";
+import { cn } from "@/lib/utils";
 
 type Props = {
   listingId: string;
   productSlug: string; // to come back to this product (and this shop) after login
   disabled?: boolean; // out of stock
   image?: string | null; // product photo: a tiny copy flies to the cart icon
+  buyNow?: boolean; // add, then go straight to checkout
+  outline?: boolean; // outlined look (when "Buy now" is the main button)
 };
 
 // Fixed, friendly messages only; the server never reveals stock numbers anyway.
@@ -35,6 +38,9 @@ function errorKey(err: unknown): string {
 const buttonClass =
   "type-body-medium flex h-12 w-full items-center justify-center gap-2 rounded-sm bg-action px-4 text-primary-foreground hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
+const outlineClass =
+  "type-body-medium flex h-12 w-full items-center justify-center gap-2 rounded-sm border border-brand bg-card px-4 text-brand hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+
 const FLY_MS = 550; // same as .fly-x / .fly-y in globals.css
 const DONE_MS = 1400; // how long the button shows the checkmark
 const FLY_SIZE = 40;
@@ -50,7 +56,7 @@ function visibleCartTarget(): DOMRect | null {
   return null;
 }
 
-export function AddToCartButton({ listingId, productSlug, disabled = false, image = null }: Props) {
+export function AddToCartButton({ listingId, productSlug, disabled = false, image = null, buyNow = false, outline = false }: Props) {
   const t = useTranslations("Cart");
   const { status } = useSession();
   const queryClient = useQueryClient();
@@ -60,6 +66,8 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
   const [done, setDone] = useState(false);
   const [flight, setFlight] = useState<Flight | null>(null);
   const photo = safeMediaUrl(image);
+  const router = useRouter();
+  const look = outline ? outlineClass : buttonClass;
 
   const pendingLand = useRef<(() => void) | null>(null);
 
@@ -115,22 +123,28 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
     mutationFn: () => addToCart(listingId, 1),
     onMutate: () => setMessage(null),
     onSuccess: (cart) => {
+      if (buyNow) {
+        queryClient.setQueryData(cartKeys.cart, cart);
+        router.push("/checkout");
+        return;
+      }
       setMessage({ kind: "ok", text: t("added") });
       celebrate(cart);
     },
     onError: (err) => setMessage({ kind: "error", text: t(errorKey(err)) }),
   });
 
+  // Guests see the same button; tapping it goes to login and comes back to this product.
   if (status !== "authenticated") {
     const next = `/products/${productSlug}?listing=${listingId}`;
     return (
       <Link
         href={`/auth/login?next=${encodeURIComponent(next)}`}
         aria-disabled={status === "loading" || disabled}
-        className={buttonClass}
+        className={cn(look, disabled && "pointer-events-none opacity-50")}
       >
-        <ShoppingCart className="size-5" aria-hidden />
-        {t("loginToAdd")}
+        {buyNow ? <Zap className="size-5" aria-hidden /> : <ShoppingCart className="size-5" aria-hidden />}
+        {buyNow ? t("buyNow") : t("add")}
       </Link>
     );
   }
@@ -143,7 +157,7 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
         onClick={() => add.mutate()}
         disabled={disabled || add.isPending}
         aria-busy={add.isPending}
-        className={buttonClass}
+        className={look}
       >
         {add.isPending ? (
           <LoaderCircle className="size-5 animate-spin" aria-hidden />
@@ -152,10 +166,12 @@ export function AddToCartButton({ listingId, productSlug, disabled = false, imag
           <span className="cart-burst flex">
             <Check className="pop-in size-5" strokeWidth={2.5} aria-hidden />
           </span>
+        ) : buyNow ? (
+          <Zap className="size-5" aria-hidden />
         ) : (
           <ShoppingCart className="size-5" aria-hidden />
         )}
-        {add.isPending ? t("adding") : done ? t("added") : t("add")}
+        {buyNow ? (add.isPending ? t("buying") : t("buyNow")) : add.isPending ? t("adding") : done ? t("added") : t("add")}
       </button>
 
       {/* A tiny arch (the product photo when there is one) arcs to the cart icon.

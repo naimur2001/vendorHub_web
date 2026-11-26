@@ -139,9 +139,11 @@ export function SelectedListingCard({
       )}
 
         <div className="flex flex-col gap-2 border-t border-line pt-4">
+        {/* Buy now is the main action; Add to cart and Make an offer sit under it */}
+        <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} image={image} buyNow />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="flex-1">
-            <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} image={image} />
+            <AddToCartButton listingId={listing.id} productSlug={productSlug} disabled={outOfStock} image={image} outline />
           </div>
           {listing.bargainEnabled && !outOfStock && (
             <div className="flex-1">

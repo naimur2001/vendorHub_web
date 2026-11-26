@@ -579,7 +579,9 @@
       "network": "Can't reach Vendors Hub. Check your connection and try again.",
       "generic": "Couldn't update your cart. Try again in a moment."
     },
-    "dealPrice": "Flash deal price"
+    "dealPrice": "Flash deal price",
+    "buyNow": "Buy now",
+    "buying": "Going to checkout…"
   },
   "Checkout": {
     "metaTitle": "Checkout",
