@@ -19,7 +19,7 @@ const MIN_SLOTS = 11;
 /**
  * Where a card sits on the curve, by its distance from the centre card (|d|), per screen size.
  * x = sideways shift (% of the slider width), s = size, r = turn towards the centre (deg), o = opacity.
- * The middle card is the big one (with a deeper shadow); its neighbours are smaller, faded and turned towards it.
+ * The middle card is the big one; its neighbours are smaller, faded and turned towards it.
  */
 type Spot = { x: number; s: number; r: number; o: number };
 const CURVE: Record<"phone" | "tablet" | "desktop", Spot[]> = {
@@ -32,14 +32,14 @@ const CURVE: Record<"phone" | "tablet" | "desktop", Spot[]> = {
   // a big middle card and half of each neighbour
   tablet: [
     { x: 0, s: 1, r: 0, o: 1 },
-    { x: 64, s: 0.8, r: 22, o: 0.65 },
-    { x: 105, s: 0.7, r: 30, o: 0 },
+    { x: 70, s: 0.8, r: 22, o: 0.65 },
+    { x: 112, s: 0.7, r: 30, o: 0 },
   ],
   // a big middle card and half of each neighbour (fits the middle column between the side panels)
   desktop: [
     { x: 0, s: 1, r: 0, o: 1 },
-    { x: 56, s: 0.8, r: 20, o: 0.7 },
-    { x: 92, s: 0.65, r: 30, o: 0 },
+    { x: 62, s: 0.8, r: 20, o: 0.7 },
+    { x: 100, s: 0.65, r: 30, o: 0 },
   ],
 };
 
@@ -78,7 +78,7 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-/** One card's picture (the whole image with a soft blurred fill when the admin chose "show whole image"). */
+/** One card's picture, with nothing behind it ("show whole image" leaves the empty sides clear). */
 function CardImage({ banner, title, eager }: { banner: HomeBanner; title: string; eager: boolean }) {
   const src = safeMediaUrl(banner.media.url);
   const still = safeMediaUrl(banner.media.thumbUrl);
@@ -86,10 +86,6 @@ function CardImage({ banner, title, eager }: { banner: HomeBanner; title: string
   const contain = banner.fit === "CONTAIN";
   return (
     <>
-      {contain && (
-        // eslint-disable-next-line @next/next/no-img-element -- decorative backdrop of the same media file
-        <img src={still ?? src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover opacity-70 blur-2xl" />
-      )}
       <picture>
         {/* Animated banners stay still for people who turn motion off */}
         {banner.mediaType === "GIF" && still && <source media="(prefers-reduced-motion: reduce)" srcSet={still} />}
@@ -183,7 +179,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     >
       {/* The curve: reaches into the page margins; the far cards are cut off at the edges and fade out */}
       <div
-        className="@container relative -mx-4 aspect-2/1 w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-[7/3] md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-[25/9] xl:mx-0 xl:w-full"
+        className="@container relative -mx-4 aspect-2/1 w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-[9/4] md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-5/2 xl:mx-0 xl:w-full"
         tabIndex={0}
         role="group"
         aria-roledescription={t("slide")}
@@ -218,7 +214,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
               style={style}
               className={cn(
                 // Card size per screen (in % of the slider width), positioned from the middle
-                "absolute top-1/2 left-1/2 aspect-2/1 w-[92cqw] -translate-x-1/2 -translate-y-1/2 sm:w-[76cqw] lg:w-[64cqw]",
+                "absolute top-1/2 left-1/2 aspect-2/1 w-[92cqw] -translate-x-1/2 -translate-y-1/2 sm:w-[84cqw] lg:w-[72cqw]",
                 "[opacity:var(--o0)] [transform:var(--t0)] sm:[opacity:var(--o1)] sm:[transform:var(--t1)] lg:[opacity:var(--o2)] lg:[transform:var(--t2)]",
                 GLIDE,
                 !centre && "cursor-pointer",
@@ -226,8 +222,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
             >
               <div
                 className={cn(
-                  "relative size-full overflow-hidden rounded-2xl bg-subtle shadow-card",
-                  centre && "shadow-modal",
+                  "relative size-full overflow-hidden rounded-2xl",
                 )}
               >
                 <CardImage banner={banner} title={name} eager={i < 3 || i > slots - 3} />
