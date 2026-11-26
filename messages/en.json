@@ -4346,5 +4346,21 @@
   },
   "Gallery": {
     "label": "Gallery"
+  },
+  "QuickView": {
+    "loading": "Loading product",
+    "close": "Close",
+    "retry": "Try again",
+    "errorTitle": "Couldn’t load this product",
+    "errorText": "Check your connection and try again.",
+    "goneTitle": "Product not available",
+    "goneText": "This product is no longer on Vendors Hub.",
+    "noPhoto": "No photo yet",
+    "photo": "Photo {n} of {total}",
+    "soldBy": "Sold by {shop}",
+    "moreShops": "{count, plural, one {# more shop has it} other {# more shops have it}}",
+    "noListings": "No shop is selling this right now.",
+    "viewProduct": "View product",
+    "keepBrowsing": "Keep browsing"
   }
 }

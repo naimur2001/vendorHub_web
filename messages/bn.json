@@ -3212,5 +3212,21 @@
   },
   "Gallery": {
     "label": "গ্যালারি"
+  },
+  "QuickView": {
+    "loading": "পণ্য লোড হচ্ছে",
+    "close": "বন্ধ করুন",
+    "retry": "আবার চেষ্টা করুন",
+    "errorTitle": "পণ্যটি লোড করা যায়নি",
+    "errorText": "সংযোগ দেখে আবার চেষ্টা করুন।",
+    "goneTitle": "পণ্যটি পাওয়া যাচ্ছে না",
+    "goneText": "এই পণ্যটি আর Vendors Hub-এ নেই।",
+    "noPhoto": "এখনো ছবি নেই",
+    "photo": "ছবি {n} / {total}",
+    "soldBy": "বিক্রেতা: {shop}",
+    "moreShops": "{count, plural, other {আরও #টি দোকানে আছে}}",
+    "noListings": "এখন কোনো দোকান এটি বিক্রি করছে না।",
+    "viewProduct": "পণ্য দেখুন",
+    "keepBrowsing": "আরও দেখুন"
   }
 }
