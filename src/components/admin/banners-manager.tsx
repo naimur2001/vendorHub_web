@@ -38,7 +38,7 @@ const PLACEMENTS = ["HERO", "SIDE_AD", "GALLERY"] as const;
 // Gallery pictures: no GIF (the server refuses it too).
 const GALLERY_TYPES = BANNER_TYPES.filter((type) => type !== "image/gif");
 const typesFor = (placement: BannerPlacement) => (placement === "GALLERY" ? GALLERY_TYPES : BANNER_TYPES);
-// Per-placement texts (the slider uses the plain keys).
+// Per-placement texts: the slider uses the plain keys, the others add "Side" or "Gallery".
 const HINT_SUFFIX: Record<BannerPlacement, string> = { HERO: "", SIDE_AD: "Side", GALLERY: "Gallery" };
 
 const outline =
@@ -200,12 +200,12 @@ export function BannersManager() {
       {placement === "GALLERY" && <p className="type-body -mt-2 text-ink-secondary">{t("galleryIntro")}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="type-body text-ink-secondary">
-          <span className={cn("type-body-medium", full ? "text-error" : "text-ink")}>{t("count", { total: meta.total, max: meta.max })}</span>
-          {full && <span className="ml-2">{t("fullHint")}</span>}
+          <span className={cn("type-body-medium", full ? "text-error" : "text-ink")}>{t(`count${HINT_SUFFIX[placement]}`, { total: meta.total, max: meta.max })}</span>
+          {full && <span className="ml-2">{t(`fullHint${HINT_SUFFIX[placement]}`)}</span>}
         </p>
         <button type="button" onClick={() => setPanel({ kind: "add" })} disabled={full} className={primary}>
           <Plus className="size-4" aria-hidden />
-          {t("add")}
+          {t(`add${HINT_SUFFIX[placement]}`)}
         </button>
       </div>
 
@@ -219,8 +219,8 @@ export function BannersManager() {
       {banners.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-line-strong py-12 text-center">
           <ImagePlus className="size-8 text-ink-muted" aria-hidden />
-          <p className="type-h3 text-ink">{t("emptyTitle")}</p>
-          <p className="type-body max-w-sm text-ink-secondary">{t("emptyText")}</p>
+          <p className="type-h3 text-ink">{t(`emptyTitle${HINT_SUFFIX[placement]}`)}</p>
+          <p className="type-body max-w-sm text-ink-secondary">{t(`emptyText${HINT_SUFFIX[placement]}`)}</p>
         </div>
       ) : (
         <ol className="flex flex-col gap-3">
@@ -244,7 +244,7 @@ export function BannersManager() {
       <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}>
         <SheetContent side="right" className="w-full overflow-y-auto bg-card pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle className="type-h3 text-ink">{panel?.kind === "edit" ? t("editTitle") : t("addTitle")}</SheetTitle>
+            <SheetTitle className="type-h3 text-ink">{t(`${panel?.kind === "edit" ? "editTitle" : "addTitle"}${HINT_SUFFIX[placement]}`)}</SheetTitle>
             <SheetDescription className="type-caption text-ink-muted">{t(`sizeHint${HINT_SUFFIX[placement]}`)}</SheetDescription>
           </SheetHeader>
           {panel && (
@@ -463,7 +463,7 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
     e.preventDefault();
     const title = input.titleEn.trim();
     if (!title) return setError(t("errors.title"));
-    if (!banner && !media) return setError(t("errors.media"));
+    if (!banner && !media) return setError(t(`errors.media${HINT_SUFFIX[input.placement]}`));
     const link = input.linkUrl.trim();
     if (link && !(/^\/(?!\/)[^\s\\]*$/.test(link) || /^https:\/\/[^\s]+$/.test(link))) return setError(t("errors.link"));
     if (input.startsAt && input.endsAt && new Date(input.endsAt) <= new Date(input.startsAt)) return setError(t("errors.dates"));
@@ -477,7 +477,7 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4 px-4 pb-4">
       <FilePicker
-        label={t("media")}
+        label={t(`media${HINT_SUFFIX[input.placement]}`)}
         hint={t(`mediaHint${HINT_SUFFIX[input.placement]}`)}
         current={banner ? safeMediaUrl(banner.media.thumbUrl) : null}
         preview={media?.preview ?? null}
@@ -566,7 +566,7 @@ function BannerForm({ banner, placement, onDone }: { banner: AdminBanner | null;
 
       <button type="submit" disabled={save.isPending} aria-busy={save.isPending} className={cn(primary, "h-12")}>
         {save.isPending && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden />}
-        {banner ? t("save") : t("create")}
+        {banner ? t("save") : t(`create${HINT_SUFFIX[input.placement]}`)}
       </button>
     </form>
   );

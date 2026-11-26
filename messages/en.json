@@ -2587,7 +2587,9 @@
       "link": "Use a path starting with / or an https:// address.",
       "dates": "\"Show until\" must be after \"Show from\".",
       "galleryLimit": "The gallery can have at most 16 pictures. Delete one first.",
-      "typeGallery": "Use a JPG, PNG or WebP image (GIFs are not allowed in the gallery)."
+      "typeGallery": "Use a JPG, PNG or WebP image (GIFs are not allowed in the gallery).",
+      "mediaSide": "Choose an advert image.",
+      "mediaGallery": "Choose a gallery image."
     },
     "fit": "How the image fits",
     "fitOptions": {
@@ -2610,7 +2612,25 @@
     "mediaHintSide": "At least 300 × 400. A tall image works best; it shows beside the banner on wide screens only.",
     "galleryIntro": "Pictures in the image gallery under the slider. Up to 16, shown in this order: the first 7 make the top mosaic (big, stacked, big), the next 5 a row, the rest a wide row at the bottom.",
     "sizeHintGallery": "JPG, PNG or WebP (no GIF), up to 5 MB. Best size 1200 × 1200; any shape works, the edges are cropped to fit.",
-    "mediaHintGallery": "At least 600 × 600. Keep the main subject in the middle; tiles of different shapes crop the edges."
+    "mediaHintGallery": "At least 600 × 600. Keep the main subject in the middle; tiles of different shapes crop the edges.",
+    "countSide": "{total} / {max} (slider banners and adverts share this limit)",
+    "countGallery": "{total} / {max} pictures",
+    "fullHintSide": "Limit reached. Delete a banner or advert to add a new one.",
+    "fullHintGallery": "Gallery is full. Delete a picture to add a new one.",
+    "addSide": "Add advert",
+    "addGallery": "Add image",
+    "addTitleSide": "New advert",
+    "addTitleGallery": "New gallery image",
+    "editTitleSide": "Edit advert",
+    "editTitleGallery": "Edit gallery image",
+    "createSide": "Add advert",
+    "createGallery": "Add image",
+    "mediaSide": "Advert image",
+    "mediaGallery": "Gallery image",
+    "emptyTitleSide": "No adverts yet",
+    "emptyTextSide": "Add an advert and it shows beside the slider on wide screens and under it on phones.",
+    "emptyTitleGallery": "No gallery images yet",
+    "emptyTextGallery": "Add images and they appear in the gallery under the slider."
   },
   "BannerSides": {
     "yourCorner": "Your corner",
