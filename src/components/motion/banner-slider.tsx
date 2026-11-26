@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const AUTOPLAY_MS = 7000;
 const GLIDE = "motion-safe:transition-[transform,opacity] motion-safe:duration-700 motion-safe:ease-in-out";
 const SWIPE_PX = 50;
-const cardLink = "absolute inset-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset focus-visible:outline-none";
+const cardLink = "absolute inset-0 rounded-2xl md:rounded-3xl focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset focus-visible:outline-none";
 // At least this many cards on the curve (banners repeat to fill it), so a card that wraps
 // from one end to the other always does it out of sight.
 const MIN_SLOTS = 11;
@@ -78,26 +78,36 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-/** One card's picture, with nothing behind it ("show whole image" leaves the empty sides clear). */
-function CardImage({ banner, title, eager }: { banner: HomeBanner; title: string; eager: boolean }) {
-  const src = safeMediaUrl(banner.media.url);
-  const still = safeMediaUrl(banner.media.thumbUrl);
-  if (!src) return null;
-  const contain = banner.fit === "CONTAIN";
+/**
+ * One card's picture. Every card shows the small thumbnail; the centre card and its two neighbours
+ * also load the full image (the phone version on phones when there is one), which fades in over the
+ * thumbnail only in the centre, so a card coming forward never flickers.
+ */
+function CardImage({ banner, title, d, eager }: { banner: HomeBanner; title: string; d: number; eager: boolean }) {
+  const full = safeMediaUrl(banner.media.url);
+  const thumb = safeMediaUrl(banner.media.thumbUrl) ?? full;
+  const mobile = safeMediaUrl(banner.mobileMedia?.url);
+  if (!thumb) return null;
+  const fit = banner.fit === "CONTAIN" ? "object-contain" : "object-cover";
+  const centre = d === 0;
   return (
     <>
-      <picture>
-        {/* Animated banners stay still for people who turn motion off */}
-        {banner.mediaType === "GIF" && still && <source media="(prefers-reduced-motion: reduce)" srcSet={still} />}
-        <img
-          src={src}
-          alt={title}
-          draggable={false}
-          loading={eager ? "eager" : "lazy"}
-          fetchPriority={eager ? "high" : undefined}
-          className={cn("absolute inset-0 size-full", contain ? "object-contain" : "object-cover")}
-        />
-      </picture>
+      {/* eslint-disable-next-line @next/next/no-img-element -- media server thumbnail */}
+      <img src={thumb} alt={centre ? "" : title} draggable={false} loading={eager ? "eager" : "lazy"} className={cn("absolute inset-0 size-full", fit)} />
+      {full && Math.abs(d) <= 1 && (
+        <picture>
+          {/* Animated banners stay still for people who turn motion off */}
+          {banner.mediaType === "GIF" && <source media="(prefers-reduced-motion: reduce)" srcSet={thumb} />}
+          {mobile && <source media="(max-width: 639px)" srcSet={mobile} />}
+          <img
+            src={full}
+            alt={centre ? title : ""}
+            draggable={false}
+            fetchPriority={eager && centre ? "high" : undefined}
+            className={cn("absolute inset-0 size-full motion-safe:transition-opacity motion-safe:duration-300", fit, centre ? "opacity-100" : "opacity-0")}
+          />
+        </picture>
+      )}
     </>
   );
 }
@@ -222,10 +232,10 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
             >
               <div
                 className={cn(
-                  "relative size-full overflow-hidden rounded-2xl",
+                  "relative size-full overflow-hidden rounded-2xl md:rounded-3xl",
                 )}
               >
-                <CardImage banner={banner} title={name} eager={i < 3 || i > slots - 3} />
+                <CardImage banner={banner} title={name} d={d} eager={i < 3 || i > slots - 3} />
                 {/* The centre card is the banner's link */}
                 {centre &&
                   link &&
