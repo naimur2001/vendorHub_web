@@ -146,7 +146,7 @@ function Row({ pictures, tall }: { pictures: Picture[]; tall?: boolean }) {
  * Phones: two columns with every third picture full width. Tablets and up: the designed mosaic.
  * Renders nothing when there are no pictures or the API is down.
  */
-export async function ImageGallery() {
+export async function ImageGallery({ leaveRoom = false }: { leaveRoom?: boolean }) {
   let banners: HomeBanner[];
   try {
     banners = await getGallery();
@@ -176,7 +176,10 @@ export async function ImageGallery() {
 
   return (
     <Reveal>
-      <section aria-label={t("label")}>
+      {/* leaveRoom: wide screens keep the right column free for the shop-to-let card that hangs below
+          the side advert (the banner row reaches 1.5rem / 6rem past the page edge, its right column is
+          13rem wide with a 2.5rem gap, so the gallery stops 14rem / 9.5rem before the page edge). */}
+      <section aria-label={t("label")} className={cn(leaveRoom && "xl:pr-56 2xl:pr-[9.5rem]")}>
         {/* Phones */}
         <div className="grid grid-cols-2 gap-3 md:hidden">
           {pictures.map((p, i) => {

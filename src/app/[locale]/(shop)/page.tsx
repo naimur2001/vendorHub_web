@@ -93,6 +93,17 @@ async function HomeBanners() {
   );
 }
 
+// The gallery under the banner row. When the shop-to-let card hangs below the side advert
+// (wide screens), the gallery leaves that column free so the card never covers a picture.
+async function HomeGallery() {
+  const [banners, sideAds, toLet] = await Promise.all([
+    getBanners().catch(() => []),
+    getSideAds().catch(() => []),
+    getHomeToLet().catch(() => []),
+  ]);
+  return <ImageGallery leaveRoom={banners.length > 0 && Boolean(sideAds[0] && toLet[0])} />;
+}
+
 // The markets with the most shops, from the 10-minute market cache: 8 (two full rows on desktop)
 // when there are at least 8, otherwise up to 4. "All markets" above leads to the rest.
 async function MarketDoors() {
@@ -235,7 +246,7 @@ export default async function HomePage({ params }: Props) {
       </Suspense>
       {/* Admin image gallery under the slider (1-minute cache); nothing when there are no pictures */}
       <Suspense>
-        <ImageGallery />
+        <HomeGallery />
       </Suspense>
       <section className="relative isolate flex flex-col items-center gap-6 pt-2 text-center md:gap-8 md:pt-4">
         {/* Gold arch, glow and sparkles behind the title (decoration only) */}
