@@ -100,7 +100,7 @@ function Personal({ name }: { name: string }) {
   );
 }
 
-/** Right column, under the admin advert: advert card for the newest shop to let: photo behind, gold "To let" pill, rent, and a link to all of them. */
+/** Right column, under the admin advert: advert card for the newest shop to let: clear photo, gold "To let" pill, and a small panel with the rent and a link to all of them. */
 export function ToLetAd({ listing: l, count, tall = false }: { listing: HomeToLet; count: number; tall?: boolean }) {
   const t = useTranslations("ToLetHome");
   const tL = useTranslations("ToLet");
@@ -120,14 +120,16 @@ export function ToLetAd({ listing: l, count, tall = false }: { listing: HomeToLe
       ) : (
         <KeyRound className="absolute top-3 right-3 -z-10 size-16 text-gold/40" strokeWidth={1} aria-hidden />
       )}
-      <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-brand via-brand/70 to-transparent" />
       <span className="type-body-medium absolute top-3 left-3 rounded-full bg-gold px-5 py-2 text-ink shadow-card">{tL("badge")}</span>
-      <span className="type-caption text-primary-foreground/80">{t("adLabel")}</span>
-      <span className="type-body-medium line-clamp-2">{l.marketName ?? l.title}</span>
-      <span className="type-caption font-medium text-gold">{tL("perMonth", { rent: formatTaka(l.monthlyRent, locale) })}</span>
-      <span className="type-caption mt-1 inline-flex items-center gap-1 underline-offset-4 group-hover:underline">
-        {count > 1 ? t("adMore", { count }) : t("adOne")}
-        <ArrowRight className="size-3.5 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:translate-x-0.5" aria-hidden />
+      {/* The photo stays clear; the words sit on a small solid panel */}
+      <span className="flex flex-col rounded-2xl bg-brand p-3 shadow-card">
+        <span className="type-caption text-primary-foreground/80">{t("adLabel")}</span>
+        <span className="type-body-medium line-clamp-2">{l.marketName ?? l.title}</span>
+        <span className="type-caption font-medium text-gold">{tL("perMonth", { rent: formatTaka(l.monthlyRent, locale) })}</span>
+        <span className="type-caption mt-1 inline-flex items-center gap-1 underline-offset-4 group-hover:underline">
+          {count > 1 ? t("adMore", { count }) : t("adOne")}
+          <ArrowRight className="size-3.5 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:translate-x-0.5" aria-hidden />
+        </span>
       </span>
     </Link>
   );
