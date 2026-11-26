@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { Link } from "@/i18n/routing";
@@ -12,6 +11,7 @@ import { cn } from "@/lib/utils";
 const AUTOPLAY_MS = 7000;
 const GLIDE = "motion-safe:transition-[transform,opacity] motion-safe:duration-700 motion-safe:ease-in-out";
 const SWIPE_PX = 50;
+const cardLink = "absolute inset-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset focus-visible:outline-none";
 // At least this many cards on the curve (banners repeat to fill it), so a card that wraps
 // from one end to the other always does it out of sight.
 const MIN_SLOTS = 11;
@@ -79,11 +79,6 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-const ctaClass =
-  "group/cta type-body-medium inline-flex h-11 items-center gap-2 rounded-sm bg-action px-5 text-primary-foreground shadow-card hover:bg-action-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none";
-const arrowButton =
-  "flex size-11 shrink-0 items-center justify-center rounded-full border border-line-strong bg-card text-ink shadow-card hover:border-brand hover:text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none";
-
 /** One card's picture (the whole image with a soft blurred fill when the admin chose "show whole image"). */
 function CardImage({ banner, title, eager }: { banner: HomeBanner; title: string; eager: boolean }) {
   const src = safeMediaUrl(banner.media.url);
@@ -115,7 +110,7 @@ function CardImage({ banner, title, eager }: { banner: HomeBanner; title: string
 /**
  * Home page billboard: admin banners on a curved strip (cards grow and turn towards the edges).
  * Steps one card every 7 s; pauses on hover, keyboard focus, a hidden tab and reduced motion.
- * The centre banner's title and button show under the curve. Arrows, dots, swipe and ←/→ move it.
+ * Swipe, a tap on a side card, or ←/→ on the focused slider moves it; the centre card opens its link.
  */
 export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
   const t = useTranslations("Banners");
@@ -149,10 +144,7 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
 
   const current = banners[active % count];
   const title = (bn && current.titleBn) || current.titleEn;
-  const subtitle = (bn && current.subtitleBn) || current.subtitleEn;
-  const cta = (bn && current.ctaLabelBn) || current.ctaLabelEn || t("open");
   const link = safeLink(current.linkUrl);
-  const arrow = <ArrowRight className="size-4 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover/cta:translate-x-1" aria-hidden />;
 
   // Signed distance of a slot from the centre, the short way round.
   const offset = (i: number) => {
@@ -160,13 +152,6 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
     if (d > slots / 2) d -= slots;
     return d;
   };
-  // Move to a banner by the shortest way (used by the dots).
-  const goToBanner = (b: number) => {
-    let step = (((b - (active % count)) % count) + count) % count;
-    if (step > count / 2) step -= count;
-    go(active + step);
-  };
-
   function onKeyDown(e: KeyboardEvent<HTMLElement>) {
     if (e.key === "ArrowLeft") go(active - 1);
     else if (e.key === "ArrowRight") go(active + 1);
@@ -195,11 +180,16 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
       // Only keyboard focus pauses; a mouse click on a control must not stop the slideshow.
       onFocus={(e) => setFocused(e.target.matches(":focus-visible"))}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setFocused(false)}
-      className="flex flex-col items-center gap-4 md:gap-5"
+      className="flex flex-col items-center"
     >
       {/* The curve: reaches into the page margins; the far cards are cut off at the edges and fade out */}
       <div
-        className="@container relative -mx-4 aspect-5/2 w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-4/1 md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-5/1 xl:mx-0 xl:w-full"
+        className="@container relative -mx-4 aspect-5/2 w-[calc(100%+2rem)] touch-pan-y overflow-hidden select-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] sm:aspect-4/1 md:-mx-10 md:w-[calc(100%+5rem)] lg:aspect-5/1 xl:mx-0 xl:w-full"
+        tabIndex={0}
+        role="group"
+        aria-roledescription={t("slide")}
+        aria-label={`${t("slideOf", { n: (active % count) + 1, total: count })}: ${title}`}
+        aria-live={playing ? "off" : "polite"}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerCancel={() => (drag.current = null)}
@@ -242,13 +232,13 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
                 )}
               >
                 <CardImage banner={banner} title={name} eager={i < 3 || i > slots - 3} />
-                {/* The centre card is the banner's link (also reachable with the button under the curve) */}
+                {/* The centre card is the banner's link */}
                 {centre &&
                   link &&
                   (link.external ? (
-                    <a href={link.href} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden className="absolute inset-0" draggable={false} />
+                    <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={name} className={cardLink} draggable={false} />
                   ) : (
-                    <Link href={link.href} tabIndex={-1} aria-hidden className="absolute inset-0" draggable={false} />
+                    <Link href={link.href} aria-label={name} className={cardLink} draggable={false} />
                   ))}
               </div>
             </div>
@@ -256,78 +246,6 @@ export function BannerSlider({ banners }: { banners: HomeBanner[] }) {
         })}
       </div>
 
-      {/* The centre banner's words (admin text, plain text) */}
-      <div
-        role="group"
-        aria-roledescription={t("slide")}
-        aria-label={t("slideOf", { n: (active % count) + 1, total: count })}
-        aria-live={playing ? "off" : "polite"}
-        className="flex max-w-2xl flex-col items-center gap-2 text-center"
-      >
-        <span aria-hidden className="flex items-center gap-2">
-          <span className="h-px w-8 bg-gold" />
-          <span className="size-2 rotate-45 bg-gold" />
-          <span className="h-px w-8 bg-gold" />
-        </span>
-        <p key={`t${active}`} className="type-h2 line-clamp-2 text-ink motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
-          {title}
-        </p>
-        {subtitle && (
-          <p key={`s${active}`} className="type-body line-clamp-2 text-ink-secondary motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300">
-            {subtitle}
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-center gap-3">
-        {count > 1 && (
-          <button type="button" onClick={() => go(active - 1)} aria-label={t("previous")} className={arrowButton}>
-            <ArrowLeft className="size-5" aria-hidden />
-          </button>
-        )}
-        {link &&
-          (link.external ? (
-            <a href={link.href} target="_blank" rel="noopener noreferrer" className={ctaClass}>
-              {cta}
-              {arrow}
-            </a>
-          ) : (
-            <Link href={link.href} className={ctaClass}>
-              {cta}
-              {arrow}
-            </Link>
-          ))}
-        {count > 1 && (
-          <button type="button" onClick={() => go(active + 1)} aria-label={t("next")} className={arrowButton}>
-            <ArrowRight className="size-5" aria-hidden />
-          </button>
-        )}
-      </div>
-
-      {count > 1 && (
-        // Gold keystone diamonds: which banner is in the middle
-        <div className="-mt-2 flex flex-wrap justify-center">
-          {banners.map((b, i) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => goToBanner(i)}
-              aria-label={t("goTo", { n: i + 1 })}
-              aria-current={i === active % count ? "true" : undefined}
-              className="group/dot relative flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
-            >
-              <span aria-hidden className="absolute size-2 rotate-45 border border-gold motion-safe:transition motion-safe:duration-200 group-hover/dot:scale-125" />
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute size-2.5 rotate-45 bg-brand motion-safe:transition motion-safe:duration-300 motion-safe:ease-out",
-                  i === active % count ? "scale-100 opacity-100" : "scale-50 opacity-0",
-                )}
-              />
-            </button>
-          ))}
-        </div>
-      )}
     </section>
   );
 }
