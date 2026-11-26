@@ -527,7 +527,9 @@
     },
     "dealPrice": "ফ্ল্যাশ ডিলের দাম",
     "buyNow": "এখনই কিনুন",
-    "buying": "চেকআউটে যাচ্ছে…"
+    "buying": "চেকআউটে যাচ্ছে…",
+    "floatItems": "{count, plural, one {#টি পণ্য} other {#টি পণ্য}}",
+    "floatLabel": "কার্ট: {items}, {total}। সরাতে টেনে নিন, অথবা অ্যারো কী ব্যবহার করুন।"
   },
   "Checkout": {
     "metaTitle": "চেকআউট",

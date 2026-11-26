@@ -603,7 +603,9 @@
     },
     "dealPrice": "Flash deal price",
     "buyNow": "Buy now",
-    "buying": "Going to checkout…"
+    "buying": "Going to checkout…",
+    "floatItems": "{count, plural, one {# Item} other {# Items}}",
+    "floatLabel": "Cart: {items}, {total}. Drag to move it, or use the arrow keys."
   },
   "Checkout": {
     "metaTitle": "Checkout",

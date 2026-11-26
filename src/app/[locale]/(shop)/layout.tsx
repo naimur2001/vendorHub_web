@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { FloatingCart } from "@/components/cart/floating-cart";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { TopNav } from "@/components/layout/top-nav";
 import { VerifyBanner } from "@/components/auth/email-verification";
@@ -18,6 +19,10 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       </main>
       <SiteFooter />
       <BottomNav />
+      {/* The cart tab on the edge of the screen (drag it to either side) */}
+      <Suspense fallback={null}>
+        <FloatingCart />
+      </Suspense>
       {/* The admin's welcome poster (reads the time for "once a day", so it sits in Suspense) */}
       <Suspense fallback={null}>
         <WelcomePopup />
